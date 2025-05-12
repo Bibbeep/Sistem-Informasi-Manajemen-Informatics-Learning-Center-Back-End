@@ -11,7 +11,8 @@
     "build:minor": "npm version minor",
     "build:major": "npm version major",
     "lint": "eslint",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.0",
     "globals": "^16.1.0",
+    "husky": "^9.1.7",
     "nodemon": "^3.1.10",
     "prettier": "^3.5.3"
   },
