@@ -1,0 +1,34 @@
+{
+  "name": "sistem-informasi-manajemen-informatics-learning-center-back-end",
+  "version": "0.0.0",
+  "main": "./src/server.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "start:dev": "nodemon src/server.js",
+    "build:patch": "npm version patch",
+    "build:minor": "npm version minor",
+    "build:major": "npm version major"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bibbeep/Sistem-Informasi-Manajemen-Informatics-Learning-Center-Back-End.git"
+  },
+  "author": "Muhammad Habib Al Farabi",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Bibbeep/Sistem-Informasi-Manajemen-Informatics-Learning-Center-Back-End/issues"
+  },
+  "homepage": "https://github.com/Bibbeep/Sistem-Informasi-Manajemen-Informatics-Learning-Center-Back-End#readme",
+  "description": "",
+  "devDependencies": {
+    "dotenv": "^16.5.0",
+    "nodemon": "^3.1.10"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "morgan": "^1.10.0"
+  }
+}
