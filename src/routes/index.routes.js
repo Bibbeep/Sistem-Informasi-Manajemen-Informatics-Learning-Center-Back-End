@@ -1,4 +1,6 @@
 const router = require('express').Router();
+const swaggerUI = require('swagger-ui-express');
+const swaggerSpec = require('../configs/swagger');
 
 router.get('/', async (req, res, next) => {
     try {
@@ -13,5 +15,6 @@ router.get('/', async (req, res, next) => {
         next(err);
     }
 });
+router.use('/docs', swaggerUI.serve, swaggerUI.setup(swaggerSpec));
 
 module.exports = router;
