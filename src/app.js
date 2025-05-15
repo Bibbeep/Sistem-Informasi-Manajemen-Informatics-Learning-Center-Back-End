@@ -7,8 +7,20 @@ const morgan = require('morgan');
 const cors = require('cors');
 const routes = require('./routes/index.routes');
 const errorHandler = require('./utils/errorHandler');
+const { sequelize } = require('./db/models');
 
 const app = express();
+const connectDb = async () => {
+    console.log('Checking database connection...');
+
+    try {
+        await sequelize.authenticate();
+        console.log('Database connection established');
+    } catch (err) {
+        console.log('Database connection failed', err);
+        process.exit(1);
+    }
+};
 
 app.use(
     cors({
@@ -24,4 +36,4 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use('/api/v1', routes);
 app.use(errorHandler);
 
-module.exports = { app };
+module.exports = { app, connectDb };

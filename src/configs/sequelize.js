@@ -12,11 +12,18 @@ module.exports = {
         dialect: 'postgres',
     },
     test: {
-        url: 'postgresql://postgres@localhost/sim_ilc_test?sslmode=no-verify',
+        username: 'postgres',
+        password: null,
+        database: 'sim_ilc_test',
+        host: '127.0.0.1',
         dialect: 'postgres',
     },
     production: {
-        url: process.env.DATABASE_URL,
+        username: process.env.DB_USERNAME,
+        password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
         dialect: 'postgres',
     },
 };
