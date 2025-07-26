@@ -25,11 +25,11 @@
 | `POST` | `/api/v1/programs/courses/{courseId}/modules` | Creates a module | ADMIN |
 | `PATCH` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}` | Updates a module | ADMIN |
 | `DELETE` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}` | Deletes a module | ADMIN |
-| `GET` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units` | Retrieves all units | FALSE |
-| `GET` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units/{unitId}` | Retrieves a unit details | TRUE |
-| `POST` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units` | Creates a unit | ADMIN |
-| `PATCH` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units/{unitId}` | Updates a unit | ADMIN |
-| `DELETE` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units/{unitId}` | Deletes a unit | ADMIN |
+| `GET` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/lessons` | Retrieves all lessons | FALSE |
+| `GET` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/lessons/{lessonId}` | Retrieves a lesson details | TRUE |
+| `POST` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/lessons` | Creates a lesson | ADMIN |
+| `PATCH` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/lessons/{lessonId}` | Updates a lesson | ADMIN |
+| `DELETE` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/lessons/{lessonId}` | Deletes a lesson | ADMIN |
 | `GET` | `/api/v1/programs/courses/{courseId}/discussions` | Retrieves all discussions | TRUE |
 | `GET` | `/api/v1/programs/courses/{courseId}/discussions/{discussionId}` | Retrieves a discussion details | TRUE |
 | `POST` | `/api/v1/programs/courses/{courseId}/discussions` | Creates a discussion | TRUE |
