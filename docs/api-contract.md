@@ -14,46 +14,45 @@
 | `POST` | `/api/v1/users` | Creates a new user account | ADMIN |
 | `PATCH` | `/api/v1/users/{userId}` | Updates a user data | TRUE |
 | `DELETE` | `/api/v1/users/{userId}` | Deletes a user account | ADMIN |
-| `GET` | `/api/v1/programs` | Retrieves all programs | FALSE |
-| `GET` | `/api/v1/programs/courses` | Retrieves all courses | FALSE |
-| `GET` | `/api/v1/programs/courses/{courseId}` | Retrieves a course details | FALSE |
-| `POST` | `/api/v1/programs/courses` | Creates a new course | ADMIN |
-| `PATCH` | `/api/v1/programs/courses/{courseId}` | Updates a course | ADMIN |
-| `DELETE` | `/api/v1/programs/courses/{courseId}` | Deletes a course | ADMIN |
-| `GET` | `/api/v1/programs/courses/{courseId}/modules` | Retrieves all modules | FALSE |
-| `GET` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}` | Retrieves a module details | FALSE |
-| `POST` | `/api/v1/programs/courses/{courseId}/modules` | Creates a module | ADMIN |
-| `PATCH` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}` | Updates a module | ADMIN |
-| `DELETE` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}` | Deletes a module | ADMIN |
-| `GET` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units` | Retrieves all units | FALSE |
-| `GET` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units/{unitId}` | Retrieves a unit details | TRUE |
-| `POST` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units` | Creates a unit | ADMIN |
-| `PATCH` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units/{unitId}` | Updates a unit | ADMIN |
-| `DELETE` | `/api/v1/programs/courses/{courseId}/modules/{moduleId}/units/{unitId}` | Deletes a unit | ADMIN |
-| `GET` | `/api/v1/programs/courses/{courseId}/discussions` | Retrieves all discussions | TRUE |
-| `GET` | `/api/v1/programs/courses/{courseId}/discussions/{discussionId}` | Retrieves a discussion details | TRUE |
-| `POST` | `/api/v1/programs/courses/{courseId}/discussions` | Creates a discussion | TRUE |
-| `PATCH` | `/api/v1/programs/courses/{courseId}/discussions/{discussionId}` | Updates a discussion | TRUE |
-| `DELETE` | `/api/v1/programs/courses/{courseId}/discussions/{discussionId}` | Deletes a discussion | TRUE |
-| `GET` | `/api/v1/programs/courses/{courseId}/discussions/{discussionId}/comments` | Retrieves all comments | TRUE |
-| `GET` | `/api/v1/programs/courses/{courseId}/discussions/{discussionId}/comments/{commentId}` | Retrieves a comment details | TRUE |
-| `POST` | `/api/v1/programs/courses/{courseId}/discussions/{discussionId}/comments/{commentId}:{reply\|like\|unlike}` | Reply/like/unlike to a comment/discussion | TRUE |
-| `PATCH` | `/api/v1/programs/courses/{courseId}/discussions/{discussionId}/comments/{commentId}` | Updates a comment | TRUE |
-| `GET` | `/api/v1/programs/seminars` | Retrieves all seminars | FALSE |
-| `GET` | `/api/v1/programs/seminars/{seminarId}` | Retrieves a seminar details | FALSE |
-| `POST` | `/api/v1/programs/seminars` | Creates a new seminar | ADMIN |
-| `PATCH` | `/api/v1/programs/seminars/{seminarId}` | Updates a seminar | ADMIN |
-| `DELETE` | `/api/v1/programs/seminars/{seminarId}` | Deletes a seminar | ADMIN |
-| `GET` | `/api/v1/programs/workshops` | Retrieves all workshops | FALSE |
-| `GET` | `/api/v1/programs/workshops/{workshopId}` | Retrieves a workshop details | FALSE |
-| `POST` | `/api/v1/programs/workshops` | Creates a new workshop | ADMIN |
-| `PATCH` | `/api/v1/programs/workshops/{workshopId}` | Updates a workshop | ADMIN |
-| `DELETE` | `/api/v1/programs/workshops/{workshopId}` | Deletes a workshop | ADMIN |
-| `GET` | `/api/v1/programs/competitions` | Retrieves all competitions | FALSE |
-| `GET` | `/api/v1/programs/competitions/{competitionId}` | Retrieves a competition details | FALSE |
-| `POST` | `/api/v1/programs/competitions` | Creates a new competition | ADMIN |
-| `PATCH` | `/api/v1/programs/competitions/{competitionId}` | Updates a competition | ADMIN |
-| `DELETE` | `/api/v1/programs/competitions/{competitionId}` | Deletes a competition | ADMIN |
+| `GET` | `/api/v1/courses` | Retrieves all courses | FALSE |
+| `GET` | `/api/v1/courses/{courseId}` | Retrieves a course details | FALSE |
+| `POST` | `/api/v1/courses` | Creates a new course | ADMIN |
+| `PATCH` | `/api/v1/courses/{courseId}` | Updates a course | ADMIN |
+| `DELETE` | `/api/v1/courses/{courseId}` | Deletes a course | ADMIN |
+| `GET` | `/api/v1/courses/{courseId}/modules` | Retrieves all modules | FALSE |
+| `GET` | `/api/v1/courses/{courseId}/modules/{moduleId}` | Retrieves a module details | FALSE |
+| `POST` | `/api/v1/courses/{courseId}/modules` | Creates a module | ADMIN |
+| `PATCH` | `/api/v1/courses/{courseId}/modules/{moduleId}` | Updates a module | ADMIN |
+| `DELETE` | `/api/v1/courses/{courseId}/modules/{moduleId}` | Deletes a module | ADMIN |
+| `GET` | `/api/v1/courses/{courseId}/modules/{moduleId}/units` | Retrieves all units | FALSE |
+| `GET` | `/api/v1/courses/{courseId}/modules/{moduleId}/units/{unitId}` | Retrieves a unit details | TRUE |
+| `POST` | `/api/v1/courses/{courseId}/modules/{moduleId}/units` | Creates a unit | ADMIN |
+| `PATCH` | `/api/v1/courses/{courseId}/modules/{moduleId}/units/{unitId}` | Updates a unit | ADMIN |
+| `DELETE` | `/api/v1/courses/{courseId}/modules/{moduleId}/units/{unitId}` | Deletes a unit | ADMIN |
+| `GET` | `/api/v1/courses/{courseId}/discussions` | Retrieves all discussions | TRUE |
+| `GET` | `/api/v1/courses/{courseId}/discussions/{discussionId}` | Retrieves a discussion details | TRUE |
+| `POST` | `/api/v1/courses/{courseId}/discussions` | Creates a discussion | TRUE |
+| `PATCH` | `/api/v1/courses/{courseId}/discussions/{discussionId}` | Updates a discussion | TRUE |
+| `DELETE` | `/api/v1/courses/{courseId}/discussions/{discussionId}` | Deletes a discussion | TRUE |
+| `GET` | `/api/v1/courses/{courseId}/discussions/{discussionId}/comments` | Retrieves all comments | TRUE |
+| `GET` | `/api/v1/courses/{courseId}/discussions/{discussionId}/comments/{commentId}` | Retrieves a comment details | TRUE |
+| `POST` | `/api/v1/courses/{courseId}/discussions/{discussionId}/comments/{commentId}:{reply\|like\|unlike}` | Reply/like/unlike to a comment/discussion | TRUE |
+| `PATCH` | `/api/v1/courses/{courseId}/discussions/{discussionId}/comments/{commentId}` | Updates a comment | TRUE |
+| `GET` | `/api/v1/seminars` | Retrieves all seminars | FALSE |
+| `GET` | `/api/v1/seminars/{seminarId}` | Retrieves a seminar details | FALSE |
+| `POST` | `/api/v1/seminars` | Creates a new seminar | ADMIN |
+| `PATCH` | `/api/v1/seminars/{seminarId}` | Updates a seminar | ADMIN |
+| `DELETE` | `/api/v1/seminars/{seminarId}` | Deletes a seminar | ADMIN |
+| `GET` | `/api/v1/workshops` | Retrieves all workshops | FALSE |
+| `GET` | `/api/v1/workshops/{workshopId}` | Retrieves a workshop details | FALSE |
+| `POST` | `/api/v1/workshops` | Creates a new workshop | ADMIN |
+| `PATCH` | `/api/v1/workshops/{workshopId}` | Updates a workshop | ADMIN |
+| `DELETE` | `/api/v1/workshops/{workshopId}` | Deletes a workshop | ADMIN |
+| `GET` | `/api/v1/competitions` | Retrieves all competitions | FALSE |
+| `GET` | `/api/v1/competitions/{competitionId}` | Retrieves a competition details | FALSE |
+| `POST` | `/api/v1/competitions` | Creates a new competition | ADMIN |
+| `PATCH` | `/api/v1/competitions/{competitionId}` | Updates a competition | ADMIN |
+| `DELETE` | `/api/v1/competitions/{competitionId}` | Deletes a competition | ADMIN |
 ---
 
 ## Request/Response Examples
