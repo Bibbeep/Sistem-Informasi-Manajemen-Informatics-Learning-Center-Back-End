@@ -16,7 +16,7 @@
 | `DELETE` | `/api/v1/users/{userId}` | Deletes a user account | Required | Self |
 | `GET` | `/api/v1/users/{userId}/enrollments` | Retrieves all enrollments | Required | Self |
 | `GET` | `/api/v1/users/{userId}/enrollments/{enrollmentId}` | Retrieves an enrollment details | Required | Self |
-| `POST` | `/api/v1/users/{userId}/enrollments` | Creates an enrollment | Required | Self |
+| `POST` | `/api/v1/users/{userId}/enrollments` | Creates an enrollment/enroll to a program | Required | Self |
 | `PATCH` | `/api/v1/users/{userId}/enrollments/{enrollmentId}` | Updates an enrollment | Required | Admin |
 | `DELETE` | `/api/v1/users/{userId}/enrollments/{enrollmentId}` | Deletes an enrollment | Required | Admin |
 | `GET` | `/api/v1/users/{userId}/certificates` | Retrieves all certificates | Required | Self |
@@ -360,6 +360,194 @@
 		"statusCode": 200,
 		"message": "Successfully deleted a user account.",
 		"data": null,	
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/users/{userId}/enrollments` - Retrieves all enrollments
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/users/1/enrollments \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all program enrollments.",
+		"data": {
+			"enrollments": [
+				{
+					"id": 1,
+					"program": {
+						"id": 3,
+						"title": "Keamanan Jaringan",
+						"type": "Course",
+						"thumbnailUrl": "https://storage.example.com/folder/image.png"
+					},
+					"progressPercentage": 80.00,
+					"status": "In Progress"
+				},
+				{
+					"id": 2,
+					"program": {
+						"id": 5,
+						"title": "Workshop UI/UX",
+						"type": "Workshop",
+						"thumbnailUrl": "https://storage.example.com/folder/image.png"
+					},
+					"progressPercentage": 0.00,
+					"status": "In Progress"
+				},
+				{
+					"id": 3,
+					"program": {
+						"id": 6,
+						"title": "Tech Future Talk",
+						"type": "Seminar",
+						"thumbnailUrl": "https://storage.example.com/folder/image.png"
+					},
+					"progressPercentage": 100.00,
+					"status": "Completed"
+				},
+				{
+					"id": 4,
+					"program": {
+						"id": 7,
+						"title": "Hackathon UNTAN",
+						"type": "Competition",
+						"thumbnailUrl": "https://storage.example.com/folder/image.png"
+					},
+					"progressPercentage": 0.00,
+					"status": "Unpaid"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 4,
+			"totalRecords": 40,
+			"currentPage": 1,
+			"totalPages": 10,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/users/{userId}/enrollments/{enrollmentId}` - Retrieves an enrollment details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/users/1/enrollments/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved program enrollment details.",
+		"data": {
+			"enrollment": {
+				"id": 1,
+				"program": {
+					"id": 3,
+					"title": "Keamanan Jaringan",
+					"type": "Course",
+					"thumbnailUrl": "https://storage.example.com/folder/image.png",
+				},
+				"progressPercentage": 80.00,
+				"moduleProgress": [
+					{
+						"module": {
+							"id": 21,
+							"title": "Pengantar Keamanan Jaringan"
+						},
+						"isDone": true
+					},
+					{
+						"module": {
+							"id": 22,
+							"title": "Sejarah Keamanan Jaringan"
+						},
+						"isDone": true
+					},
+					{
+						"module": {
+							"id": 23,
+							"title": "Apa itu internet?"
+						},
+						"isDone": true
+					},
+					{
+						"module": {
+							"id": 24,
+							"title": "Denial of Service (DoS)"
+						},
+						"isDone": true
+					},
+					{
+						"module": {
+							"id": 25,
+							"title": "Distributed Denial of Service (DDoS)"
+						},
+						"isDone": false
+					}
+				],
+				"status": "In Progress"
+			}
+		},
+		"errors": null
+	}
+	```
+
+
+- `POST /api/v1/users/{userId}/enrollments` - Creates an enrollment/enroll to a program
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/users/1/enrollments \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"programId": 1
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully enrolled to a program. Please complete the payment to access the contents.",
+		"data": {
+			"enrollment": {
+				"id": 1,
+				"program": {
+					"id": 3,
+					"title": "Keamanan Jaringan",
+					"type": "Course",
+					"thumbnailUrl": "https://storage.example.com/folder/image.png",
+				},
+				"status": "Unpaid"
+			},
+			"invoice": {
+				"id": 1,
+				"virtualAccountNumber": "1234279807578",
+				"amount_idr": 150000.00
+			}
+		},
 		"errors": null
 	}
 	```
