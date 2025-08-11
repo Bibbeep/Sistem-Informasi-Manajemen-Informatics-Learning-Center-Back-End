@@ -19,11 +19,26 @@
 | `POST` | `/api/v1/users/{userId}/enrollments` | Creates an enrollment/enroll to a program | Required | Self |
 | `PATCH` | `/api/v1/users/{userId}/enrollments/{enrollmentId}` | Updates an enrollment | Required | Admin |
 | `DELETE` | `/api/v1/users/{userId}/enrollments/{enrollmentId}` | Deletes an enrollment | Required | Admin |
+| `GET` | `/api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules` | Retrieves all completed modules for program enrollment with "Course" program type | Required | Self |
+| `GET` | `/api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules/{completedModuleId}` | Retrieves a completed module details for program enrollment with "Course" program type | Required | Self |
+| `POST` | `/api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules` | Completed a module for program enrollment with "Course" program type | Required | Self |
+| `PATCH` | `/api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules/{completedModuleId}` | Updates a completed module for program enrollment with "Course" program type | Required | Admin |
+| `DELETE` | `/api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules/{completedModuleId}` | Deletes a completed module for program enrollment with "Course" program type | Required | Admin |
 | `GET` | `/api/v1/users/{userId}/certificates` | Retrieves all certificates | Required | Self |
 | `GET` | `/api/v1/users/{userId}/certificates/{certificateId}` | Retrieves a certificate details | Required | Self |
 | `POST` | `/api/v1/users/{userId}/certificates` | Creates a certificate | Required | Admin |
 | `PATCH` | `/api/v1/users/{userId}/certificates/{certificateId}` | Updates a certificate | Required | Admin |
 | `DELETE` | `/api/v1/users/{userId}/certificates/{certificateId}` | Deletes a certificate | Required | Admin |
+| `GET` | `/api/v1/users/{userId}/invoices` | Retrieves all invoices | Required | Self |
+| `GET` | `/api/v1/users/{userId}/invoices/{invoiceId}` | Retrieves an invoice details | Required | Self |
+| `POST` | `/api/v1/users/{userId}/invoices` | Creates an invoice | Required | Admin |
+| `PATCH` | `/api/v1/users/{userId}/invoices/{invoiceId}` | Updates an invoice | Required | Admin |
+| `DELETE` | `/api/v1/users/{userId}/invoices/{invoiceId}` | Deletes an invoice | Required | Admin |
+| `GET` | `/api/v1/users/{userId}/payments` | Retrieves all payments | Required | Self |
+| `GET` | `/api/v1/users/{userId}/payments/{paymentId}` | Retrieves a payment details | Required | Self |
+| `POST` | `/api/v1/users/{userId}/payments` | Creates a payment | Required | Self |
+| `PATCH` | `/api/v1/users/{userId}/payments/{paymentId}` | Updates a payment | Required | Admin |
+| `DELETE` | `/api/v1/users/{userId}/payments/{paymentId}` | Deletes a payment | Required | Admin |
 | `GET` | `/api/v1/programs` | Retrieves all programs | Not required | Any |
 | `GET` | `/api/v1/programs/{programId}` | Retrieves a program details | Not required | Any |
 | `POST` | `/api/v1/programs` | Creates a new program | Required | Admin |
@@ -47,6 +62,9 @@
 | `POST` | `/api/v1/discussions/{discussionId}/comments/{commentId}/reply` | Replies to a comment | Required | Any |
 | `POST` | `/api/v1/discussions/{discussionId}/comments/{commentId}/like` | Likes a comment | Required | Any |
 | `POST` | `/api/v1/discussions/{discussionId}/comments/{commentId}/unlike` | Unlikes a comment | Required | Any |
+| `GET` | `/api/v1/feedbacks` | Retrieves all feedbacks | Required | Admin |
+| `GET` | `/api/v1/feedbacks/{feedbackId}` | Retrieves a feedback details | Required | Admin |
+| `POST` | `/api/v1/feedbacks` | Creates/send a feedback | Not required | Any |
 
 ---
 
@@ -538,6 +556,198 @@
 		"success": true,
 		"statusCode": 200,
 		"message": "Successfully deleted a program enrollment.",
+		"data": null,
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules` - Retrieves all completed modules for program enrollment with "Course" program type
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/users/1/enrollments/1/completed-modules \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all completed modules.",
+		"data": {
+			"completedModules": [
+				{
+					"id": 1,
+					"moduleId": 1,
+					"completedAt": "2025-12-09T12:45:55.091Z"
+				},
+				{
+					"id": 2,
+					"moduleId": 2,
+					"completedAt": "2025-12-09T12:50:00.123Z"
+				},
+				{
+					"id": 3,
+					"moduleId": 3,
+					"completedAt": "2025-12-09T12:51:55.000Z"
+				},
+				{
+					"id": 4,
+					"moduleId": 4,
+					"completedAt": "2025-12-09T12:52:03.333Z"
+				},
+				{
+					"id": 5,
+					"moduleId": 5,
+					"completedAt": "2025-12-09T13:01:11.999Z"
+				},
+				{
+					"id": 6,
+					"moduleId": 6,
+					"completedAt": "2025-12-09T13:03:01.001Z"
+				},
+				{
+					"id": 7,
+					"moduleId": 7,
+					"completedAt": "2025-12-10T10:45:55.091Z"
+				},
+				{
+					"id": 8,
+					"moduleId": 8,
+					"completedAt": "2025-12-10T10:47:02.000Z"
+				},
+				{
+					"id": 9,
+					"moduleId": 19,
+					"completedAt": "2025-12-09T11:00:00.000Z"
+				},
+				{
+					"id": 10,
+					"moduleId": 10,
+					"completedAt": "2025-12-09T12:45:55.091Z"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 10,
+			"totalRecords": 24,
+			"currentPage": 1,
+			"totalPages": 3,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules/{completedModuleId}` - Retrieves a completed module details for program enrollment with "Course" program type
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/users/1/enrollments/1/completed-modules/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved a completed module details.",
+		"data": {
+			"completedModule": {
+				"id": 1,
+				"moduleId": 1,
+				"completedAt": "2025-12-09T12:45:55.091Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules` - Completed a module for program enrollment with "Course" program type
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/users/1/enrollments/1/completed-modules \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"moduleId": 1
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully completed a module.",
+		"data": {
+			"completedModule": {
+				"id": 1,
+				"moduleId": 1,
+				"completedAt": "2025-12-09T12:45:55.091Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `PATCH /api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules/{completedModuleId}` - Updates a completed module for program enrollment with "Course" program type
+
+	- Request:
+
+	```bash
+	curl -X PATCH http://localhost:3000/api/v1/users/1/enrollments/1/completed-modules/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"moduleId": 3
+		}'
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully updated a completed module.",
+		"data": {
+			"completedModule": {
+				"id": 1,
+				"moduleId": 3,
+				"completedAt": "2025-12-09T12:45:55.091Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/users/{userId}/enrollments/{enrollmentId}/completed-modules/{completedModuleId}` - Deletes a completed module for program enrollment with "Course" program type
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/users/1/enrollments/1/completed-modules/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted a completed module.",
 		"data": null,
 		"errors": null
 	}
