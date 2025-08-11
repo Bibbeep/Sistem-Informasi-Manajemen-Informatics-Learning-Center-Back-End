@@ -384,45 +384,25 @@
 			"enrollments": [
 				{
 					"id": 1,
-					"program": {
-						"id": 3,
-						"title": "Keamanan Jaringan",
-						"type": "Course",
-						"thumbnailUrl": "https://storage.example.com/folder/image.png"
-					},
+					"programId": 3,
 					"progressPercentage": 80.00,
 					"status": "In Progress"
 				},
 				{
 					"id": 2,
-					"program": {
-						"id": 5,
-						"title": "Workshop UI/UX",
-						"type": "Workshop",
-						"thumbnailUrl": "https://storage.example.com/folder/image.png"
-					},
+					"programId": 5,
 					"progressPercentage": 0.00,
 					"status": "In Progress"
 				},
 				{
 					"id": 3,
-					"program": {
-						"id": 6,
-						"title": "Tech Future Talk",
-						"type": "Seminar",
-						"thumbnailUrl": "https://storage.example.com/folder/image.png"
-					},
+					"programId": 6,
 					"progressPercentage": 100.00,
 					"status": "Completed"
 				},
 				{
 					"id": 4,
-					"program": {
-						"id": 7,
-						"title": "Hackathon UNTAN",
-						"type": "Competition",
-						"thumbnailUrl": "https://storage.example.com/folder/image.png"
-					},
+					"programId": 7,
 					"progressPercentage": 0.00,
 					"status": "Unpaid"
 				}
@@ -459,51 +439,10 @@
 		"data": {
 			"enrollment": {
 				"id": 1,
-				"program": {
-					"id": 3,
-					"title": "Keamanan Jaringan",
-					"type": "Course",
-					"thumbnailUrl": "https://storage.example.com/folder/image.png",
-				},
+				"programId": 3,
 				"progressPercentage": 80.00,
-				"moduleProgress": [
-					{
-						"module": {
-							"id": 21,
-							"title": "Pengantar Keamanan Jaringan"
-						},
-						"isDone": true
-					},
-					{
-						"module": {
-							"id": 22,
-							"title": "Sejarah Keamanan Jaringan"
-						},
-						"isDone": true
-					},
-					{
-						"module": {
-							"id": 23,
-							"title": "Apa itu internet?"
-						},
-						"isDone": true
-					},
-					{
-						"module": {
-							"id": 24,
-							"title": "Denial of Service (DoS)"
-						},
-						"isDone": true
-					},
-					{
-						"module": {
-							"id": 25,
-							"title": "Distributed Denial of Service (DDoS)"
-						},
-						"isDone": false
-					}
-				],
-				"status": "In Progress"
+				"status": "In Progress",
+				"completedAt": null
 			}
 		},
 		"errors": null
@@ -534,20 +473,71 @@
 		"data": {
 			"enrollment": {
 				"id": 1,
-				"program": {
-					"id": 3,
-					"title": "Keamanan Jaringan",
-					"type": "Course",
-					"thumbnailUrl": "https://storage.example.com/folder/image.png",
-				},
-				"status": "Unpaid"
+				"programId": 1,
+				"progressPercentage": 0.00,
+				"status": "Unpaid",
 			},
 			"invoice": {
 				"id": 1,
 				"virtualAccountNumber": "1234279807578",
-				"amount_idr": 150000.00
+				"amountIDR": 150000.00,
+				"paymentDueDatetime": "2025-12-11T23:59:59.999"
 			}
 		},
+		"errors": null
+	}
+	```
+
+- `PATCH /api/v1/users/{userId}/enrollments/{enrollmentId}` - Updates an enrollment
+
+	- Request:
+
+	```bash
+	curl -X PATCH http://localhost:3000/api/v1/users/1/enrollments/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"status": "Completed"
+		}'
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully updated program enrollment details.",
+		"data": {
+			"enrollment": {
+				"id": 1,
+				"programId": 1,
+				"progressPercentage": 0.00,
+				"status": "Completed",
+				"completedAt": "2025-12-07T23:55:01.002Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/users/{userId}/enrollments/{enrollmentId}` - Deletes an enrollment
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/users/1/enrollments/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted a program enrollment.",
+		"data": null,
 		"errors": null
 	}
 	```
