@@ -899,3 +899,116 @@
 	}
 	```
 
+- `POST /api/v1/certificates` - Creates a certificate
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/certificates \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"title": "Mobile Development Certificate of Completion",
+			"issuedAt": "2025-12-09T12:45:55.091Z",
+			"expiredAt": "2030-12-09T12:45:55.091Z",
+			"userId": 23,
+			"enrollmentId": 33
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a certificate.",
+		"data": {
+			"certificate": {
+				"id": 200,
+				"userId": 23,
+				"enrollmentId": 33,
+				"program": {
+					"id": 79,
+					"title": "Mobile Development",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p79.png"
+				},
+				"title": "Mobile Development Certificate of Completion",
+				"credential": "MBD2316-AGSA22",
+				"issuedAt": "2025-12-09T12:45:55.091Z",
+				"expiredAt": "2030-12-09T12:45:55.091Z",
+				"documentUrl": "https://example.storage.com/cert/mobiledev0119999.pdf",
+				"createdAt": "2025-12-09T12:45:55.091Z",
+				"updatedAt": "2025-12-09T12:45:55.091Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `PATCH /api/v1/certificates/{certificateId}` - Updates a certificate
+
+	- Request:
+
+	```bash
+	curl -X PATCH http://localhost:3000/api/v1/certificates/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"title": "VueJS Front-End Web Development Certificate of Completion"
+		}'
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully updated a certificate.",
+		"data": {
+			"certificate": {
+				"id": 1,
+				"userId": 1,
+				"enrollmentId": 1,
+				"program": {
+					"id": 3,
+					"title": "VueJS untuk Pemula",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+				},
+				"title": "VueJS Front-End Web Development Certificate of Completion",
+				"credential": "ASJ2316-AHUA17",
+				"issuedAt": "2025-12-09T12:45:55.091Z",
+				"expiredAt": "2030-12-09T12:45:55.091Z",
+				"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf",
+				"createdAt": "2025-12-09T12:45:55.091Z",
+				"updatedAt": "2025-12-31T12:45:55.091Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/certificates/{certificateId}` - Deletes a certificate
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/certificates/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted a certificate.",
+		"data": null,
+		"errors": null
+	}
+	```
+
