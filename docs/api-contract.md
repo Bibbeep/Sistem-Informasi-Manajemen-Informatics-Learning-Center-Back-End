@@ -27,12 +27,8 @@
 | `DELETE` | `/api/v1/certificates/{certificateId}`                           | Deletes a certificate                        | Required       | Admin         |
 | `GET`    | `/api/v1/invoices`                                               | Retrieves all invoices                       | Required       | Self          |
 | `GET`    | `/api/v1/invoices/{invoiceId}`                                   | Retrieves an invoice details                 | Required       | Self          |
-| `POST`   | `/api/v1/invoices`                                               | Creates an invoice                           | Required       | Admin         |
-| `PATCH`  | `/api/v1/invoices/{invoiceId}`                                   | Updates an invoice                           | Required       | Admin         |
 | `DELETE` | `/api/v1/invoices/{invoiceId}`                                   | Deletes an invoice                           | Required       | Admin         |
 | `POST`   | `/api/v1/invoices/{invoiceId}/payments`                          | Creates a payment                            | Required       | Self          |
-| `PATCH`  | `/api/v1/invoices/{invoiceId}/payments/{paymentId}`              | Updates a payment                            | Required       | Admin         |
-| `DELETE` | `/api/v1/invoices/{invoiceId}/payments/{paymentId}`              | Deletes a payment                            | Required       | Admin         |
 | `GET`    | `/api/v1/programs`                                               | Retrieves all programs                       | Not required   | Any           |
 | `GET`    | `/api/v1/programs/{programId}`                                   | Retrieves a program details                  | Not required   | Any           |
 | `POST`   | `/api/v1/programs`                                               | Creates a new program                        | Required       | Admin         |
@@ -1012,3 +1008,228 @@
 	}
 	```
 
+- `GET /api/v1/invoices` - Retrieves all invoices
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/invoices?userId=1&limit=5&page=1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all invoices.",
+		"data": {
+			"invoices": [
+				{
+					"id": 1,
+					"userId": 1,
+					"enrollmentId": 1,
+					"program": {
+						"id": 3,
+						"title": "VueJS untuk Pemula",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+					},
+					"virtualAccountNumber": "1234279807578",
+					"amountIdr": 150000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Verified",
+					"payment": {
+						"id": 1,
+						"amountPaidIdr": 150000.00,
+						"createdAt": "2025-12-30T23:59:59.999",
+						"updatedAt": "2025-12-30T23:59:59.999"
+					},
+					"createdAt": "2025-12-27T23:59:59.999",
+					"updatedAt": "2025-12-30T23:59:59.999"
+				},
+				{
+					"id": 2,
+					"userId": 1,
+					"enrollmentId": 2,
+					"program": {
+						"id": 5,
+						"title": "Back-End Web Development",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p5.png"
+					},
+					"virtualAccountNumber": "1234279807579",
+					"amountIdr": 200000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Unverified",
+					"payment": null,
+					"createdAt": "2025-12-28T10:00:00.000",
+					"updatedAt": "2025-12-28T10:00:00.000"
+				},
+				{
+					"id": 3,
+					"userId": 1,
+					"enrollmentId": 3,
+					"program": {
+						"id": 7,
+						"title": "Dasar Pemrograman Python",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p7.png"
+					},
+					"virtualAccountNumber": "1234279807580",
+					"amountIdr": 175000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Expired",
+					"payment": null,
+					"createdAt": "2025-12-29T11:00:00.000",
+					"updatedAt": "2025-12-31T23:59:59.999"
+				},
+				{
+					"id": 4,
+					"userId": 1,
+					"enrollmentId": 4,
+					"program": {
+						"id": 2,
+						"title": "Machine Learning Dasar",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p2.png"
+					},
+					"virtualAccountNumber": "1234279807581",
+					"amountIdr": 250000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Verified",
+					"payment": {
+						"id": 2,
+						"amountPaidIdr": 250000.00,
+						"createdAt": "2025-12-30T15:00:00.000",
+						"updatedAt": "2025-12-30T15:00:00.000"
+					},
+					"createdAt": "2025-12-30T12:00:00.000",
+					"updatedAt": "2025-12-30T15:00:00.000"
+				},
+				{
+					"id": 5,
+					"userId": 1,
+					"enrollmentId": 5,
+					"program": {
+						"id": 9,
+						"title": "DevOps Fundamental",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p9.png"
+					},
+					"virtualAccountNumber": "1234279807582",
+					"amountIdr": 180000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Unverified",
+					"payment": null,
+					"createdAt": "2025-12-31T08:00:00.000",
+					"updatedAt": "2025-12-31T08:00:00.000"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 5,
+			"totalRecords": 7,
+			"currentPage": 1,
+			"totalPages": 2,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/invoices/{invoiceId}` - Retrieves an invoice details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/invoices/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved an invoice details.",
+		"data": {
+			"invoice": {
+				"id": 1,
+				"userId": 1,
+				"enrollmentId": 1,
+				"program": {
+					"id": 3,
+					"title": "VueJS untuk Pemula",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+				},
+				"virtualAccountNumber": "1234279807578",
+				"amountIdr": 150000.00,
+				"paymentDueDatetime": "2025-12-31T23:59:59.999",
+				"status": "Verified",
+				"payment": {
+					"id": 1,
+					"amountPaidIdr": 150000.00,
+					"createdAt": "2025-12-30T23:59:59.999",
+					"updatedAt": "2025-12-30T23:59:59.999"
+				},
+				"createdAt": "2025-12-27T23:59:59.999",
+				"updatedAt": "2025-12-30T23:59:59.999"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/invoices/{invoiceId}` - Deletes an invoice
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/invoices/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted an invoice.",
+		"data": null,
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/invoices/{invoiceId}/payments` - Creates a payment
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/invoices/1/payments \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a payment.",
+		"data": {
+			"payment": {
+				"id": 1,
+				"amountPaidIdr": 150000.00,
+				"createdAt": "2025-12-30T23:59:59.999",
+				"updatedAt": "2025-12-30T23:59:59.999"
+			}
+		},
+		"errors": null
+	}
+	```
