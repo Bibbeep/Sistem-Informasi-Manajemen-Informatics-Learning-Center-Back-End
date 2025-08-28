@@ -776,40 +776,74 @@
 						"thumbnailUrl": "https://static.image.com/thumb_p3.png"
 					},
 					"title": "VueJS untuk Pemula Certificate of Completion",
+					"credential": "ASJ2316-AHUA17",
 					"issuedAt": "2025-12-09T12:45:55.091Z",
+					"expiredAt": "2030-12-09T12:45:55.091Z",
 					"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf"
 				},
 				{
 					"id": 2,
 					"userId": 1,
 					"enrollmentId": 2,
+					"program": {
+						"id": 5,
+						"title": "Back-End Web Development",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p5.png"
+					},
 					"title": "Back-End Web Development Certificate of Completion",
+					"credential": "YAGS617-AJSB98",
 					"issuedAt": "2025-12-14T11:00:00.000Z",
+					"expiredAt": "2030-12-14T11:00:00.000Z",
 					"documentUrl": "https://example.storage.com/cert/backend0119119.pdf"
 				},
 				{
 					"id": 3,
 					"userId": 1,
 					"enrollmentId": 3,
-					"title": "Machine Learning Dasar Certificate of Completion",
-					"issuedAt": "2025-12-01T12:30:30.111Z",
-					"documentUrl": "https://example.storage.com/cert/machinelearningdasar013214.pdf"
+					"program": {
+						"id": 7,
+						"title": "Dasar Pemrograman Python",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p7.png"
+					},
+					"title": "Dasar Pemrograman Python Certificate of Completion",
+					"credential": "PYTH123-DFG456",
+					"issuedAt": "2025-12-20T10:00:00.000Z",
+					"expiredAt": "2030-12-20T10:00:00.000Z",
+					"documentUrl": "https://example.storage.com/cert/python0119222.pdf"
 				},
 				{
 					"id": 4,
 					"userId": 1,
 					"enrollmentId": 4,
-					"title": "Pemrograman Python Dasar Certificate of Completion",
-					"issuedAt": "2025-11-21T09:09:09.009Z",
-					"documentUrl": "https://example.storage.com/cert/pythondasar01192315.pdf"
+					"program": {
+						"id": 2,
+						"title": "Machine Learning Dasar",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p2.png"
+					},
+					"title": "Machine Learning Dasar Certificate of Completion",
+					"credential": "MLD789-HJK321",
+					"issuedAt": "2025-12-25T15:30:00.000Z",
+					"expiredAt": "2030-12-25T15:30:00.000Z",
+					"documentUrl": "https://example.storage.com/cert/ml0119333.pdf"
 				},
 				{
 					"id": 5,
 					"userId": 1,
 					"enrollmentId": 5,
-					"title": "Pemrograman Java Dasar Certificate of Completion",
-					"issuedAt": "2025-11-22T09:09:09.009Z",
-					"documentUrl": "https://example.storage.com/cert/javadasar011912312.pdf"
+					"program": {
+						"id": 9,
+						"title": "DevOps Fundamental",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p9.png"
+					},
+					"title": "DevOps Fundamental Certificate of Completion",
+					"credential": "DEVOPS456-XYZ789",
+					"issuedAt": "2026-01-01T12:00:00.000Z",
+					"expiredAt": "2031-01-01T12:00:00.000Z",
+					"documentUrl": "https://example.storage.com/cert/devops0119444.pdf"
 				}
 			]
 		},
@@ -844,12 +878,21 @@
 		"data": {
 			"certificate": {
 				"id": 1,
+				"userId": 1,
 				"enrollmentId": 1,
-				"title": "Front-End Web Development Certificate of Completion",
-				"credential": "lWNxvj5QTleAEF0PsniDug",
+				"program": {
+					"id": 3,
+					"title": "VueJS untuk Pemula",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+				},
+				"title": "VueJS untuk Pemula Certificate of Completion",
+				"credential": "ASJ2316-AHUA17",
 				"issuedAt": "2025-12-09T12:45:55.091Z",
 				"expiredAt": "2030-12-09T12:45:55.091Z",
-				"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf"
+				"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf",
+				"createdAt": "2025-12-09T12:45:55.091Z",
+				"updatedAt": "2025-12-09T12:45:55.091Z"
 			}
 		},
 		"errors": null
