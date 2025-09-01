@@ -34,6 +34,7 @@
 | `POST`   | `/api/v1/programs`                                               | Creates a new program                        | Required       | Admin         |
 | `PATCH`  | `/api/v1/programs/{programId}`                                   | Updates a program                            | Required       | Admin         |
 | `DELETE` | `/api/v1/programs/{programId}`                                   | Deletes a program                            | Required       | Admin         |
+| `POST`   | `/api/v1/programs/{programId}/thumbnails`                        | Creates a new program                        | Required       | Admin         |
 | `GET`    | `/api/v1/programs/{programId}/modules`                           | Retrieves all modules                        | Required       | Any           |
 | `GET`    | `/api/v1/programs/{programId}/modules/{moduleId}`                | Retrieves a module details                   | Required       | Any           |
 | `POST`   | `/api/v1/programs/{programId}/modules`                           | Creates a module                             | Required       | Admin         |
@@ -1230,6 +1231,243 @@
 				"updatedAt": "2025-12-30T23:59:59.999"
 			}
 		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/programs` - Retrieves all programs
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/programs?limit=5&page=1&type=All
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all programs.",
+		"data": {
+			"programs": [
+				{
+					"id": 1,
+					"title": "VueJS untuk Pemula",
+					"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p3.png",
+					"availableDate": "2025-01-01T00:00:00.000Z",
+					"priceIdr": 300000,
+					"createdAt": "2024-12-25T10:00:00.000Z",
+					"updatedAt": "2024-12-25T10:00:00.000Z",
+				},
+				{
+					"id": 2,
+					"title": "ReactJS Lanjutan",
+					"description": "Program lanjutan untuk pengembangan aplikasi web dengan ReactJS. Peserta akan mempelajari teknik advanced seperti hooks, context API, optimasi performa, dan integrasi dengan backend.",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p5.png",
+					"availableDate": "2025-02-01T00:00:00.000Z",
+					"priceIdr": 350000,
+					"createdAt": "2024-12-26T10:00:00.000Z",
+					"updatedAt": "2024-12-26T10:00:00.000Z"
+				},
+				{
+					"id": 3,
+					"title": "Hackathon Informatics 2025",
+					"description": "Kompetisi pengembangan aplikasi selama 48 jam untuk mahasiswa dan profesional IT. Peserta akan membentuk tim, mengerjakan studi kasus, dan mempresentasikan solusi di depan juri.",
+					"type": "Competition",
+					"thumbnailUrl": "https://static.image.com/thumb_competition.png",
+					"availableDate": "2025-03-10T00:00:00.000Z",
+					"priceIdr": 0,
+					"isOnline": false,
+					"locationAddress": "Gedung Informatics Center, Jl. Teknologi No. 10, Jakarta",
+					"hostName": "Informatics Learning Center",
+					"totalPrize": 15000000,
+					"contestRoomUrl": null,
+					"videoConferenceUrl": null,
+					"createdAt": "2024-12-27T10:00:00.000Z",
+					"updatedAt": "2024-12-27T10:00:00.000Z"
+				},
+				{
+					"id": 4,
+					"title": "AI Ethics Seminar",
+					"description": "Seminar membahas etika dalam pengembangan kecerdasan buatan, menghadirkan pembicara dari industri dan akademisi. Cocok untuk praktisi dan mahasiswa yang ingin memahami dampak sosial AI.",
+					"type": "Seminar",
+					"thumbnailUrl": "https://static.image.com/thumb_seminar.png",
+					"availableDate": "2025-04-15T00:00:00.000Z",
+					"priceIdr": 100000,
+					"isOnline": true,
+					"videoConferenceUrl": "https://zoom.us/j/123456789",
+					"locationAddress": null,
+					"speakerNames": [
+						"Dr. Andi Pratama",
+						"Prof. Siti Rahmawati"
+					],
+					"createdAt": "2024-12-28T10:00:00.000Z",
+					"updatedAt": "2024-12-28T10:00:00.000Z"
+				},
+				{
+					"id": 5,
+					"title": "Workshop DevOps Fundamental",
+					"description": "Workshop intensif satu hari untuk memahami konsep dasar DevOps, CI/CD, dan praktik terbaik dalam pengelolaan infrastruktur modern. Peserta akan mendapatkan pengalaman langsung melalui simulasi dan studi kasus.",
+					"type": "Workshop",
+					"thumbnailUrl": "https://static.image.com/thumb_workshop.png",
+					"availableDate": "2025-05-20T00:00:00.000Z",
+					"priceIdr": 250000,
+					"isOnline": false,
+					"videoConferenceUrl": null,
+					"locationAddress": "Ruang Workshop, Gedung Informatics Center, Jakarta",
+					"facilitatorNames": [
+						"Budi Santoso",
+						"Rina Kusuma"
+					],
+					"createdAt": "2024-12-29T10:00:00.000Z",
+					"updatedAt": "2024-12-29T10:00:00.000Z"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 5,
+			"totalRecords": 53,
+			"currentPage": 1,
+			"totalPages": 11,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/programs/{programId}` - Retrieves a program details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/programs/1
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved a program details.",
+		"data": {
+			"program": {
+				"id": 1,
+				"title": "VueJS untuk Pemula",
+				"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
+				"type": "Course",
+				"thumbnailUrl": "https://static.image.com/thumb_p3.png",
+				"availableDate": "2025-01-01T00:00:00.000Z",
+				"priceIdr": 300000,
+				"createdAt": "2024-12-25T10:00:00.000Z",
+				"updatedAt": "2024-12-25T10:00:00.000Z",
+			},
+		},
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/programs` - Creates a new program
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/programs \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"title": "VueJS untuk Pemula",
+			"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
+			"type": "Course",
+			"availableDate": "2025-01-01",
+			"priceIdr": 300000
+		}
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a program.",
+		"data": {
+			"program": {
+				"id": 1,
+				"title": "VueJS untuk Pemula",
+				"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
+				"type": "Course",
+				"thumbnailUrl": "https://static.image.com/thumb_p3.png",
+				"availableDate": "2025-01-01T00:00:00.000Z",
+				"priceIdr": 300000,
+				"createdAt": "2024-12-25T10:00:00.000Z",
+				"updatedAt": "2024-12-25T10:00:00.000Z",
+			},
+		},
+		"errors": null
+	}
+	```
+
+- `PATCH /api/v1/programs/{programId}` - Updates a program
+
+	- Request:
+
+	```bash
+	curl -X PATCH http://localhost:3000/api/v1/programs/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"priceIdr": 150000
+		}
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully updated a program.",
+		"data": {
+			"program": {
+				"id": 1,
+				"title": "VueJS untuk Pemula",
+				"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
+				"type": "Course",
+				"thumbnailUrl": "https://static.image.com/thumb_p3.png",
+				"availableDate": "2025-01-01T00:00:00.000Z",
+				"priceIdr": 200000,
+				"createdAt": "2024-12-25T10:00:00.000Z",
+				"updatedAt": "2025-01-01T12:00:00.000Z",
+			},
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/programs/{programId}` - Deletes a program
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/programs/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted a program.",
+		"data": null,
 		"errors": null
 	}
 	```
