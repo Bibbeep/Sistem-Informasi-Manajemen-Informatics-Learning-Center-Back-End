@@ -1753,3 +1753,208 @@
 	}
 	```
 
+- `GET /api/v1/discussions` - Retrieves all discussion forums
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/discussions?type=Course \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all discussion forums.",
+		"data": {
+			"discussions": [
+				{
+					"id": 1,
+					"title": "Forum Data Science",
+					"createdAt": "2025-03-01T10:00:00.000Z",
+					"updatedAt": "2025-03-01T10:00:00.000Z"
+				},
+				{
+					"id": 2,
+					"title": "Forum Web Development",
+					"createdAt": "2025-03-02T11:00:00.000Z",
+					"updatedAt": "2025-03-02T11:00:00.000Z"
+				},
+				{
+					"id": 3,
+					"title": "Forum Machine Learning",
+					"createdAt": "2025-03-03T12:00:00.000Z",
+					"updatedAt": "2025-03-03T12:00:00.000Z"
+				},
+				{
+					"id": 4,
+					"title": "Forum Cyber Security",
+					"createdAt": "2025-03-04T13:00:00.000Z",
+					"updatedAt": "2025-03-04T13:00:00.000Z"
+				},
+				{
+					"id": 5,
+					"title": "Forum Mobile Development",
+					"createdAt": "2025-03-05T14:00:00.000Z",
+					"updatedAt": "2025-03-05T14:00:00.000Z"
+				},
+				{
+					"id": 6,
+					"title": "Forum UI/UX Design",
+					"createdAt": "2025-03-06T15:00:00.000Z",
+					"updatedAt": "2025-03-06T15:00:00.000Z"
+				},
+				{
+					"id": 7,
+					"title": "Forum Cloud Computing",
+					"createdAt": "2025-03-07T16:00:00.000Z",
+					"updatedAt": "2025-03-07T16:00:00.000Z"
+				},
+				{
+					"id": 8,
+					"title": "Forum Data Analytics",
+					"createdAt": "2025-03-08T17:00:00.000Z",
+					"updatedAt": "2025-03-08T17:00:00.000Z"
+				},
+				{
+					"id": 9,
+					"title": "Forum Artificial Intelligence",
+					"createdAt": "2025-03-09T18:00:00.000Z",
+					"updatedAt": "2025-03-09T18:00:00.000Z"
+				},
+				{
+					"id": 10,
+					"title": "Forum DevOps",
+					"createdAt": "2025-03-10T19:00:00.000Z",
+					"updatedAt": "2025-03-10T19:00:00.000Z"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 10,
+			"totalRecords": 55,
+			"currentPage": 1,
+			"totalPages": 6,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/discussions/{discussionId}` - Retrieves a discussion forum details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/discussions/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved discussion forum details.",
+		"data": {
+			"discussion": {
+				"id": 1,
+				"title": "Forum Data Science",
+				"createdAt": "2025-03-01T10:00:00.000Z",
+				"updatedAt": "2025-03-01T10:00:00.000Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/discussions` - Creates a discussion forum
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/discussions \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"title": "Forum Data Science"
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a discussion forum.",
+		"data": {
+			"discussion": {
+				"id": 1,
+				"title": "Forum Data Science",
+				"createdAt": "2025-03-01T10:00:00.000Z",
+				"updatedAt": "2025-03-01T10:00:00.000Z"
+			},
+		},
+		"errors": null
+	}
+	```
+
+- `PATCH /api/v1/discussions/1` - Updates a discussion forum
+
+	- Request:
+
+	```bash
+	curl -X PATCH http://localhost:3000/api/v1/discussions/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"title": "Forum Sains Data"
+		}'
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully updated a discussion forum.",
+		"data": {
+			"discussion": {
+				"id": 1,
+				"title": "Forum Sains Data",
+				"createdAt": "2025-03-01T10:00:00.000Z",
+				"updatedAt": "2025-03-02T11:00:00.000Z"
+			},
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/discussions/1` - Deletes a discussion forum
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/discussions/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted a discussion forum.",
+		"data": null,
+		"errors": null
+	}
+	```
+
