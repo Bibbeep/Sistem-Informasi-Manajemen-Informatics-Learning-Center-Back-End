@@ -34,12 +34,13 @@
 | `POST`   | `/api/v1/programs`                                               | Creates a new program                        | Required       | Admin         |
 | `PATCH`  | `/api/v1/programs/{programId}`                                   | Updates a program                            | Required       | Admin         |
 | `DELETE` | `/api/v1/programs/{programId}`                                   | Deletes a program                            | Required       | Admin         |
-| `POST`   | `/api/v1/programs/{programId}/thumbnails`                        | Creates a new program                        | Required       | Admin         |
+| `POST`   | `/api/v1/programs/{programId}/thumbnails`                        | Uploads a program thumbnail                  | Required       | Admin         |
 | `GET`    | `/api/v1/programs/{programId}/modules`                           | Retrieves all modules                        | Required       | Any           |
 | `GET`    | `/api/v1/programs/{programId}/modules/{moduleId}`                | Retrieves a module details                   | Required       | Any           |
-| `POST`   | `/api/v1/programs/{programId}/modules`                           | Creates a module                             | Required       | Admin         |
+| `POST`   | `/api/v1/programs/{programId}/modules`                           | Creates a new module                         | Required       | Admin         |
 | `PATCH`  | `/api/v1/programs/{programId}/modules/{moduleId}`                | Updates a module                             | Required       | Admin         |
 | `DELETE` | `/api/v1/programs/{programId}/modules/{moduleId}`                | Deletes a module                             | Required       | Admin         |
+| `POST`   | `/api/v1/programs/{programId}/modules/{moduleId}/materials`      | Uploads a module material                    | Required       | Admin         |
 | `GET`    | `/api/v1/discussions`                                            | Retrieves all discussion forums              | Required       | Any           |
 | `GET`    | `/api/v1/discussions/{discussionId}`                             | Retrieves a discussion forum details         | Required       | Any           |
 | `POST`   | `/api/v1/discussions`                                            | Creates a discussion forum                   | Required       | Admin         |
@@ -1239,7 +1240,7 @@
 
 	- Request:
 
-	```bash
+    ```bash
 	curl -X GET http://localhost:3000/api/v1/programs?limit=5&page=1&type=All
 	```
 
@@ -1471,3 +1472,284 @@
 		"errors": null
 	}
 	```
+
+- `POST /api/v1/programs/{programId}/thumbnails` - Uploads a program thumbnail
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/programs/1/thumbnails \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-F "picture=@/path/to/thumbnail.jpg"
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully uploaded a program thumbnail.",
+		"data": {
+			"thumbnailUrl": "https://static.image.com/profile-user1.png"
+		},	
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/programs/{programId}/modules` - Retrieves all modules
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/programs/1/modules?limit=10&page=1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all modules.",
+		"data": {
+			"modules": [
+				{
+					"id": 1,
+					"numberCode": 1,
+					"materialUrl": "https://static.material.com/module1.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module1",
+					"createdAt": "2025-01-01T10:00:00.000Z",
+					"updatedAt": "2025-01-02T12:00:00.000Z"
+				},
+				{
+					"id": 2,
+					"numberCode": 2,
+					"materialUrl": "https://static.material.com/module2.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module2",
+					"createdAt": "2025-01-02T10:00:00.000Z",
+					"updatedAt": "2025-01-03T12:00:00.000Z"
+				},
+				{
+					"id": 3,
+					"numberCode": 3,
+					"materialUrl": "https://static.material.com/module3.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module3",
+					"createdAt": "2025-01-03T10:00:00.000Z",
+					"updatedAt": "2025-01-04T12:00:00.000Z"
+				},
+				{
+					"id": 4,
+					"numberCode": 4,
+					"materialUrl": "https://static.material.com/module4.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module4",
+					"createdAt": "2025-01-04T10:00:00.000Z",
+					"updatedAt": "2025-01-05T12:00:00.000Z"
+				},
+				{
+					"id": 5,
+					"numberCode": 5,
+					"materialUrl": "https://static.material.com/module5.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module5",
+					"createdAt": "2025-01-05T10:00:00.000Z",
+					"updatedAt": "2025-01-06T12:00:00.000Z"
+				},
+				{
+					"id": 6,
+					"numberCode": 6,
+					"materialUrl": "https://static.material.com/module6.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module6",
+					"createdAt": "2025-01-06T10:00:00.000Z",
+					"updatedAt": "2025-01-07T12:00:00.000Z"
+				},
+				{
+					"id": 7,
+					"numberCode": 7,
+					"materialUrl": "https://static.material.com/module7.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module7",
+					"createdAt": "2025-01-07T10:00:00.000Z",
+					"updatedAt": "2025-01-08T12:00:00.000Z"
+				},
+				{
+					"id": 8,
+					"numberCode": 8,
+					"materialUrl": "https://static.material.com/module8.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module8",
+					"createdAt": "2025-01-08T10:00:00.000Z",
+					"updatedAt": "2025-01-09T12:00:00.000Z"
+				},
+				{
+					"id": 9,
+					"numberCode": 9,
+					"materialUrl": "https://static.material.com/module9.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module9",
+					"createdAt": "2025-01-09T10:00:00.000Z",
+					"updatedAt": "2025-01-10T12:00:00.000Z"
+				},
+				{
+					"id": 10,
+					"numberCode": 10,
+					"materialUrl": "https://static.material.com/module10.pdf",
+					"youtubeUrl": "https://youtube.com/watch?v=module10",
+					"createdAt": "2025-01-10T10:00:00.000Z",
+					"updatedAt": "2025-01-11T12:00:00.000Z"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 10,
+			"totalRecords": 22,
+			"currentPage": 1,
+			"totalPages": 3,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/programs/{programId}/modules/{moduleId}` - Retrieves a module details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/programs/1/modules/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved module details.",
+		"data": {
+			"module": {
+				"id": 1,
+				"numberCode": 1,
+				"materialUrl": "https://static.material.com/module1.pdf",
+				"youtubeUrl": "https://youtube.com/watch?v=module1",
+				"createdAt": "2025-01-01T10:00:00.000Z",
+				"updatedAt": "2025-01-02T12:00:00.000Z"
+			},
+		},
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/programs/{programId}/modules` - Creates a new module
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/programs/1/modules \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"numberCode": 1,
+			"youtubeUrl": "https://youtube.com/watch?v=module1"
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a module.",
+		"data": {
+			"module": {
+				"id": 1,
+				"numberCode": 1,
+				"materialUrl": null,
+				"youtubeUrl": "https://youtube.com/watch?v=module1",
+				"createdAt": "2025-01-01T10:00:00.000Z",
+				"updatedAt": "2025-01-01T10:00:00.000Z"
+			},
+		},
+		"errors": null
+	}
+	```
+
+- `PATCH /api/v1/programs/{programId}/modules/{moduleId}` - Updates a module
+
+	- Request:
+
+	```bash
+	curl -X PATCH http://localhost:3000/api/v1/programs/1/modules/1 /
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"youtubeUrl": "https://youtube.com/watch?v=module1_new"
+		}'
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully updated a module.",
+		"data": {
+			"module": {
+				"id": 1,
+				"numberCode": 1,
+				"materialUrl": null,
+				"youtubeUrl": "https://youtube.com/watch?v=module1_new",
+				"createdAt": "2025-01-01T10:00:00.000Z",
+				"updatedAt": "2025-01-03T00:00:00.000Z"
+			},
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/programs/{programId}/modules/{moduleId}` - Deletes a module
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/programs/1/modules/1 /
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted a module.",
+		"data": null,
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/programs/{programId}/modules/{moduleId}/materials` - Uploads a module material
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/programs/1/modules/1/materials \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-F "picture=@/path/to/material0101.pdf"
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully uploaded a module material.",
+		"data": {
+			"materialUrl": "https://storage.document.com/material0101.pdf"
+		},	
+		"errors": null
+	}
+	```
+
