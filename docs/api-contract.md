@@ -2,61 +2,60 @@
 
 ## Endpoints
 
-| Method   | URL                                                              | Functionality                                | Authentication | Authorization |
-| -------- | ---------------------------------------------------------------- | -------------------------------------------- | -------------- | ------------- |
-| `POST`   | `/api/v1/auth/register`                                          | Registers a new user account                 | Not required   | Any           |
-| `POST`   | `/api/v1/auth/login`                                             | Logs in a user account                       | Required       | Self          |
-| `POST`   | `/api/v1/auth/logout`                                            | Logs out a user account                      | Required       | Self          |
-| `POST`   | `/api/v1/auth/forgot-password`                                   | Sends an email with a URL to reset password  | Not required   | Self          |
-| `POST`   | `/api/v1/auth/reset-password`                                    | Resets password of a user account            | Required       | Self          |
-| `GET`    | `/api/v1/users`                                                  | Retrieves all user data                      | Required       | Admin         |
-| `GET`    | `/api/v1/users/{userId}`                                         | Retrieves a user data                        | Required       | Self          |
-| `PATCH`  | `/api/v1/users/{userId}`                                         | Updates a user data                          | Required       | Self          |
-| `DELETE` | `/api/v1/users/{userId}`                                         | Deletes a user account                       | Required       | Self          |
-| `POST`   | `/api/v1/users/{userId}/picture`                                 | Uploads a profile picture                    | Required       | Self          |
-| `GET`    | `/api/v1/enrollments`                                            | Retrieves all enrollments                    | Required       | Self          |
-| `GET`    | `/api/v1/enrollments/{enrollmentId}`                             | Retrieves an enrollment details              | Required       | Self          |
-| `POST`   | `/api/v1/enrollments`                                            | Creates an enrollment/enroll to a program    | Required       | Self          |
-| `PATCH`  | `/api/v1/enrollments/{enrollmentId}`                             | Updates an enrollment                        | Required       | Self          |
-| `DELETE` | `/api/v1/enrollments/{enrollmentId}`                             | Deletes an enrollment                        | Required       | Admin         |
-| `POST`   | `/api/v1/enrollments/{enrollmentId}/completed-modules`           | Mark a module as completed                   | Required       | Self          |
-| `GET`    | `/api/v1/certificates`                                           | Retrieves all certificates                   | Required       | Self          |
-| `GET`    | `/api/v1/certificates/{certificateId}`                           | Retrieves a certificate details              | Required       | Self          |
-| `POST`   | `/api/v1/certificates`                                           | Creates a certificate                        | Required       | Admin         |
-| `PATCH`  | `/api/v1/certificates/{certificateId}`                           | Updates a certificate                        | Required       | Admin         |
-| `DELETE` | `/api/v1/certificates/{certificateId}`                           | Deletes a certificate                        | Required       | Admin         |
-| `GET`    | `/api/v1/invoices`                                               | Retrieves all invoices                       | Required       | Self          |
-| `GET`    | `/api/v1/invoices/{invoiceId}`                                   | Retrieves an invoice details                 | Required       | Self          |
-| `DELETE` | `/api/v1/invoices/{invoiceId}`                                   | Deletes an invoice                           | Required       | Admin         |
-| `POST`   | `/api/v1/invoices/{invoiceId}/payments`                          | Creates a payment                            | Required       | Self          |
-| `GET`    | `/api/v1/programs`                                               | Retrieves all programs                       | Not required   | Any           |
-| `GET`    | `/api/v1/programs/{programId}`                                   | Retrieves a program details                  | Not required   | Any           |
-| `POST`   | `/api/v1/programs`                                               | Creates a new program                        | Required       | Admin         |
-| `PATCH`  | `/api/v1/programs/{programId}`                                   | Updates a program                            | Required       | Admin         |
-| `DELETE` | `/api/v1/programs/{programId}`                                   | Deletes a program                            | Required       | Admin         |
-| `POST`   | `/api/v1/programs/{programId}/thumbnails`                        | Uploads a program thumbnail                  | Required       | Admin         |
-| `GET`    | `/api/v1/programs/{programId}/modules`                           | Retrieves all modules                        | Required       | Any           |
-| `GET`    | `/api/v1/programs/{programId}/modules/{moduleId}`                | Retrieves a module details                   | Required       | Any           |
-| `POST`   | `/api/v1/programs/{programId}/modules`                           | Creates a new module                         | Required       | Admin         |
-| `PATCH`  | `/api/v1/programs/{programId}/modules/{moduleId}`                | Updates a module                             | Required       | Admin         |
-| `DELETE` | `/api/v1/programs/{programId}/modules/{moduleId}`                | Deletes a module                             | Required       | Admin         |
-| `POST`   | `/api/v1/programs/{programId}/modules/{moduleId}/materials`      | Uploads a module material                    | Required       | Admin         |
-| `GET`    | `/api/v1/discussions`                                            | Retrieves all discussion forums              | Required       | Any           |
-| `GET`    | `/api/v1/discussions/{discussionId}`                             | Retrieves a discussion forum details         | Required       | Any           |
-| `POST`   | `/api/v1/discussions`                                            | Creates a discussion forum                   | Required       | Admin         |
-| `PATCH`  | `/api/v1/discussions/{discussionId}`                             | Updates a discussion forum                   | Required       | Admin         |
-| `DELETE` | `/api/v1/discussions/{discussionId}`                             | Deletes a discussion forum                   | Required       | Admin         |
-| `GET`    | `/api/v1/discussions/{discussionId}/comments`                    | Retrieves all comments in a discussion forum | Required       | Any           |
-| `GET`    | `/api/v1/discussions/{discussionId}/comments/{commentId}`        | Retrieves a comment details                  | Required       | Any           |
-| `POST`   | `/api/v1/discussions/{discussionId}/comments`                    | Post a comment to a discussion               | Required       | Any           |
-| `PATCH`  | `/api/v1/discussions/{discussionId}/comments/{commentId}`        | Updates a comment                            | Required       | Self          |
-| `DELETE` | `/api/v1/discussions/{discussionId}/comments/{commentId}`        | Deletes a comment                            | Required       | Self          |
-| `POST`   | `/api/v1/discussions/{discussionId}/comments/{commentId}/reply`  | Replies to a comment                         | Required       | Any           |
-| `POST`   | `/api/v1/discussions/{discussionId}/comments/{commentId}/like`   | Likes a comment                              | Required       | Any           |
-| `POST`   | `/api/v1/discussions/{discussionId}/comments/{commentId}/unlike` | Unlikes a comment                            | Required       | Any           |
-| `GET`    | `/api/v1/feedbacks`                                              | Retrieves all feedbacks                      | Required       | Admin         |
-| `GET`    | `/api/v1/feedbacks/{feedbackId}`                                 | Retrieves a feedback details                 | Required       | Admin         |
-| `POST`   | `/api/v1/feedbacks`                                              | Creates/send a feedback                      | Not required   | Any           |
+| Method   | URL                                                             | Functionality                                | Authentication | Authorization |
+| -------- | --------------------------------------------------------------- | -------------------------------------------- | -------------- | ------------- |
+| `POST`   | `/api/v1/auth/register`                                         | Registers a new user account                 | Not required   | Any           |
+| `POST`   | `/api/v1/auth/login`                                            | Logs in a user account                       | Required       | Self          |
+| `POST`   | `/api/v1/auth/logout`                                           | Logs out a user account                      | Required       | Self          |
+| `POST`   | `/api/v1/auth/forgot-password`                                  | Sends an email with a URL to reset password  | Not required   | Self          |
+| `POST`   | `/api/v1/auth/reset-password`                                   | Resets password of a user account            | Required       | Self          |
+| `GET`    | `/api/v1/users`                                                 | Retrieves all user data                      | Required       | Admin         |
+| `GET`    | `/api/v1/users/{userId}`                                        | Retrieves a user data                        | Required       | Self          |
+| `PATCH`  | `/api/v1/users/{userId}`                                        | Updates a user data                          | Required       | Self          |
+| `DELETE` | `/api/v1/users/{userId}`                                        | Deletes a user account                       | Required       | Self          |
+| `POST`   | `/api/v1/users/{userId}/picture`                                | Uploads a profile picture                    | Required       | Self          |
+| `GET`    | `/api/v1/enrollments`                                           | Retrieves all enrollments                    | Required       | Self          |
+| `GET`    | `/api/v1/enrollments/{enrollmentId}`                            | Retrieves an enrollment details              | Required       | Self          |
+| `POST`   | `/api/v1/enrollments`                                           | Creates an enrollment/enroll to a program    | Required       | Self          |
+| `PATCH`  | `/api/v1/enrollments/{enrollmentId}`                            | Updates an enrollment                        | Required       | Self          |
+| `DELETE` | `/api/v1/enrollments/{enrollmentId}`                            | Deletes an enrollment                        | Required       | Admin         |
+| `POST`   | `/api/v1/enrollments/{enrollmentId}/completed-modules`          | Mark a module as completed                   | Required       | Self          |
+| `GET`    | `/api/v1/certificates`                                          | Retrieves all certificates                   | Required       | Self          |
+| `GET`    | `/api/v1/certificates/{certificateId}`                          | Retrieves a certificate details              | Required       | Self          |
+| `POST`   | `/api/v1/certificates`                                          | Creates a certificate                        | Required       | Admin         |
+| `PATCH`  | `/api/v1/certificates/{certificateId}`                          | Updates a certificate                        | Required       | Admin         |
+| `DELETE` | `/api/v1/certificates/{certificateId}`                          | Deletes a certificate                        | Required       | Admin         |
+| `GET`    | `/api/v1/invoices`                                              | Retrieves all invoices                       | Required       | Self          |
+| `GET`    | `/api/v1/invoices/{invoiceId}`                                  | Retrieves an invoice details                 | Required       | Self          |
+| `DELETE` | `/api/v1/invoices/{invoiceId}`                                  | Deletes an invoice                           | Required       | Admin         |
+| `POST`   | `/api/v1/invoices/{invoiceId}/payments`                         | Creates a payment                            | Required       | Self          |
+| `GET`    | `/api/v1/programs`                                              | Retrieves all programs                       | Not required   | Any           |
+| `GET`    | `/api/v1/programs/{programId}`                                  | Retrieves a program details                  | Not required   | Any           |
+| `POST`   | `/api/v1/programs`                                              | Creates a new program                        | Required       | Admin         |
+| `PATCH`  | `/api/v1/programs/{programId}`                                  | Updates a program                            | Required       | Admin         |
+| `DELETE` | `/api/v1/programs/{programId}`                                  | Deletes a program                            | Required       | Admin         |
+| `POST`   | `/api/v1/programs/{programId}/thumbnails`                       | Uploads a program thumbnail                  | Required       | Admin         |
+| `GET`    | `/api/v1/programs/{programId}/modules`                          | Retrieves all modules                        | Required       | Any           |
+| `GET`    | `/api/v1/programs/{programId}/modules/{moduleId}`               | Retrieves a module details                   | Required       | Any           |
+| `POST`   | `/api/v1/programs/{programId}/modules`                          | Creates a new module                         | Required       | Admin         |
+| `PATCH`  | `/api/v1/programs/{programId}/modules/{moduleId}`               | Updates a module                             | Required       | Admin         |
+| `DELETE` | `/api/v1/programs/{programId}/modules/{moduleId}`               | Deletes a module                             | Required       | Admin         |
+| `POST`   | `/api/v1/programs/{programId}/modules/{moduleId}/materials`     | Uploads a module material                    | Required       | Admin         |
+| `GET`    | `/api/v1/discussions`                                           | Retrieves all discussion forums              | Required       | Any           |
+| `GET`    | `/api/v1/discussions/{discussionId}`                            | Retrieves a discussion forum details         | Required       | Any           |
+| `POST`   | `/api/v1/discussions`                                           | Creates a discussion forum                   | Required       | Admin         |
+| `PATCH`  | `/api/v1/discussions/{discussionId}`                            | Updates a discussion forum                   | Required       | Admin         |
+| `DELETE` | `/api/v1/discussions/{discussionId}`                            | Deletes a discussion forum                   | Required       | Admin         |
+| `GET`    | `/api/v1/discussions/{discussionId}/comments`                   | Retrieves all comments in a discussion forum | Required       | Any           |
+| `GET`    | `/api/v1/discussions/{discussionId}/comments/{commentId}`       | Retrieves a comment details                  | Required       | Any           |
+| `POST`   | `/api/v1/discussions/{discussionId}/comments`                   | Post a comment to a discussion               | Required       | Any           |
+| `PATCH`  | `/api/v1/discussions/{discussionId}/comments/{commentId}`       | Updates a comment                            | Required       | Self          |
+| `DELETE` | `/api/v1/discussions/{discussionId}/comments/{commentId}`       | Deletes a comment                            | Required       | Self          |
+| `POST`   | `/api/v1/discussions/{discussionId}/comments/{commentId}/likes` | Likes a comment                              | Required       | Any           |
+| `DELETE` | `/api/v1/discussions/{discussionId}/comments/{commentId}/likes` | Unlikes a comment                            | Required       | Any           |
+| `GET`    | `/api/v1/feedbacks`                                             | Retrieves all feedbacks                      | Required       | Admin         |
+| `GET`    | `/api/v1/feedbacks/{feedbackId}`                                | Retrieves a feedback details                 | Required       | Admin         |
+| `POST`   | `/api/v1/feedbacks`                                             | Creates/send a feedback                      | Not required   | Any           |
 
 ---
 
@@ -95,9 +94,12 @@
 				"updatedAt": "2025-06-06T08:08:00.080Z"
 			}
 		},
-		"errors": null
-	}
-	```
+			"errors": null
+		}
+		```
+	
+	> **Note:**  
+	> In the `childrenPagination` object, `depth` indicates the current nesting level of the comment, while `depth` (if present) specifies the maximum allowed nesting level for replies in the discussion forum. This helps API consumers understand how deeply comments can be nested and at what level a particular comment resides.
 
 - `POST /api/v1/auth/login` - Logs in a user account
 
@@ -1905,7 +1907,7 @@
 	}
 	```
 
-- `PATCH /api/v1/discussions/1` - Updates a discussion forum
+- `PATCH /api/v1/discussions/{discussionId}` - Updates a discussion forum
 
 	- Request:
 
@@ -1937,7 +1939,7 @@
 	}
 	```
 
-- `DELETE /api/v1/discussions/1` - Deletes a discussion forum
+- `DELETE /api/v1/discussions/{discussionId}` - Deletes a discussion forum
 
 	- Request:
 
@@ -1954,6 +1956,375 @@
 		"statusCode": 200,
 		"message": "Successfully deleted a discussion forum.",
 		"data": null,
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/discussions/{discussionId}/comments` - Retrieves all comments in a discussion forum
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/discussions/1/comments?limit=10&page=1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all comments.",
+		"data": {
+			"comments": [
+				{
+					"id": 1,
+					"userId": 1,
+					"userName": "John Doe",
+					"parentCommentId": null,
+					"message": "Do standards or best practices exist for structuring JSON responses from an API? Obviously, every application's data is different, so that much I'm not concerned with, but rather the \"response boilerplate\"",
+					"childrenPagination": {
+						"hasChildren": true,
+						"nextLevelRecords": 3,
+						"depth": 4
+					},
+					"likesCount": 5,
+					"createdAt": "2025-03-01T10:00:00.000Z",
+					"updatedAt": "2025-03-01T10:00:00.000Z"
+				},
+				{
+					"id": 2,
+					"userId": 2,
+					"userName": "Jane Doe",
+					"parentCommentId": null,
+					"message": "Generally, it's a good idea to have a consistent envelope for all responses, e.g., always include success, message, and data fields.",
+					"childrenPagination": {
+						"hasChildren": false,
+						"nextLevelRecords": 0,
+						"depth": 1
+					},
+					"likesCount": 2,
+					"createdAt": "2025-03-01T10:05:00.000Z",
+					"updatedAt": "2025-03-01T10:05:00.000Z"
+				},
+				{
+					"id": 3,
+					"userId": 3,
+					"userName": "Alice Smith",
+					"parentCommentId": null,
+					"message": "Some APIs also include an errors array, even if it's empty, to make error handling easier on the client side.",
+					"childrenPagination": {
+						"hasChildren": true,
+						"nextLevelRecords": 2,
+						"depth": 2
+					},
+					"likesCount": 1,
+					"createdAt": "2025-03-01T10:10:00.000Z",
+					"updatedAt": "2025-03-01T10:10:00.000Z"
+				},
+				{
+					"id": 4,
+					"userId": 4,
+					"userName": "Bob Johnson",
+					"parentCommentId": null,
+					"message": "I recommend always returning HTTP status codes that match the response, e.g., 200 for success, 400 for validation errors, etc.",
+					"childrenPagination": {
+						"hasChildren": false,
+						"nextLevelRecords": 0,
+						"depth": 1
+					},
+					"likesCount": 1,
+					"createdAt": "2025-03-01T10:15:00.000Z",
+					"updatedAt": "2025-03-01T10:15:00.000Z"
+				},
+				{
+					"id": 5,
+					"userId": 5,
+					"userName": "Charlie Brown",
+					"parentCommentId": null,
+					"message": "For paginated endpoints, include pagination info in a separate object, not mixed with the data array.",
+					"childrenPagination": {
+						"hasChildren": false,
+						"nextLevelRecords": 0,
+						"depth": 1
+					},
+					"likesCount": 0,
+					"createdAt": "2025-03-01T10:20:00.000Z",
+					"updatedAt": "2025-03-01T10:20:00.000Z"
+				},
+				{
+					"id": 6,
+					"userId": 6,
+					"userName": "David Lee",
+					"parentCommentId": null,
+					"message": "It's helpful to always return the same structure for both success and error responses, so clients can parse them easily.",
+					"childrenPagination": {
+						"hasChildren": false,
+						"nextLevelRecords": 0,
+						"depth": 1
+					},
+					"likesCount": 0,
+					"createdAt": "2025-03-01T10:25:00.000Z",
+					"updatedAt": "2025-03-01T10:25:00.000Z"
+				},
+				{
+					"id": 7,
+					"userId": 7,
+					"userName": "Eva Green",
+					"parentCommentId": null,
+					"message": "Some teams use a top-level code field for custom error codes, in addition to HTTP status codes.",
+					"childrenPagination": {
+						"hasChildren": false,
+						"nextLevelRecords": 0,
+						"depth": 1
+					},
+					"likesCount": 0,
+					"createdAt": "2025-03-01T10:30:00.000Z",
+					"updatedAt": "2025-03-01T10:30:00.000Z"
+				},
+				{
+					"id": 8,
+					"userId": 8,
+					"userName": "Frank Miller",
+					"parentCommentId": null,
+					"message": "If your API supports localization, consider returning messages in the user's preferred language.",
+					"childrenPagination": {
+						"hasChildren": false,
+						"nextLevelRecords": 0,
+						"depth": 1
+					},
+					"likesCount": 0,
+					"createdAt": "2025-03-01T10:35:00.000Z",
+					"updatedAt": "2025-03-01T10:35:00.000Z"
+				},
+				{
+					"id": 9,
+					"userId": 9,
+					"userName": "Grace Hopper",
+					"parentCommentId": null,
+					"message": "For security, avoid leaking internal error details in production responses. Log them server-side instead.",
+					"childrenPagination": {
+						"hasChildren": false,
+						"nextLevelRecords": 0,
+						"depth": 1
+					},
+					"likesCount": 0,
+					"createdAt": "2025-03-01T10:40:00.000Z",
+					"updatedAt": "2025-03-01T10:40:00.000Z"
+				},
+				{
+					"id": 10,
+					"userId": 10,
+					"userName": "Henry Ford",
+					"parentCommentId": null,
+					"message": "You can also include a requestId in every response to help with debugging and tracing issues.",
+					"childrenPagination": {
+						"hasChildren": false,
+						"nextLevelRecords": 0,
+						"depth": 1
+					},
+					"likesCount": 0,
+					"createdAt": "2025-03-01T10:45:00.000Z",
+					"updatedAt": "2025-03-01T10:45:00.000Z"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 10,
+			"totalRecords": 12,
+			"currentPage": 1,
+			"totalPages": 2,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/discussions/{discussionId}/comments/{commentId}` - Retrieves a comment details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/discussions/1/comments/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved a comment details.",
+		"data": {
+			"comment": {
+				"id": 1,
+				"userId": 1,
+				"userName": "John Doe",
+				"parentCommentId": null,
+				"message": "Do standards or best practices exist for structuring JSON responses from an API? Obviously, every application's data is different, so that much I'm not concerned with, but rather the \"response boilerplate\"",
+				"childrenPagination": {
+					"hasChildren": true,
+					"nextLevelRecords": 3,
+					"depth": 4,
+				},
+				"likesCount": 5,
+				"createdAt": "2025-03-01T10:00:00.000Z",
+				"updatedAt": "2025-03-01T10:00:00.000Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/discussions/{discussionId}/comments` - Post a comment to a discussion
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/discussions/1/comments \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"parentCommentId": null,
+			"message": "Do standards or best practices exist for structuring JSON responses from an API? Obviously, every application's data is different, so that much I'm not concerned with, but rather the \"response boilerplate\""
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a comment.",
+		"data": {
+			"comment": {
+				"id": 1,
+				"userId": 1,
+				"userName": "John Doe",
+				"parentCommentId": null,
+				"message": "Do standards or best practices exist for structuring JSON responses from an API? Obviously, every application's data is different, so that much I'm not concerned with, but rather the \"response boilerplate\"",
+				"childrenPagination": {
+					"hasChildren": false,
+					"nextLevelRecords": 0,
+					"depth": 1,
+				},
+				"likesCount": 0,
+				"createdAt": "2025-03-01T10:00:00.000Z",
+				"updatedAt": "2025-03-01T10:00:00.000Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `PATCH /api/v1/discussions/{discussionId}/comments/{commentId}` - Updates a comment
+
+	- Request:
+
+	```bash
+	curl -X PATCH http://localhost:3000/api/v1/discussions/1/comments/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"message": "Do standards or best practices exist for structuring JSON responses from an API?"
+		}'
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully updated a comment.",
+		"data": {
+			"comment": {
+				"id": 1,
+				"userId": 1,
+				"userName": "John Doe",
+				"parentCommentId": null,
+				"message": "Do standards or best practices exist for structuring JSON responses from an API?",
+				"childrenPagination": {
+					"hasChildren": false,
+					"nextLevelRecords": 0,
+					"depth": 1,
+				},
+				"likesCount": 0,
+				"createdAt": "2025-03-01T10:00:00.000Z",
+				"updatedAt": "2025-03-02T10:00:00.000Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/discussions/{discussionId}/comments/{commentId}` - Deletes a comment
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/discussions/1/comments/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted a comment.",
+		"data": null,
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/discussions/{discussionId}/comments/{commentId}/likes` - Likes a comment
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/discussions/1/comments/1/likes \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully liked a comment.",
+		"data": {
+			"likesCount": 10
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/discussions/{discussionId}/comments/{commentId}/likes` - Unlikes a comment
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/discussions/1/comments/1/likes \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully unliked a comment.",
+		"data": {
+			"likesCount": 9
+		},
 		"errors": null
 	}
 	```
