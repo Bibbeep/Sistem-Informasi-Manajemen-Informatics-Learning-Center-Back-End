@@ -55,7 +55,8 @@
 | `DELETE` | `/api/v1/discussions/{discussionId}/comments/{commentId}/likes` | Unlikes a comment                            | Required       | Any           |
 | `GET`    | `/api/v1/feedbacks`                                             | Retrieves all feedbacks                      | Required       | Admin         |
 | `GET`    | `/api/v1/feedbacks/{feedbackId}`                                | Retrieves a feedback details                 | Required       | Admin         |
-| `POST`   | `/api/v1/feedbacks`                                             | Creates/send a feedback                      | Not required   | Any           |
+| `POST`   | `/api/v1/feedbacks`                                             | Creates/sends a feedback                     | Not required   | Any           |
+| `POST`   | `/api/v1/feedbacks/{feedbackId}/responses`                      | Responds to a feedback                       | Requires       | Admin         |
 
 ---
 
@@ -2329,3 +2330,249 @@
 	}
 	```
 
+- `GET /api/v1/feedbacks` - Retrieves all feedbacks
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/feedbacks?limit=10&page=1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all feedbacks.",
+		"data": {
+			"feedbacks": [
+				{
+					"id": 1,
+					"fullName": "John Doe",
+					"email": "johndoe@mail.com",
+					"message": "It would be helpful if you guys can add quizzes :)",
+					"responses": [
+						{
+							"feedbackResponseId": 1,
+							"adminUserId": 1,
+							"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!",
+							"createdAt": "2025-03-02T10:00:00.000Z",
+							"updatedAt": "2025-03-02T10:00:00.000Z"
+						}
+					],
+					"createdAt": "2025-03-01T10:00:00.000Z",
+					"updatedAt": "2025-03-01T10:00:00.000Z"
+				},
+				{
+					"id": 2,
+					"fullName": "Jane Doe",
+					"email": "janedoe@mail.com",
+					"message": "Great platform! The course materials are very clear.",
+					"responses": [
+						{
+							"feedbackResponseId": 5,
+							"adminUserId": 3,
+							"message": "Thanks Jane! We are happy to know that our website helped you!",
+							"createdAt": "2025-03-02T10:00:00.000Z",
+							"updatedAt": "2025-03-02T10:00:00.000Z"
+						}
+					],
+					"createdAt": "2025-03-01T10:05:00.000Z",
+					"updatedAt": "2025-03-01T10:05:00.000Z"
+				},
+				{
+					"id": 3,
+					"fullName": "Alice Smith",
+					"email": "alice@mail.com",
+					"message": "Can you add more advanced topics on AI?",
+					"responses": [],
+					"createdAt": "2025-03-01T10:10:00.000Z",
+					"updatedAt": "2025-03-01T10:10:00.000Z"
+				},
+				{
+					"id": 4,
+					"fullName": "Bob Johnson",
+					"email": "bob@mail.com",
+					"message": "The discussion forums are very helpful.",
+					"responses": [],
+					"createdAt": "2025-03-01T10:15:00.000Z",
+					"updatedAt": "2025-03-01T10:15:00.000Z"
+				},
+				{
+					"id": 5,
+					"fullName": "Charlie Brown",
+					"email": "charlie@mail.com",
+					"message": "Please improve the video streaming quality.",
+					"responses": [],
+					"createdAt": "2025-03-01T10:20:00.000Z",
+					"updatedAt": "2025-03-01T10:20:00.000Z"
+				},
+				{
+					"id": 6,
+					"fullName": "David Lee",
+					"email": "david@mail.com",
+					"message": "I like the hands-on workshops!",
+					"responses": [],
+					"createdAt": "2025-03-01T10:25:00.000Z",
+					"updatedAt": "2025-03-01T10:25:00.000Z"
+				},
+				{
+					"id": 7,
+					"fullName": "Eva Green",
+					"email": "eva@mail.com",
+					"message": "The certificate download feature works smoothly.",
+					"responses": [],
+					"createdAt": "2025-03-01T10:30:00.000Z",
+					"updatedAt": "2025-03-01T10:30:00.000Z"
+				},
+				{
+					"id": 8,
+					"fullName": "Frank Miller",
+					"email": "frank@mail.com",
+					"message": "Would love to see more competitions.",
+					"responses": [],
+					"createdAt": "2025-03-01T10:35:00.000Z",
+					"updatedAt": "2025-03-01T10:35:00.000Z"
+				},
+				{
+					"id": 9,
+					"fullName": "Grace Hopper",
+					"email": "grace@mail.com",
+					"message": "Mobile app would be a great addition.",
+					"responses": [],
+					"createdAt": "2025-03-01T10:40:00.000Z",
+					"updatedAt": "2025-03-01T10:40:00.000Z"
+				},
+				{
+					"id": 10,
+					"fullName": "Henry Ford",
+					"email": "henry@mail.com",
+					"message": "Support team is responsive and helpful.",
+					"responses": [],
+					"createdAt": "2025-03-01T10:45:00.000Z",
+					"updatedAt": "2025-03-01T10:45:00.000Z"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 10,
+			"totalRecords": 55,
+			"currentPage": 1,
+			"totalPages": 6,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}	
+	```
+
+- `GET /api/v1/feedbacks/{feedbackId}` - Retrieves a feedback details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/feedbacks/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved a feedback details.",
+		"data": {
+			"feedback": {
+				"id": 1,
+				"fullName": "John Doe",
+				"email": "johndoe@mail.com",
+				"message": "It would be helpful if you guys can add quizzes :)",
+				"responses": [
+					{
+						"feedbackResponseId": 1,
+						"adminUserId": 1,
+						"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!",
+						"createdAt": "2025-03-02T10:00:00.000Z",
+						"updatedAt": "2025-03-02T10:00:00.000Z"
+					}
+				],
+				"createdAt": "2025-03-01T10:00:00.000Z",
+				"updatedAt": "2025-03-01T10:00:00.000Z"
+			}
+		},
+		"errors": null
+	}	
+	```
+
+- `POST /api/v1/feedbacks` - Creates/sends a feedback
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/feedbacks \
+		-H "Content-Type: application/json"
+		-d '{
+			"fullName": "John Doe",
+			"email": "johndoe@mail.com",
+			"message": "It would be helpful if you guys can add quizzes :)"
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a feedback.",
+		"data": {
+			"feedback": {
+				"id": 1,
+				"fullName": "John Doe",
+				"email": "johndoe@mail.com",
+				"message": "It would be helpful if you guys can add quizzes :)",
+				"responses": [],
+				"createdAt": "2025-03-01T10:00:00.000Z",
+				"updatedAt": "2025-03-01T10:00:00.000Z"
+			}
+		},
+		"errors": null
+	}	
+	```
+
+- `POST /api/v1/feedbacks/{feedbackId}/responses` - Responds to a feedback
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/feedbacks/1/responses \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!"
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a feedback response.",
+		"data": {
+			"feedbackResponse": {
+				"id": 1,
+				"feedbackParentId": 1,
+				"adminUserId": 1,
+				"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!",
+				"createdAt": "2025-03-01T10:00:00.000Z",
+				"updatedAt": "2025-03-01T10:00:00.000Z"
+			}
+		},
+		"errors": null
+	}	
+	```
