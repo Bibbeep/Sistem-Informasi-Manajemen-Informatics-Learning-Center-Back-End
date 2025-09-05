@@ -97,7 +97,7 @@
 		},
 			"errors": null
 		}
-		```
+	```
 
 - `POST /api/v1/auth/login` - Logs in a user account
 
