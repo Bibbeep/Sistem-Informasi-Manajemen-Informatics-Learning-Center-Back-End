@@ -98,9 +98,6 @@
 			"errors": null
 		}
 		```
-	
-	> **Note:**  
-	> In the `childrenPagination` object, `depth` indicates the current nesting level of the comment, while `depth` (if present) specifies the maximum allowed nesting level for replies in the discussion forum. This helps API consumers understand how deeply comments can be nested and at what level a particular comment resides.
 
 - `POST /api/v1/auth/login` - Logs in a user account
 
@@ -1265,7 +1262,7 @@
 					"availableDate": "2025-01-01T00:00:00.000Z",
 					"priceIdr": 300000,
 					"createdAt": "2024-12-25T10:00:00.000Z",
-					"updatedAt": "2024-12-25T10:00:00.000Z",
+					"updatedAt": "2024-12-25T10:00:00.000Z"
 				},
 				{
 					"id": 2,
@@ -1448,7 +1445,7 @@
 				"availableDate": "2025-01-01T00:00:00.000Z",
 				"priceIdr": 200000,
 				"createdAt": "2024-12-25T10:00:00.000Z",
-				"updatedAt": "2025-01-01T12:00:00.000Z",
+				"updatedAt": "2025-01-01T12:00:00.000Z"
 			},
 		},
 		"errors": null
@@ -2004,7 +2001,7 @@
 						"hasChildren": false,
 						"nextLevelRecords": 0,
 						"depth": 1
-					},
+					}
 					"likesCount": 2,
 					"createdAt": "2025-03-01T10:05:00.000Z",
 					"updatedAt": "2025-03-01T10:05:00.000Z"
@@ -2169,7 +2166,7 @@
 				"childrenPagination": {
 					"hasChildren": true,
 					"nextLevelRecords": 3,
-					"depth": 4,
+					"depth": 4
 				},
 				"likesCount": 5,
 				"createdAt": "2025-03-01T10:00:00.000Z",
@@ -2211,7 +2208,7 @@
 				"childrenPagination": {
 					"hasChildren": false,
 					"nextLevelRecords": 0,
-					"depth": 1,
+					"depth": 1
 				},
 				"likesCount": 0,
 				"createdAt": "2025-03-01T10:00:00.000Z",
@@ -2321,7 +2318,7 @@
 	```json
 	{
 		"success": true,
-		"statusCode": 201,
+		"statusCode": 200,
 		"message": "Successfully unliked a comment.",
 		"data": {
 			"likesCount": 9
@@ -2568,7 +2565,7 @@
 				"id": 1,
 				"feedbackParentId": 1,
 				"adminUserId": 1,
-				"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!",
+				"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!"
 				"createdAt": "2025-03-01T10:00:00.000Z",
 				"updatedAt": "2025-03-01T10:00:00.000Z"
 			}
