@@ -12,7 +12,9 @@
     "build:major": "npm version major",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "prepare": "husky"
+    "prepare": "husky",
+    "test": "NODE_ENV=test jest --detectOpenHandles --silent --coverage",
+    "test:unit": "NODE_ENV=test jest ./tests/units/*/*.test.js --detectOpenHandles --coverage"
   },
   "repository": {
     "type": "git",
@@ -27,12 +29,14 @@
   "description": "",
   "devDependencies": {
     "@eslint/js": "^9.26.0",
+    "@types/jest": "^30.0.0",
     "dotenv": "^16.5.0",
     "eslint": "^9.26.0",
     "eslint-config-prettier": "^10.1.5",
     "eslint-plugin-prettier": "^5.4.0",
     "globals": "^16.1.0",
     "husky": "^9.1.7",
+    "jest": "^30.1.3",
     "nodemon": "^3.1.10",
     "prettier": "^3.5.3",
     "sequelize-cli": "^6.6.3"

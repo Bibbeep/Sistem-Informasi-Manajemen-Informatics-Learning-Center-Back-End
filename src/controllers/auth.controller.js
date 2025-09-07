@@ -16,7 +16,7 @@ module.exports = {
                 success: true,
                 statusCode: 201,
                 data,
-                message: '',
+                message: 'Successfully registered a new user account.',
                 errors: null,
             });
         } catch (err) {
