@@ -5,7 +5,7 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
-const routes = require('./routes/index.routes');
+const routes = require('./routes/index.route');
 const errorHandler = require('./utils/errorHandler');
 const { sequelize } = require('./db/models');
 

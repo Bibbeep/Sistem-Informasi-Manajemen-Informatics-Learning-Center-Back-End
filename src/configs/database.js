@@ -5,4 +5,4 @@ const config = require('./sequelize');
 
 const sequelize = new Sequelize(config[env]);
 
-module.exports = sequelize;
+module.exports = { sequelize };
