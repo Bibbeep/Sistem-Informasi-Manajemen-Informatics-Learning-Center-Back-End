@@ -14,7 +14,8 @@
     "lint:fix": "eslint --fix",
     "prepare": "husky",
     "test": "NODE_ENV=test jest --detectOpenHandles --silent --coverage",
-    "test:unit": "NODE_ENV=test jest ./tests/units/*/*.test.js --detectOpenHandles --coverage"
+    "test:unit": "NODE_ENV=test jest ./tests/units/*/*.test.js --detectOpenHandles --coverage",
+    "test:integration": "NODE_ENV=test jest ./tests/integration/*/*.test.js --detectOpenHandles --coverage"
   },
   "repository": {
     "type": "git",
