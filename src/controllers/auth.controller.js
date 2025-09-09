@@ -1,4 +1,4 @@
-const { validateRegister } = require('../validations/validator');
+const { validateRegister, validateLogin } = require('../validations/validator');
 const AuthService = require('../services/auth.service');
 
 module.exports = {
@@ -19,6 +19,20 @@ module.exports = {
                 message: 'Successfully registered a new user account.',
                 errors: null,
             });
+        } catch (err) {
+            next(err);
+        }
+    },
+    login: async (req, res, next) => {
+        try {
+            const { error, value } = validateLogin(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            // Login
+            // Return Response with JWT Token
         } catch (err) {
             next(err);
         }
