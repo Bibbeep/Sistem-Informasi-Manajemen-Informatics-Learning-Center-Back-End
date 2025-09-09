@@ -6,7 +6,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "start:dev": "nodemon src/server.js",
+    "start:dev": "NODE_ENV=development && nodemon src/server.js",
     "build:patch": "npm version patch",
     "build:minor": "npm version minor",
     "build:major": "npm version major",

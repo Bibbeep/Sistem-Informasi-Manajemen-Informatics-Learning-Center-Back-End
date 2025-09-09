@@ -33,7 +33,15 @@ module.exports = {
 
             const data = await AuthService.login(value);
 
-            // Return Response with JWT Token
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully logged in.',
+                data: {
+                    accessToken: data.accessToken,
+                },
+                errors: null,
+            });
         } catch (err) {
             next(err);
         }
