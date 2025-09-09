@@ -30,9 +30,16 @@
       "/node_modules/",
       "/coverage/",
       "/src/configs/",
-      "/src/db/",
-      "/src/utils/httpError.js"
-    ]
+      "/src/db/"
+    ],
+    "coverageThreshold": {
+        "global": {
+            "branches": 100,
+            "functions": 100,
+            "lines": 100,
+            "statements": 100
+        }
+    }
   },
   "repository": {
     "type": "git",
