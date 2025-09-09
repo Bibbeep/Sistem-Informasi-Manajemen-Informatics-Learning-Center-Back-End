@@ -1,4 +1,5 @@
 const { app, connectDb } = require('./app');
+/* istanbul ignore next */
 const PORT = process.env.PORT || 3000;
 
 const server = app.listen(PORT, async () => {

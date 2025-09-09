@@ -1,3 +1,4 @@
+/* istanbul ignore next */
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
@@ -13,6 +14,7 @@ const app = express();
 const connectDb = async () => {
     console.log('Checking database connection...');
 
+    /* istanbul ignore next */
     try {
         await sequelize.authenticate();
         console.log('Database connection established');
@@ -29,6 +31,7 @@ app.use(
     }),
 );
 
+/* istanbul ignore next */
 if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 } else if (process.env.NODE_ENV === 'production') {

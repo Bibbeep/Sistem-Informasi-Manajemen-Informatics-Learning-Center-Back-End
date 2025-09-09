@@ -106,7 +106,15 @@ describe('Authentication Service Unit Tests', () => {
             });
 
             await expect(AuthService.register(mockData)).rejects.toThrow(
-                HTTPError,
+                new HTTPError(409, 'Resource conflict.', [
+                    {
+                        message: 'email is already registered.',
+                        context: {
+                            key: 'email',
+                            value: mockUserData.email,
+                        },
+                    },
+                ]),
             );
 
             expect(User.findOne).toHaveBeenCalledWith({

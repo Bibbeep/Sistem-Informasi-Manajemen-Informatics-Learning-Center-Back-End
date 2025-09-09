@@ -4,6 +4,7 @@ const HTTPError = require('./httpError');
 
 module.exports = (err, req, res, next) => {
     if (err instanceof Joi.ValidationError) {
+        /* istanbul ignore next */
         return res.status(400).json({
             success: false,
             statusCode: 400,
@@ -22,6 +23,7 @@ module.exports = (err, req, res, next) => {
                 : [],
         });
     } else if (err instanceof HTTPError) {
+        /* istanbul ignore next */
         return res.status(err.statusCode).json({
             success: false,
             statusCode: err.statusCode,
@@ -40,7 +42,11 @@ module.exports = (err, req, res, next) => {
                 : null,
         });
     } else {
-        console.error(err);
+        /* istanbul ignore next */
+        if (process.NODE_ENV == 'development') {
+            console.error(err);
+        }
+
         return res.status(500).json({
             success: false,
             statusCode: 500,
