@@ -121,9 +121,5 @@ describe('Authentication Service Unit Tests', () => {
                 where: { email: mockData.email },
             });
         });
-
-        it('should throw error if there is problem with the database', async () => {
-            //
-        });
     });
 });
