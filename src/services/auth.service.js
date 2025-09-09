@@ -11,7 +11,7 @@ class Auth {
         });
 
         if (isUserExist) {
-            throw new HTTPError(409, 'Resource conflict', [
+            throw new HTTPError(409, 'Resource conflict.', [
                 {
                     message: 'email is already registered.',
                     context: {

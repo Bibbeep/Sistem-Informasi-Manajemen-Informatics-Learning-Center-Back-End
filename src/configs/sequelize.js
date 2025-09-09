@@ -15,10 +15,11 @@ module.exports = {
         },
     },
     test: {
-        username: 'postgres',
-        password: null,
+        username: process.env.DB_USERNAME || 'postgres',
+        password: process.env.DB_PASSWORD || null,
         database: 'sim_ilc_test',
         host: '127.0.0.1',
+        port: '5432',
         dialect: 'postgres',
         logging: false,
     },

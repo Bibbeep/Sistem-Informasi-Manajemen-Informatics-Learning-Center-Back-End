@@ -29,7 +29,11 @@ app.use(
     }),
 );
 
-app.use(morgan('dev'));
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+} else if (process.env.NODE_ENV === 'production') {
+    app.use(morgan('common'));
+}
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
