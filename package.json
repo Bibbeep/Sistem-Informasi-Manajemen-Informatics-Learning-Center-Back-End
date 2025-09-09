@@ -31,10 +31,7 @@
       "/coverage/",
       "/src/configs/",
       "/src/db/",
-      "/src/utils/errorHandler.js",
-      "/src/utils/httpError.js",
-      "/src/server.js",
-      "/src/app.js"
+      "/src/utils/httpError.js"
     ]
   },
   "repository": {
