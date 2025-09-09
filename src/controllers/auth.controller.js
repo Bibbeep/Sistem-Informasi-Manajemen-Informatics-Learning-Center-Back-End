@@ -31,7 +31,8 @@ module.exports = {
                 throw error;
             }
 
-            // Login
+            const data = await AuthService.login(value);
+
             // Return Response with JWT Token
         } catch (err) {
             next(err);

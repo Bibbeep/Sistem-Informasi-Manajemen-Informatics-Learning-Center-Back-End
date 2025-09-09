@@ -122,4 +122,18 @@ describe('Authentication Service Unit Tests', () => {
             });
         });
     });
+
+    describe('login Tests', () => {
+        it('should sign an access token and return it', async () => {
+            //
+        });
+
+        it('should throw error if user with given email does not exist', async () => {
+            //
+        });
+
+        it('should throw error if given password is incorrect', async () => {
+            //
+        });
+    });
 });
