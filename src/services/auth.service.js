@@ -49,7 +49,7 @@ class Auth {
     static async login(data) {
         const { email, password } = data;
 
-        const userData = await User.findOne({ where: email });
+        const userData = await User.findOne({ where: { email } });
 
         if (
             !userData ||
