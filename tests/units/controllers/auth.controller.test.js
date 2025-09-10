@@ -9,7 +9,6 @@ const {
 const AuthService = require('../../../src/services/auth.service');
 const { register, login } = require('../../../src/controllers/auth.controller');
 const { ValidationError } = require('joi');
-const { fn } = require('sequelize');
 
 describe('Authentication Controller Unit Tests', () => {
     let req, res, next;
