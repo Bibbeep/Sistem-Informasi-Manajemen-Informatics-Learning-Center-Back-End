@@ -60,7 +60,7 @@ describe('Authentication Integration Test', () => {
             expect(errors).toBeNull();
         });
 
-        it('should return 400 if invalid response body', async () => {
+        it('should return 400 if invalid request body', async () => {
             const mockData = {
                 email: faker.person.fullName(),
                 fullName: faker.number.float(),
@@ -168,6 +168,24 @@ describe('Authentication Integration Test', () => {
             expect(message).toBe('There is an issue with the server.');
             expect(data).toBeNull();
             expect(errors).toBeNull();
+        });
+    });
+
+    describe('POST /api/v1/auth/login', () => {
+        it('should return 200 and successfully signed a JWT access token', async () => {
+            //
+        });
+
+        it('should return 400 if invalid request body', async () => {
+            //
+        });
+
+        it('should return 401 if invalid login credentials', async () => {
+            //
+        });
+
+        it('should return 500 if server encounters an internal error', async () => {
+            //
         });
     });
 });
