@@ -1,5 +1,8 @@
 /* eslint-disable no-undef */
-const { validateRegister } = require('../../../src/validations/validator');
+const {
+    validateRegister,
+    validateLogin,
+} = require('../../../src/validations/validator');
 
 describe('Authentication Validation Unit Tests', () => {
     describe('validateRegister Tests', () => {
@@ -119,6 +122,109 @@ describe('Authentication Validation Unit Tests', () => {
             };
 
             const result = validateRegister(edgeCaseData);
+
+            expect(result.error).toBeUndefined();
+        });
+    });
+
+    describe('validateLogin Tests', () => {
+        it('should pass validation with valid login data', () => {
+            const validData = {
+                email: 'john.doe@example.com',
+                password: 'validPassword123',
+            };
+
+            const result = validateLogin(validData);
+
+            expect(result.error).toBeUndefined();
+            expect(result.value).toEqual(validData);
+        });
+
+        it('should fail validation when email is missing', () => {
+            const invalidData = {
+                password: 'validPassword123',
+            };
+
+            const result = validateLogin(invalidData);
+
+            expect(result.error).toBeDefined();
+            expect(result.error.details[0].path).toContain('email');
+            expect(result.error.details[0].type).toBe('any.required');
+        });
+
+        it('should fail validation with invalid email format', () => {
+            const invalidData = {
+                email: 'invalid-email',
+                password: 'validPassword123',
+            };
+
+            const result = validateLogin(invalidData);
+
+            expect(result.error).toBeDefined();
+            expect(result.error.details[0].path).toContain('email');
+            expect(result.error.details[0].type).toBe('string.email');
+        });
+
+        it('should fail validation when password is too short', () => {
+            const invalidData = {
+                email: 'john.doe@example.com',
+                password: 'short',
+            };
+
+            const result = validateLogin(invalidData);
+
+            expect(result.error).toBeDefined();
+            expect(result.error.details[0].path).toContain('password');
+            expect(result.error.details[0].type).toBe('string.min');
+        });
+
+        it('should fail validation when password is too long', () => {
+            const invalidData = {
+                email: 'john.doe@example.com',
+                password: 'a'.repeat(73),
+            };
+
+            const result = validateLogin(invalidData);
+
+            expect(result.error).toBeDefined();
+            expect(result.error.details[0].path).toContain('password');
+            expect(result.error.details[0].type).toBe('string.max');
+        });
+
+        it('should fail validation with multiple missing fields', () => {
+            const invalidData = {};
+
+            const result = validateLogin(invalidData);
+
+            expect(result.error).toBeDefined();
+            expect(result.error.details).toHaveLength(2);
+
+            const errorPaths = result.error.details.map((detail) => {
+                return detail.path[0];
+            });
+
+            expect(errorPaths).toContain('email');
+            expect(errorPaths).toContain('password');
+        });
+
+        it('should pass with minimum valid password length', () => {
+            const edgeCaseData = {
+                email: 'john.doe@example.com',
+                password: 'abcd1234',
+            };
+
+            const result = validateLogin(edgeCaseData);
+
+            expect(result.error).toBeUndefined();
+        });
+
+        it('should pass with maximum valid password length', () => {
+            const edgeCaseData = {
+                email: 'john.doe@example.com',
+                password: 'a'.repeat(72),
+            };
+
+            const result = validateLogin(edgeCaseData);
 
             expect(result.error).toBeUndefined();
         });

@@ -6,7 +6,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "start:dev": "nodemon src/server.js",
+    "start:dev": "NODE_ENV=development && nodemon src/server.js",
     "build:patch": "npm version patch",
     "build:minor": "npm version minor",
     "build:major": "npm version major",
@@ -33,12 +33,12 @@
       "/src/db/"
     ],
     "coverageThreshold": {
-        "global": {
-            "branches": 100,
-            "functions": 100,
-            "lines": 100,
-            "statements": 100
-        }
+      "global": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
     }
   },
   "repository": {
@@ -76,6 +76,7 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "joi": "^18.0.1",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
     "pg": "^8.16.0",
     "pg-hstore": "^2.3.4",

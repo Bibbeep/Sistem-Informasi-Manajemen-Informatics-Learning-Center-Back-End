@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const request = require('supertest');
 const { fakerID_ID: faker } = require('@faker-js/faker');
+const bcrypt = require('bcrypt');
 const { sequelize } = require('../../src/configs/database');
 const { server } = require('../../src/server');
 const truncate = require('../../scripts/db/truncate');
@@ -60,7 +61,7 @@ describe('Authentication Integration Test', () => {
             expect(errors).toBeNull();
         });
 
-        it('should return 400 if invalid response body', async () => {
+        it('should return 400 if invalid request body', async () => {
             const mockData = {
                 email: faker.person.fullName(),
                 fullName: faker.number.float(),
@@ -168,6 +169,143 @@ describe('Authentication Integration Test', () => {
             expect(message).toBe('There is an issue with the server.');
             expect(data).toBeNull();
             expect(errors).toBeNull();
+        });
+    });
+
+    describe('POST /api/v1/auth/login', () => {
+        it('should return 200 and successfully signed as User a JWT access token', async () => {
+            const mockPassword = 'mockpassword123';
+            const hashedPassword = await bcrypt.hash(mockPassword, 10);
+
+            const mockUser = await userFactory({ hashedPassword });
+            const mockReqBody = {
+                email: mockUser.email,
+                password: mockPassword,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/login')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(200);
+
+            const { success, statusCode, message, data, errors } =
+                response.body;
+
+            expect(success).toBe(true);
+            expect(statusCode).toBe(200);
+            expect(message).toBe('Successfully logged in.');
+            expect(data).toHaveProperty('accessToken');
+            expect(data.accessToken).toBeDefined();
+            expect(errors).toBeNull();
+        });
+
+        it('should return 200 and successfully signed as Admin a JWT access token', async () => {
+            const mockPassword = 'mockpassword123';
+            const hashedPassword = await bcrypt.hash(mockPassword, 10);
+
+            const mockUser = await userFactory({
+                hashedPassword,
+                role: 'Admin',
+            });
+            const mockReqBody = {
+                email: mockUser.email,
+                password: mockPassword,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/login')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(200);
+
+            const { success, statusCode, message, data, errors } =
+                response.body;
+
+            expect(success).toBe(true);
+            expect(statusCode).toBe(200);
+            expect(message).toBe('Successfully logged in.');
+            expect(data).toHaveProperty('accessToken');
+            expect(data.accessToken).toBeDefined();
+            expect(errors).toBeNull();
+        });
+
+        it('should return 400 if invalid request body', async () => {
+            const mockReqBody = {
+                email: 'invalid-email',
+                password: 0.696,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/login')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(400);
+
+            const { success, statusCode, message, data, errors } =
+                response.body;
+
+            expect(success).toBe(false);
+            expect(statusCode).toBe(400);
+            expect(message).toBe('Request body validation error.');
+            expect(data).toBeNull();
+            expect(errors).toMatchObject([
+                {
+                    message: '"email" must be a valid email',
+                    context: {
+                        key: 'email',
+                        value: mockReqBody.email,
+                    },
+                },
+                {
+                    message: '"password" must be a string',
+                    context: {
+                        key: 'password',
+                        value: mockReqBody.password,
+                    },
+                },
+            ]);
+        });
+
+        it('should return 401 if invalid login credentials', async () => {
+            const mockPassword = 'mockpassword123';
+            const hashedPassword = await bcrypt.hash(mockPassword, 10);
+
+            const mockUser = await userFactory({ hashedPassword });
+            const mockReqBody = {
+                email: mockUser.email,
+                password: 'wrong!' + mockPassword,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/login')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(401);
+
+            const { success, statusCode, message, data, errors } =
+                response.body;
+
+            expect(success).toBe(false);
+            expect(statusCode).toBe(401);
+            expect(message).toBe('Unauthorized.');
+            expect(data).toBeNull();
+            expect(errors).toMatchObject([
+                {
+                    message: 'Wrong email or password.',
+                    context: {
+                        key: 'email',
+                        value: mockReqBody.email,
+                    },
+                },
+                {
+                    message: 'Wrong email or password.',
+                    context: {
+                        key: 'password',
+                        value: '*'.repeat(mockReqBody.password.length),
+                    },
+                },
+            ]);
         });
     });
 });
