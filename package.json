@@ -6,6 +6,7 @@
     "doc": "docs"
   },
   "scripts": {
+    "start:prod": "NODE_ENV=production && node ./src/server.js",
     "start:dev": "NODE_ENV=development && nodemon src/server.js",
     "build:patch": "npm version patch",
     "build:minor": "npm version minor",
@@ -18,11 +19,11 @@
     "db:create": "npx sequelize-cli db:create --env test",
     "pretest": "NODE_ENV=test npx sequelize db:drop && npm run db:create && npm run db:migrate",
     "pretest:silent": "NODE_ENV=test npx sequelize db:drop --config src/configs/sequelize.js 2>/dev/null && npm run db:create 2>/dev/null && npm run db:migrate:silent",
-    "test": "npm run pretest && NODE_ENV=test jest --detectOpenHandles --silent --coverage",
-    "test:clean": "npm run pretest:silent && NODE_ENV=test jest --detectOpenHandles --silent --coverage",
-    "test:unit": "NODE_ENV=test jest ./tests/units/*/*.test.js --coverage",
-    "test:integration": "npm run pretest && NODE_ENV=test jest ./tests/integrations/*.test.js --detectOpenHandles --coverage",
-    "test:integration:clean": "npm run pretest:silent && NODE_ENV=test jest ./tests/integrations/*.test.js --detectOpenHandles --silent --coverage"
+    "test": "npm run pretest && NODE_ENV=test jest --detectOpenHandles --silent --coverage --verbose",
+    "test:clean": "npm run pretest:silent && NODE_ENV=test jest --detectOpenHandles --silent --coverage --verbose",
+    "test:unit": "NODE_ENV=test jest ./tests/units/*/*.test.js --coverage --verbose",
+    "test:integration": "npm run pretest && NODE_ENV=test jest ./tests/integrations/*.test.js --detectOpenHandles --coverage --verbose",
+    "test:integration:clean": "npm run pretest:silent && NODE_ENV=test jest ./tests/integrations/*.test.js --detectOpenHandles --silent --coverage --verbose"
   },
   "jest": {
     "collectCoverage": true,

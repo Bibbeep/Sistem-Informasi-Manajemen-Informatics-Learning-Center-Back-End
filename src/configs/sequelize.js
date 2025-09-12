@@ -4,19 +4,19 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = {
     development: {
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
+        username: process.env.POSTGRES_USER,
+        password: process.env.POSTGRES_PASSWORD,
+        database: process.env.POSTGRES_DB,
+        host: process.env.POSTGRES_HOST,
+        port: process.env.POSTGRES_PORT,
         dialect: 'postgres',
         logging: (query) => {
             console.log('[Sequelize]', query);
         },
     },
     test: {
-        username: process.env.DB_USERNAME || 'postgres',
-        password: process.env.DB_PASSWORD || null,
+        username: process.env.POSTGRES_USER || 'postgres',
+        password: process.env.POSTGRES_PASSWORD || null,
         database: 'sim_ilc_test',
         host: '127.0.0.1',
         port: '5432',
@@ -24,11 +24,11 @@ module.exports = {
         logging: false,
     },
     production: {
-        username: process.env.DB_USERNAME,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        host: process.env.DB_HOST,
-        port: process.env.DB_PORT,
+        username: process.env.POSTGRES_USER,
+        password: process.env.POSTGRES_PASSWORD,
+        database: process.env.POSTGRES_DB,
+        host: process.env.POSTGRES_HOST,
+        port: process.env.POSTGRES_PORT,
         dialect: 'postgres',
         logging: false,
     },

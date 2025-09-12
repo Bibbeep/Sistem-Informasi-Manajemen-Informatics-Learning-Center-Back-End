@@ -179,7 +179,7 @@ describe('Authentication Service Unit Tests', () => {
             );
             expect(jwt.sign).toHaveBeenCalledWith(
                 { sub: mockUserData.id, admin: false },
-                process.env.JWT_SECRET,
+                process.env.JWT_SECRET_KEY,
                 { expiresIn: '7d' },
             );
             expect(result).toEqual({ accessToken: mockAccessToken });
@@ -230,7 +230,7 @@ describe('Authentication Service Unit Tests', () => {
             );
             expect(jwt.sign).toHaveBeenCalledWith(
                 { sub: mockUserData.id, admin: true },
-                process.env.JWT_SECRET,
+                process.env.JWT_SECRET_KEY,
                 { expiresIn: '7d' },
             );
             expect(result).toEqual({ accessToken: mockAccessToken });

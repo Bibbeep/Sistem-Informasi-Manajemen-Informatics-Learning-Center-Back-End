@@ -78,7 +78,7 @@ class Auth {
             admin: userData.role == 'Admin' ? true : false,
         };
 
-        const accessToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, {
+        const accessToken = jwt.sign(jwtPayload, process.env.JWT_SECRET_KEY, {
             expiresIn: '7d',
         });
 
