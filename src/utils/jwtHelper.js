@@ -25,7 +25,4 @@ module.exports = {
             return false;
         }
     },
-    decode: (token) => {
-        return jwt.decode(token);
-    },
 };

@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const User = require('../db/models/user');
+const { redisClient } = require('../configs/redis');
 const HTTPError = require('../utils/httpError');
 const { sign } = require('../utils/jwtHelper');
 
@@ -89,8 +90,14 @@ class Auth {
 
     static async logout(data) {
         const { sub, exp, jti } = data;
+        const ttl = exp - Math.floor(Date.now() / 1000);
+        const logoutDatetime = new Date(Date.now()).toISOString();
 
-        //
+        await redisClient.setEx(
+            `user:${sub}:JWT:${jti}:logoutAt`,
+            ttl,
+            logoutDatetime,
+        );
     }
 }
 

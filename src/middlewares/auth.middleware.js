@@ -1,5 +1,6 @@
 const HTTPError = require('../utils/httpError');
-const { verify, decode } = require('../utils/jwtHelper');
+const { verify } = require('../utils/jwtHelper');
+const { redisClient } = require('../configs/redis');
 
 module.exports = {
     authenticate: async (req, res, next) => {
@@ -8,7 +9,13 @@ module.exports = {
                 ? req.headers.authorization.split(' ')[1]
                 : null;
 
-            if (!token || !verify(token)) {
+            const decoded = verify(token);
+            if (
+                !decoded ||
+                !(await redisClient.get(
+                    `user:${decoded.sub}:JWT:${decoded.jti}:logoutAt`,
+                ))
+            ) {
                 throw new HTTPError(401, 'Unauthorized.', [
                     {
                         message: 'Invalid or expired token.',
@@ -18,9 +25,7 @@ module.exports = {
                     },
                 ]);
             } else {
-                const decoded = decode(token);
                 req.tokenPayload = decoded;
-
                 next();
             }
         } catch (err) {
