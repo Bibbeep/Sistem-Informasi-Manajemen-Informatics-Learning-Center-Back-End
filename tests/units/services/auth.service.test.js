@@ -1,26 +1,25 @@
 /* eslint-disable no-undef */
+jest.mock('bcrypt');
+jest.mock('../../../src/db/models/user');
+jest.mock('../../../src/utils/jwtHelper');
+jest.mock('jsonwebtoken');
+jest.mock('uuid');
+
 const { fakerID_ID: faker } = require('@faker-js/faker');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 const AuthService = require('../../../src/services/auth.service');
 const User = require('../../../src/db/models/user');
 const HTTPError = require('../../../src/utils/httpError');
-
-jest.mock('bcrypt');
-jest.mock('../../../src/db/models/user');
-jest.mock('jsonwebtoken');
+const { sign } = require('../../../src/utils/jwtHelper');
 
 describe('Authentication Service Unit Tests', () => {
-    const originalEnv = process.env;
-
     beforeEach(() => {
         jest.resetModules();
-        process.env.JWT_SECRET = 'mock-jwt-secret';
     });
 
     afterEach(() => {
         jest.clearAllMocks();
-        process.env = originalEnv;
     });
 
     describe('register Tests', () => {
@@ -160,11 +159,13 @@ describe('Authentication Service Unit Tests', () => {
                 createdAt: mockDate,
                 updatedAt: mockDate,
             };
+            const mockjti = 'mocked-jti-uuid-string';
             const mockAccessToken = 'jwt-access-token';
 
             User.findOne.mockResolvedValue(mockUserData);
             bcrypt.compare.mockResolvedValue(true);
-            jwt.sign.mockReturnValue(mockAccessToken);
+            uuidv4.mockReturnValue(mockjti);
+            sign.mockReturnValue(mockAccessToken);
 
             const result = await AuthService.login(mockLoginCredential);
 
@@ -177,11 +178,11 @@ describe('Authentication Service Unit Tests', () => {
                 mockLoginCredential.password,
                 mockUserData.hashedPassword,
             );
-            expect(jwt.sign).toHaveBeenCalledWith(
-                { sub: mockUserData.id, admin: false },
-                process.env.JWT_SECRET_KEY,
-                { expiresIn: '7d' },
-            );
+            expect(sign).toHaveBeenCalledWith({
+                sub: mockUserData.id,
+                admin: false,
+                jti: mockjti,
+            });
             expect(result).toEqual({ accessToken: mockAccessToken });
         });
 
@@ -211,11 +212,13 @@ describe('Authentication Service Unit Tests', () => {
                 createdAt: mockDate,
                 updatedAt: mockDate,
             };
+            const mockjti = 'mocked-jti-uuid-string';
             const mockAccessToken = 'jwt-access-token';
 
             User.findOne.mockResolvedValue(mockUserData);
             bcrypt.compare.mockResolvedValue(true);
-            jwt.sign.mockReturnValue(mockAccessToken);
+            uuidv4.mockReturnValue(mockjti);
+            sign.mockReturnValue(mockAccessToken);
 
             const result = await AuthService.login(mockLoginCredential);
 
@@ -228,11 +231,11 @@ describe('Authentication Service Unit Tests', () => {
                 mockLoginCredential.password,
                 mockUserData.hashedPassword,
             );
-            expect(jwt.sign).toHaveBeenCalledWith(
-                { sub: mockUserData.id, admin: true },
-                process.env.JWT_SECRET_KEY,
-                { expiresIn: '7d' },
-            );
+            expect(sign).toHaveBeenCalledWith({
+                sub: mockUserData.id,
+                admin: true,
+                jti: mockjti,
+            });
             expect(result).toEqual({ accessToken: mockAccessToken });
         });
 
