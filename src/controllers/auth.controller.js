@@ -46,4 +46,21 @@ module.exports = {
             next(err);
         }
     },
+    logout: async (req, res, next) => {
+        try {
+            const { tokenPayload } = req;
+
+            await AuthService.logout(tokenPayload);
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully logged out.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
