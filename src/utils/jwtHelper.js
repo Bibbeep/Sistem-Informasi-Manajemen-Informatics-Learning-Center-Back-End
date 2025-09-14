@@ -19,7 +19,7 @@ module.exports = {
                 return false;
             }
 
-            return true;
+            return decoded;
             // eslint-disable-next-line no-unused-vars
         } catch (err) {
             return false;

@@ -93,10 +93,15 @@ class Auth {
         const ttl = exp - Math.floor(Date.now() / 1000);
         const logoutDatetime = new Date(Date.now()).toISOString();
 
-        await redisClient.setEx(
+        await redisClient.set(
             `user:${sub}:JWT:${jti}:logoutAt`,
-            ttl,
             logoutDatetime,
+            {
+                expiration: {
+                    type: 'EX',
+                    value: ttl,
+                },
+            },
         );
     }
 }

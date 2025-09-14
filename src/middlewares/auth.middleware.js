@@ -12,7 +12,7 @@ module.exports = {
             const decoded = verify(token);
             if (
                 !decoded ||
-                !(await redisClient.get(
+                (await redisClient.get(
                     `user:${decoded.sub}:JWT:${decoded.jti}:logoutAt`,
                 ))
             ) {

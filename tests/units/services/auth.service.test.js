@@ -362,10 +362,15 @@ describe('Authentication Service Unit Tests', () => {
 
             await AuthService.logout(mockJWTClaim);
 
-            expect(redisClient.setEx).toHaveBeenCalledWith(
+            expect(redisClient.set).toHaveBeenCalledWith(
                 `user:${mockJWTClaim.sub}:JWT:${mockJWTClaim.jti}:logoutAt`,
-                mockttl,
                 mockLogoutTime,
+                {
+                    expiration: {
+                        type: 'EX',
+                        value: mockttl,
+                    },
+                },
             );
             expect(AuthService.logout(mockJWTClaim)).resolves.not.toThrow();
         });

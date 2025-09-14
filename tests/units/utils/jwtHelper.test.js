@@ -85,7 +85,7 @@ describe('JWT Helper Utility Unit Tests', () => {
                 mockVerifyOptions,
             );
             expect(validateTokenPayload).toHaveBeenCalledWith(mockDecoded);
-            expect(result).toBe(true);
+            expect(result).toBe(mockDecoded);
         });
 
         it('should return false if token signature is invalid', () => {
