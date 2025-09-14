@@ -31,7 +31,8 @@
       "/node_modules/",
       "/coverage/",
       "/src/configs/",
-      "/src/db/"
+      "/src/db/",
+      "/scripts/"
     ],
     "coverageThreshold": {
       "global": {

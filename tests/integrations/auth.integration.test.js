@@ -3,6 +3,7 @@ const request = require('supertest');
 const { fakerID_ID: faker } = require('@faker-js/faker');
 const bcrypt = require('bcrypt');
 const { sequelize } = require('../../src/configs/database');
+const { redisClient } = require('../../src/configs/redis');
 const { server } = require('../../src/server');
 const truncate = require('../../scripts/db/truncate');
 const userFactory = require('../../src/db/seeders/factories/user');
@@ -12,6 +13,7 @@ describe('Authentication Integration Test', () => {
     afterAll(async () => {
         server.close();
         await sequelize.close();
+        await redisClient.close();
     });
 
     beforeEach(async () => {
