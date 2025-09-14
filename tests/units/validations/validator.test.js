@@ -2,9 +2,21 @@
 const {
     validateRegister,
     validateLogin,
+    validateTokenPayload,
 } = require('../../../src/validations/validator');
+const { ValidationError } = require('joi');
 
 describe('Authentication Validation Unit Tests', () => {
+    beforeAll(() => {
+        jest.useFakeTimers().setSystemTime(
+            new Date('2025-12-12T00:00:00.000Z'),
+        );
+    });
+
+    afterAll(() => {
+        jest.useRealTimers();
+    });
+
     describe('validateRegister Tests', () => {
         it('should pass validation with valid register data', () => {
             const validData = {
@@ -227,6 +239,105 @@ describe('Authentication Validation Unit Tests', () => {
             const result = validateLogin(edgeCaseData);
 
             expect(result.error).toBeUndefined();
+        });
+    });
+
+    describe('validateTokenPayload Tests', () => {
+        it('should pass validation with valid payload data', () => {
+            const mockPayload = {
+                sub: 1,
+                admin: true,
+                iat: Math.floor(new Date() / 1000),
+                exp: Math.floor(
+                    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) / 1000,
+                ),
+                jti: '85018a40-06ce-4d4d-8ba5-8f9f2510c840',
+                aud: 'http://localhost',
+                iss: 'http://localhost',
+            };
+            const mockReturnValue = {
+                ...mockPayload,
+                iat: new Date(mockPayload.iat * 1000),
+                exp: new Date(mockPayload.exp * 1000),
+            };
+
+            const result = validateTokenPayload(mockPayload);
+
+            expect(result.error).toBeUndefined();
+            expect(result.value).toStrictEqual(mockReturnValue);
+        });
+
+        it('should fail validation with multiple missing fields', () => {
+            const mockPayload = {
+                iat: Math.floor(new Date() / 1000),
+                exp: Math.floor(
+                    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) / 1000,
+                ),
+                aud: 'http://localhost',
+                iss: 'http://localhost',
+            };
+
+            const result = validateTokenPayload(mockPayload);
+
+            expect(result.error).toBeInstanceOf(ValidationError);
+            expect(
+                result.error.details.map((d) => {
+                    return d.path[0];
+                }),
+            ).toEqual(expect.arrayContaining(['sub', 'jti', 'admin']));
+        });
+
+        it('should fail validation with extra field', () => {
+            const mockPayload = {
+                sub: 1,
+                admin: true,
+                iat: Math.floor(new Date() / 1000),
+                exp: Math.floor(
+                    new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) / 1000,
+                ),
+                jti: '85018a40-06ce-4d4d-8ba5-8f9f2510c840',
+                aud: 'http://localhost',
+                iss: 'http://localhost',
+                extraField: 'shouldNotExist',
+            };
+
+            const result = validateTokenPayload(mockPayload);
+
+            expect(result.error).toBeInstanceOf(ValidationError);
+            expect(result.error.details[0]).toEqual(
+                expect.objectContaining({
+                    path: expect.arrayContaining(['extraField']),
+                    type: expect.stringMatching('object.unknown'),
+                }),
+            );
+        });
+
+        it('should fail validation with invalid field format', () => {
+            const mockPayload = {
+                sub: true,
+                admin: 1,
+                iat: { object: 'value' },
+                exp: ['I am an', 'Array!'],
+                jti: 123,
+                aud: new Date(),
+                iss: new Date(),
+            };
+
+            const result = validateTokenPayload(mockPayload);
+
+            expect(result.error).toBeInstanceOf(ValidationError);
+            expect(
+                result.error.details.map((d) => {
+                    return d.type;
+                }),
+            ).toEqual(
+                expect.arrayContaining([
+                    'number.base',
+                    'boolean.base',
+                    'date.base',
+                    'string.base',
+                ]),
+            );
         });
     });
 });

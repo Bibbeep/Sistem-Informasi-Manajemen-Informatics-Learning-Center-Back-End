@@ -28,7 +28,7 @@ const tokenPayload = Joi.object({
     iss: Joi.string()
         .uri({ scheme: ['http', 'https'] })
         .required(),
-});
+}).unknown(false);
 
 module.exports = {
     register,
