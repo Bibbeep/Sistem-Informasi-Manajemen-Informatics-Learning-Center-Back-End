@@ -4,6 +4,7 @@ jest.mock('../../../src/db/models/user');
 jest.mock('../../../src/utils/jwtHelper');
 jest.mock('jsonwebtoken');
 jest.mock('uuid');
+jest.mock('../../../src/configs/redis');
 
 const { fakerID_ID: faker } = require('@faker-js/faker');
 const bcrypt = require('bcrypt');
@@ -12,8 +13,19 @@ const AuthService = require('../../../src/services/auth.service');
 const User = require('../../../src/db/models/user');
 const HTTPError = require('../../../src/utils/httpError');
 const { sign } = require('../../../src/utils/jwtHelper');
+const { redisClient } = require('../../../src/configs/redis');
 
 describe('Authentication Service Unit Tests', () => {
+    beforeAll(() => {
+        jest.useFakeTimers().setSystemTime(
+            new Date('2025-12-05T00:00:00.000Z'),
+        );
+    });
+
+    afterAll(() => {
+        jest.useRealTimers();
+    });
+
     beforeEach(() => {
         jest.resetModules();
     });
@@ -330,6 +342,32 @@ describe('Authentication Service Unit Tests', () => {
                 mockLoginCredential.password,
                 mockUserData.hashedPassword,
             );
+        });
+    });
+
+    describe('logout Tests', () => {
+        it('should revoke access token', async () => {
+            const mockJWTClaim = {
+                sub: 1,
+                exp: Math.floor(new Date('2025-12-12T00:00:00.000Z') / 1000),
+                jti: 'mock-jti-value',
+            };
+            const mockttl =
+                mockJWTClaim.exp -
+                Math.floor(new Date('2025-12-05T00:00:00.000Z') / 1000);
+            const mockLogoutTime = new Date(
+                '2025-12-05T00:00:00.000Z',
+            ).toISOString();
+            redisClient.setEx.mockResolvedValue('OK');
+
+            await AuthService.logout(mockJWTClaim);
+
+            expect(redisClient.setEx).toHaveBeenCalledWith(
+                `user:${mockJWTClaim.sub}:JWT:${mockJWTClaim.jti}:logoutAt`,
+                mockttl,
+                mockLogoutTime,
+            );
+            expect(AuthService.logout(mockJWTClaim)).resolves.not.toThrow();
         });
     });
 });
