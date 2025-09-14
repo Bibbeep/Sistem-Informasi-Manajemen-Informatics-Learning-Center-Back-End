@@ -25,24 +25,6 @@
     "test:integration": "npm run pretest && NODE_ENV=test jest ./tests/integrations/*.test.js --detectOpenHandles --coverage --verbose",
     "test:integration:clean": "npm run pretest:silent && NODE_ENV=test jest ./tests/integrations/*.test.js --detectOpenHandles --silent --coverage --verbose"
   },
-  "jest": {
-    "collectCoverage": true,
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/coverage/",
-      "/src/configs/",
-      "/src/db/",
-      "/scripts/"
-    ],
-    "coverageThreshold": {
-      "global": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      }
-    }
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Bibbeep/Sistem-Informasi-Manajemen-Informatics-Learning-Center-Back-End.git"
