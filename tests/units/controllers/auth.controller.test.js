@@ -7,7 +7,11 @@ const {
     validateLogin,
 } = require('../../../src/validations/validator');
 const AuthService = require('../../../src/services/auth.service');
-const { register, login } = require('../../../src/controllers/auth.controller');
+const {
+    register,
+    login,
+    logout,
+} = require('../../../src/controllers/auth.controller');
 const { ValidationError } = require('joi');
 
 describe('Authentication Controller Unit Tests', () => {
@@ -176,6 +180,42 @@ describe('Authentication Controller Unit Tests', () => {
 
             expect(validateLogin).toHaveBeenCalledWith(req.body);
             expect(AuthService.login).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('logout Tests', () => {
+        it('should sends 200 on success and does not call next', async () => {
+            req.tokenPayload = { jti: 'some-jti-string' };
+            AuthService.logout.mockResolvedValue();
+
+            await logout(req, res, next);
+
+            expect(AuthService.logout).toHaveBeenCalledWith(req.tokenPayload);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully logged out.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.tokenPayload = { jti: 'some-jti-string' };
+            const serviceError = new Error('Boom');
+
+            AuthService.logout.mockRejectedValue(serviceError);
+
+            await logout(req, res, next);
+
+            expect(AuthService.logout).toHaveBeenCalledWith(req.tokenPayload);
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
