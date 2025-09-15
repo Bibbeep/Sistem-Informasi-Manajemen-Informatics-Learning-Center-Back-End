@@ -26,13 +26,8 @@ module.exports = {
         },
     ],
     collectCoverage: true,
-    coveragePathIgnorePatterns: [
-        '/node_modules/',
-        '/coverage/',
-        '<rootDir>/src/configs/',
-        '<rootDir>/src/db/',
-        '<rootDir>/scripts/',
-    ],
+    collectCoverageFrom: ['src/**/*.js', '!src/configs/**', '!src/db/**'],
+    coveragePathIgnorePatterns: ['/node_modules/', '/coverage/'],
     coverageThreshold: {
         global: {
             branches: 100,

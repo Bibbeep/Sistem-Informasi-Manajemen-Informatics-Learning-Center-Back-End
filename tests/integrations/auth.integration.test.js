@@ -2,26 +2,72 @@
 const request = require('supertest');
 const { fakerID_ID: faker } = require('@faker-js/faker');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
 const { server } = require('../../src/server');
 const truncate = require('../../scripts/db/truncate');
 const userFactory = require('../../src/db/seeders/factories/user');
 const User = require('../../src/db/models/user');
+const AuthService = require('../../src/services/auth.service');
+const { verify } = require('../../src/utils/jwtHelper');
+const jwtOptions = require('../../src/configs/jsonwebtoken');
 
 describe('Authentication Integration Test', () => {
+    const mockUserPassword = 'password123';
+    let users, tokens;
+
+    beforeAll(() => {
+        //
+    });
+
     afterAll(async () => {
         server.close();
+        jest.useRealTimers();
         await sequelize.close();
         await redisClient.close();
     });
 
     beforeEach(async () => {
-        //
+        users = {
+            user: await userFactory({ role: 'User' }, mockUserPassword),
+            admin: await userFactory({ role: 'Admin' }, mockUserPassword),
+        };
+
+        tokens = {
+            valid: (
+                await AuthService.login({
+                    email: users.user.email,
+                    password: mockUserPassword,
+                })
+            ).accessToken,
+            revoked: (
+                await AuthService.login({
+                    email: users.user.email,
+                    password: mockUserPassword,
+                })
+            ).accessToken,
+            expired: jwt.sign(
+                {
+                    sub: users.user.id,
+                    admin: false,
+                    jti: uuidv4(),
+                },
+                process.env.JWT_SECRET_KEY,
+                {
+                    ...jwtOptions.sign,
+                    expiresIn: 0,
+                },
+            ),
+        };
+
+        await AuthService.logout(verify(tokens.revoked));
     });
 
     afterEach(async () => {
         await truncate();
+        jest.clearAllMocks();
     });
 
     describe('POST /api/v1/auth/register', () => {
@@ -308,6 +354,100 @@ describe('Authentication Integration Test', () => {
                     },
                 },
             ]);
+        });
+    });
+
+    describe('POST /api/v1/auth/logout', () => {
+        it('should return 200 and successfully revoked a JWT access token', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/logout')
+                .set('Authorization', `Bearer ${tokens.valid}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully logged out.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should return 401 when token is invalid', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/logout')
+                .set('Authorization', `Basic whatdahelll`);
+
+            expect(response.status).toBe(401);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 401,
+                    message: 'Unauthorized.',
+                    data: null,
+                    errors: [
+                        {
+                            message: 'Invalid or expired token.',
+                            context: {
+                                key: 'request.headers.authorization',
+                                value: null,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 401 when token is expired', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/logout')
+                .set('Authorization', `Bearer ${tokens.expired}`);
+
+            expect(response.status).toBe(401);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 401,
+                    message: 'Unauthorized.',
+                    data: null,
+                    errors: [
+                        {
+                            message: 'Invalid or expired token.',
+                            context: {
+                                key: 'request.headers.authorization',
+                                value: null,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 401 when token is already revoked', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/logout')
+                .set('Authorization', `Bearer ${tokens.revoked}`);
+
+            expect(response.status).toBe(401);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 401,
+                    message: 'Unauthorized.',
+                    data: null,
+                    errors: [
+                        {
+                            message: 'Invalid or expired token.',
+                            context: {
+                                key: 'request.headers.authorization',
+                                value: null,
+                            },
+                        },
+                    ],
+                }),
+            );
         });
     });
 });
