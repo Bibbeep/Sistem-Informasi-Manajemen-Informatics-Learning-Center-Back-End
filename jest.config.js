@@ -1,23 +1,37 @@
 module.exports = {
     projects: [
-        // '<rootDir>/jest.unit.config.js',
-        // '<rootDir>/jest.integration.config.js',
         {
             displayName: 'integration',
             testMatch: ['**/tests/integrations/*.[jt]s?(x)'],
         },
         {
-            displayName: 'unit',
-            testMatch: ['**/tests/units/**/*.[jt]s?(x)'],
+            displayName: 'middleware',
+            testMatch: ['**/tests/units/middlwares/*.[jt]s?(x)'],
+        },
+        {
+            displayName: 'controller',
+            testMatch: ['**/tests/units/controllers/*.[jt]s?(x)'],
+        },
+        {
+            displayName: 'service',
+            testMatch: ['**/tests/units/services/*.[jt]s?(x)'],
+        },
+        {
+            displayName: 'utility',
+            testMatch: ['**/tests/units/utils/*.[jt]s?(x)'],
+        },
+        {
+            displayName: 'validation',
+            testMatch: ['**/tests/units/validations/*.[jt]s?(x)'],
         },
     ],
     collectCoverage: true,
     coveragePathIgnorePatterns: [
         '/node_modules/',
         '/coverage/',
-        '/src/configs/',
-        '/src/db/',
-        '/scripts/',
+        '<rootDir>/src/configs/',
+        '<rootDir>/src/db/',
+        '<rootDir>/scripts/',
     ],
     coverageThreshold: {
         global: {
