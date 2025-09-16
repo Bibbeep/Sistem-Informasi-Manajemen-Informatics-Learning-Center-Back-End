@@ -6,7 +6,7 @@ module.exports = {
         },
         {
             displayName: 'middleware',
-            testMatch: ['**/tests/units/middlwares/*.[jt]s?(x)'],
+            testMatch: ['**/tests/units/middlewares/*.[jt]s?(x)'],
         },
         {
             displayName: 'controller',
