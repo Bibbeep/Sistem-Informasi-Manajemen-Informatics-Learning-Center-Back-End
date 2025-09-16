@@ -1,6 +1,6 @@
 /* eslint-disable no-undef */
 const Joi = require('joi');
-const errorHandler = require('../../../src/utils/errorHandler');
+const errorHandler = require('../../../src/middlewares/errorHandler.middleware');
 const HTTPError = require('../../../src/utils/httpError');
 
 const mockRes = () => {
