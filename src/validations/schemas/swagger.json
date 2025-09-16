@@ -292,5 +292,268 @@
             "message": "There is an issue with the server.",
             "errors": null
         }
+    },
+    "LoginRequestBody": {
+        "type": "object",
+        "properties": {
+            "email": {
+                "type": "string",
+                "format": "email"
+            },
+            "password": {
+                "type": "string",
+                "format": "password"
+            }
+        },
+        "example": {
+            "email": "johndoe@mail.com",
+            "password": "Weakpassword321"
+        }
+    },
+    "LoginSuccessResponse200": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "properties": {
+                    "accessToken": {
+                        "type": "string"
+                    }
+                }
+            },
+            "errors": {
+                "type": "array",
+                "nullable": true
+            }
+        },
+        "example": {
+            "success": true,
+            "statusCode": 200,
+            "message": "Successfully logged in.",
+            "data": {
+                "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MywidXNlcm5hbWUiOiJBbGV4YSIsImlhdCI6MTczODg0NTcxMiwiZXhwIjoxNzM5NDUwNTEyfQ.jaOEpQcfyzZs7sDWz6cG7k3oShiFQkj0wkhEabaScOA"
+            },
+            "errors": null
+        }
+    },
+    "LoginFailedResponse400": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "context": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": ["string", "integer", "object"],
+                                    "nullable": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "example": {
+            "success": false,
+            "statusCode": 400,
+            "data": null,
+            "message": "Request body validation error.",
+            "errors": [
+                {
+                    "message": "\"email\" must be a valid email",
+                    "context": {
+                        "key": "email",
+                        "value": "invalid-email"
+                    }
+                },
+                {
+                    "message": "\"password\" must be a string",
+                    "context": {
+                        "key": "password",
+                        "value": 0.696
+                    }
+                }
+            ]
+        }
+    },
+    "LoginFailedResponse401": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "context": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": ["string", "integer", "object"],
+                                    "nullable": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "example": {
+            "success": false,
+            "statusCode": 401,
+            "message": "Unauthorized.",
+            "data": null,
+            "errors": [
+                {
+                    "message": "Wrong email or password.",
+                    "context": {
+                        "key": "email",
+                        "value": "johndoe@mail.com"
+                    }
+                },
+                {
+                    "message": "Wrong email or password.",
+                    "context": {
+                        "key": "password",
+                        "value": "*********"
+                    }
+                }
+            ]
+        }
+    },
+    "LogoutSuccessResponse200": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "array",
+                "nullable": true
+            }
+        },
+        "example": {
+            "success": true,
+            "statusCode": 200,
+            "message": "Successfully logged out.",
+            "data": null,
+            "errors": null
+        }
+    },
+    "LogoutFailedResponse401": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "context": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": ["string", "integer", "object"],
+                                    "nullable": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "example": {
+            "success": false,
+            "statusCode": 401,
+            "message": "Invalid or expired token.",
+            "data": null,
+            "errors": [
+                {
+                    "message": "Invalid or expired token",
+                    "context": {
+                        "key": "request.headers.authorization",
+                        "value": null
+                    }
+                }
+            ]
+        }
     }
 }

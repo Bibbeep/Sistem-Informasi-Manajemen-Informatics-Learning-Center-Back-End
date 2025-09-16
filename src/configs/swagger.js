@@ -27,8 +27,7 @@ const options = {
                     `http://localhost:${process.env.PORT}`,
             },
         ],
-        produces: ['application/json'],
-        schemes: ['https', 'http'],
+        basePath: '/api/v1/',
     },
     apis: ['./src/routes/*.js'],
 };
