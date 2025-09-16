@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 const Joi = require('joi');
-const HTTPError = require('./httpError');
+const HTTPError = require('../utils/httpError');
 
 module.exports = (err, req, res, next) => {
     if (err instanceof Joi.ValidationError) {

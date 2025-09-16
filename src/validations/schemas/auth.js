@@ -13,7 +13,25 @@ const login = Joi.object({
     password: Joi.string().min(8).max(72).required(),
 });
 
+// JWT access token payload
+const tokenPayload = Joi.object({
+    sub: Joi.number().integer().positive().required(),
+    admin: Joi.boolean().required(),
+    iat: Joi.date().timestamp('unix').required(),
+    exp: Joi.date().timestamp('unix').required(),
+    jti: Joi.string()
+        .uuid({ version: ['uuidv4'] })
+        .required(),
+    aud: Joi.string()
+        .uri({ scheme: ['http', 'https'] })
+        .required(),
+    iss: Joi.string()
+        .uri({ scheme: ['http', 'https'] })
+        .required(),
+}).unknown(false);
+
 module.exports = {
     register,
     login,
+    tokenPayload,
 };

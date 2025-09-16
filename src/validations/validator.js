@@ -1,4 +1,4 @@
-const { register, login } = require('./schemas/auth');
+const { register, login, tokenPayload } = require('./schemas/auth');
 
 const validator = (schema) => {
     return (payload) => {
@@ -9,4 +9,5 @@ const validator = (schema) => {
 module.exports = {
     validateRegister: validator(register),
     validateLogin: validator(login),
+    validateTokenPayload: validator(tokenPayload),
 };

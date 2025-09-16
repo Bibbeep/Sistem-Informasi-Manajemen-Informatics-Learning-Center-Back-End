@@ -1,7 +1,9 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const { v4: uuidv4 } = require('uuid');
 const User = require('../db/models/user');
+const { redisClient } = require('../configs/redis');
 const HTTPError = require('../utils/httpError');
+const { sign } = require('../utils/jwtHelper');
 
 class Auth {
     static async register(data) {
@@ -76,15 +78,31 @@ class Auth {
         const jwtPayload = {
             sub: userData.id,
             admin: userData.role == 'Admin' ? true : false,
+            jti: uuidv4(),
         };
 
-        const accessToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, {
-            expiresIn: '7d',
-        });
+        const accessToken = sign(jwtPayload);
 
         return {
             accessToken,
         };
+    }
+
+    static async logout(data) {
+        const { sub, exp, jti } = data;
+        const ttl = exp - Math.floor(Date.now() / 1000);
+        const logoutDatetime = new Date(Date.now()).toISOString();
+
+        await redisClient.set(
+            `user:${sub}:JWT:${jti}:logoutAt`,
+            logoutDatetime,
+            {
+                expiration: {
+                    type: 'EX',
+                    value: ttl,
+                },
+            },
+        );
     }
 }
 

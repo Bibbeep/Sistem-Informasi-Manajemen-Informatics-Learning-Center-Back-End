@@ -14,7 +14,9 @@ const spawnOptions = { stdio: isSilent ? 'pipe' : 'inherit' };
             ['db:migrate', `--url=${url}`],
             spawnOptions,
         );
-        console.log('[Test] Migration Successful\n');
+        if (!isSilent) {
+            console.log('[Test] Migration Successful\n');
+        }
     } catch (err) {
         console.log('[Test] Migration failed. Error:', err.message);
         process.exit(1);
