@@ -1,9 +1,14 @@
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
+const { randomBytes, createHash } = require('crypto');
+const fs = require('fs');
+const path = require('path');
+const handlebars = require('handlebars');
 const User = require('../db/models/user');
 const { redisClient } = require('../configs/redis');
 const HTTPError = require('../utils/httpError');
 const { sign } = require('../utils/jwtHelper');
+const mailer = require('../utils/mailer');
 
 class Auth {
     static async register(data) {
@@ -102,6 +107,69 @@ class Auth {
                     value: ttl,
                 },
             },
+        );
+    }
+
+    static async sendResetPasswordMail(data) {
+        const { email } = data;
+
+        const isUserExist = await User.findOne({
+            where: {
+                email,
+            },
+        });
+
+        if (!isUserExist) {
+            throw new HTTPError(400, 'Request body validation error.', [
+                {
+                    message: '"email" is not registered',
+                    context: {
+                        key: 'email',
+                        value: email,
+                    },
+                },
+            ]);
+        }
+
+        const token = randomBytes(32).toString('hex');
+        const hashedToken = createHash('sha256').update(token).digest('hex');
+        const ttl = 15 * 60;
+
+        await redisClient.set(
+            `user:${isUserExist.id}:resetPasswordToken`,
+            hashedToken,
+            {
+                expiration: {
+                    type: 'EX',
+                    value: ttl,
+                },
+            },
+        );
+
+        const resetUrl = `${process.env.CORS_ORIGIN}/reset-password?token=${token}&userId=${isUserExist.id}`;
+
+        const templateSource = fs.readFileSync(
+            path.join(
+                __dirname,
+                '..',
+                'templates',
+                'emails',
+                'reset-password.hbs',
+            ),
+            'utf8',
+        );
+
+        const template = handlebars.compile(templateSource);
+        const html = template({
+            fullName: isUserExist.fullName,
+            resetUrl,
+        });
+
+        await mailer(
+            email,
+            'Permintaan Reset Password - Informatics Learning Center',
+            `Anda telah meminta untuk reset ulang password. Buka tautan ini: ${resetUrl}`,
+            html,
         );
     }
 }

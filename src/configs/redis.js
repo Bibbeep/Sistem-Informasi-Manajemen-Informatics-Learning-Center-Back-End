@@ -24,7 +24,7 @@ const connectRedis = async () => {
             console.log('[Redis] Database connection established');
         }
     } catch (err) {
-        console.log('[Sequelize] Database connection failed', err);
+        console.log('[Redis] Database connection failed', err);
         process.exit(1);
     }
 };

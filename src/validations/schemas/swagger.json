@@ -555,5 +555,133 @@
                 }
             ]
         }
+    },
+    "ForgotPasswordRequestBody": {
+        "type": "object",
+        "properties": {
+            "email": {
+                "type": "string",
+                "format": "email"
+            }
+        },
+        "example": {
+            "email": "johndoe@mail.com"
+        }
+    },
+    "ForgotPasswordSuccessResponse200": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "fullName": {
+                                "type": "string"
+                            },
+                            "memberLevel": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "pictureUrl": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "errors": {
+                "type": "array",
+                "nullable": true
+            }
+        },
+        "example": {
+            "success": true,
+            "statusCode": 200,
+            "message": "Successfully sent password reset link to your email.",
+            "data": null,
+            "errors": null
+        }
+    },
+    "ForgotPasswordFailedResponse400": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "context": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": ["string", "integer", "object"],
+                                    "nullable": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "example": {
+            "success": false,
+            "statusCode": 400,
+            "data": null,
+            "message": "Request body validation error.",
+            "errors": [
+                {
+                    "message": "\"email\" must be a valid email",
+                    "context": {
+                        "key": "email",
+                        "value": "johndoemail.com"
+                    }
+                }
+            ]
+        }
     }
 }
