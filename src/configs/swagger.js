@@ -23,8 +23,9 @@ const options = {
         servers: [
             {
                 url:
-                    process.env.HOST_NAME ||
-                    `http://localhost:${process.env.PORT}`,
+                    process.env.HOST_NAME !== 'http://localhost'
+                        ? process.env.HOST_NAME
+                        : `http://localhost:${process.env.PORT}`,
             },
         ],
         basePath: '/api/v1/',
