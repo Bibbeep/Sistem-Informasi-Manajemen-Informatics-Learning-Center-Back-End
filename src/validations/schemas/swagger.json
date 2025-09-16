@@ -1,0 +1,296 @@
+{
+    "RegisterRequestBody": {
+        "type": "object",
+        "properties": {
+            "fullName": {
+                "type": "string"
+            },
+            "email": {
+                "type": "string",
+                "format": "email"
+            },
+            "password": {
+                "type": "string",
+                "format": "password"
+            }
+        },
+        "example": {
+            "fullName": "John Doe",
+            "email": "johndoe@mail.com",
+            "password": "Weakpassword321"
+        }
+    },
+    "RegisterSuccessResponse201": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "properties": {
+                    "user": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "integer"
+                            },
+                            "email": {
+                                "type": "string",
+                                "format": "email"
+                            },
+                            "fullName": {
+                                "type": "string"
+                            },
+                            "memberLevel": {
+                                "type": "string"
+                            },
+                            "role": {
+                                "type": "string"
+                            },
+                            "pictureUrl": {
+                                "type": "string"
+                            },
+                            "createdAt": {
+                                "type": "string"
+                            },
+                            "updatedAt": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "errors": {
+                "type": "array",
+                "nullable": true
+            }
+        },
+        "example": {
+            "success": true,
+            "statusCode": 201,
+            "message": "Successfully registered a new user account.",
+            "data": {
+                "user": {
+                    "id": 1,
+                    "email": "johndoe@mail.com",
+                    "fullName": "John Doe",
+                    "memberLevel": "Basic",
+                    "role": "User",
+                    "pictureUrl": null,
+                    "createdAt": "2025-06-06T08:08:00.080Z",
+                    "updatedAt": "2025-06-06T08:08:00.080Z"
+                }
+            },
+            "errors": null
+        }
+    },
+    "RegisterFailedResponse400": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "context": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": ["string", "integer", "object"],
+                                    "nullable": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "example": {
+            "success": false,
+            "statusCode": 400,
+            "data": null,
+            "message": "Request body validation error.",
+            "errors": [
+                {
+                    "message": "\"fullName\" must be a string",
+                    "context": {
+                        "key": "fullName",
+                        "value": 0.999
+                    }
+                },
+                {
+                    "message": "\"email\" must be a valid email",
+                    "context": {
+                        "key": "email",
+                        "value": "John Doe"
+                    }
+                },
+                {
+                    "message": "\"password\" is required",
+                    "context": {
+                        "key": "password"
+                    }
+                }
+            ]
+        }
+    },
+    "RegisterFailedResponse409": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "context": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": ["string", "integer", "object"],
+                                    "nullable": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "example": {
+            "success": false,
+            "statusCode": 409,
+            "data": null,
+            "message": "Resource conflict.",
+            "errors": [
+                {
+                    "message": "email is already registered.",
+                    "context": {
+                        "key": "email",
+                        "value": "johndoe@mail.com"
+                    }
+                }
+            ]
+        }
+    },
+    "FailedResponse429": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "object",
+                "nullable": true
+            }
+        },
+        "example": {
+            "success": false,
+            "statusCode": 429,
+            "message": "Too many requests.",
+            "data": null,
+            "errors": null
+        }
+    },
+    "FailedResponse500": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "context": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": ["string", "integer", "object"],
+                                    "nullable": true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "example": {
+            "success": false,
+            "statusCode": 500,
+            "data": null,
+            "message": "There is an issue with the server.",
+            "errors": null
+        }
+    }
+}
