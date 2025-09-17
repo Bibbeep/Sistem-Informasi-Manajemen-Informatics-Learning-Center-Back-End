@@ -2,6 +2,8 @@ if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
 
+const chalk = require('chalk');
+
 module.exports = {
     development: {
         username: process.env.POSTGRES_USER,
@@ -11,7 +13,7 @@ module.exports = {
         port: process.env.POSTGRES_PORT,
         dialect: 'postgres',
         logging: (query) => {
-            console.log('[Sequelize]', query);
+            console.log(chalk.blue('[Sequelize]'), query);
         },
     },
     test: {

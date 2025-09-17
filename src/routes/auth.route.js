@@ -35,25 +35,37 @@ const { authenticate } = require('../middlewares/auth.middleware');
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/RegisterFailedResponse400'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               BadRequest:
+ *                 $ref: '#/components/examples/BadRequest'
  *       409:
  *         description: Email already registered
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/RegisterFailedResponse409'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               Conflict:
+ *                 $ref: '#/components/examples/Conflict'
  *       429:
  *         description: Too many requests
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/FailedResponse429'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               TooManyRequests:
+ *                 $ref: '#/components/examples/TooManyRequests'
  *       500:
  *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/FailedResponse500'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               InternalServerError:
+ *                 $ref: '#/components/examples/InternalServerError'
  */
 router.post('/register', AuthController.register);
 
@@ -81,25 +93,37 @@ router.post('/register', AuthController.register);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/LoginFailedResponse400'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               BadRequest:
+ *                 $ref: '#/components/examples/BadRequest'
  *       401:
  *         description: Invalid credentials
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/LoginFailedResponse401'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               Unauthorized:
+ *                 $ref: '#/components/examples/Unauthorized'
  *       429:
  *         description: Too many requests
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/FailedResponse429'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               TooManyRequests:
+ *                 $ref: '#/components/examples/TooManyRequests'
  *       500:
  *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/FailedResponse500'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               InternalServerError:
+ *                 $ref: '#/components/examples/InternalServerError'
  */
 router.post('/login', AuthController.login);
 
@@ -131,20 +155,78 @@ router.post('/login', AuthController.login);
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/LogoutFailedResponse401'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               Unauthorized:
+ *                 $ref: '#/components/examples/Unauthorized'
  *       429:
  *         description: Too many requests
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/FailedResponse429'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               TooManyRequests:
+ *                 $ref: '#/components/examples/TooManyRequests'
  *       500:
  *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/FailedResponse500'
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               InternalServerError:
+ *                 $ref: '#/components/examples/InternalServerError'
  */
 router.post('/logout', authenticate, AuthController.logout);
+
+/**
+ * @openapi
+ * /api/v1/auth/forgot-password:
+ *   post:
+ *     summary: Sends an email with a URL to reset password
+ *     tags: [User Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ForgotPasswordRequestBody'
+ *     responses:
+ *       200:
+ *         description: Password reset link sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ForgotPasswordSuccessResponse200'
+ *       400:
+ *         description: Invalid request body format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               BadRequest:
+ *                 $ref: '#/components/examples/BadRequest'
+ *       429:
+ *         description: Too many requests
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               TooManyRequests:
+ *                 $ref: '#/components/examples/TooManyRequests'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FailedResponse'
+ *             examples:
+ *               InternalServerError:
+ *                 $ref: '#/components/examples/InternalServerError'
+ */
+router.post('/forgot-password', AuthController.forgotPassword);
 
 module.exports = router;

@@ -4,8 +4,8 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const express = require('express');
-const morgan = require('morgan');
 const cors = require('cors');
+const morganMiddleware = require('./configs/morgan');
 const routes = require('./routes/index.route');
 const errorHandler = require('./middlewares/errorHandler.middleware');
 
@@ -19,11 +19,10 @@ app.use(
 );
 
 /* istanbul ignore next */
-if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'));
-} else if (process.env.NODE_ENV === 'production') {
-    app.use(morgan('common'));
+if (process.env.NODE_ENV !== 'test') {
+    app.use(morganMiddleware);
 }
+
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 

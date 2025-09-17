@@ -30,8 +30,13 @@ const tokenPayload = Joi.object({
         .required(),
 }).unknown(false);
 
+const forgotPassword = Joi.object({
+    email: Joi.string().email().required(),
+});
+
 module.exports = {
     register,
     login,
     tokenPayload,
+    forgotPassword,
 };

@@ -3,6 +3,7 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const { createClient } = require('redis');
+const chalk = require('chalk');
 
 const redisClient = createClient({
     username: process.env.REDIS_USER || 'default',
@@ -16,22 +17,25 @@ const redisClient = createClient({
 });
 
 const connectRedis = async () => {
-    console.log('[Redis] Checking database connection...');
+    console.log(chalk.red('[Redis]'), 'Checking database connection...');
 
     try {
         if (!redisClient.isOpen) {
             await redisClient.connect();
-            console.log('[Redis] Database connection established');
+            console.log(
+                chalk.red('[Redis]'),
+                'Database connection established',
+            );
         }
     } catch (err) {
-        console.log('[Sequelize] Database connection failed', err);
+        console.log(chalk.red('[Redis]'), 'Database connection failed', err);
         process.exit(1);
     }
 };
 
 redisClient.on('error', (err) => {
     if (process.env.NODE_ENV !== 'production') {
-        console.error('[Redis] Client error:', err);
+        console.error(chalk.red('[Redis]'), 'Client error:', err);
     }
 
     process.exit(-1);
@@ -39,19 +43,19 @@ redisClient.on('error', (err) => {
 
 redisClient.on('connect', () => {
     if (process.env.NODE_ENV !== 'production') {
-        console.log('[Redis] Database connected');
+        console.log(chalk.red('[Redis]'), 'Database connected');
     }
 });
 
 redisClient.on('reconnecting', () => {
     if (process.env.NODE_ENV !== 'production') {
-        console.log('[Redis] Client reconnecting');
+        console.log(chalk.red('[Redis]'), 'Client reconnecting');
     }
 });
 
 redisClient.on('ready', () => {
     if (process.env.NODE_ENV !== 'production') {
-        console.log('[Redis] Client is ready');
+        console.log(chalk.red('[Redis]'), 'Client is ready');
     }
 });
 

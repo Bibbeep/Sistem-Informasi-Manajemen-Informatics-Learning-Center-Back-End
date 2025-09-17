@@ -1,21 +1,57 @@
 /* eslint-disable no-undef */
-jest.mock('bcrypt');
-jest.mock('../../../src/db/models/user');
-jest.mock('../../../src/utils/jwtHelper');
+jest.mock('bcrypt', () => {
+    return {
+        genSalt: jest.fn(),
+        hash: jest.fn(),
+        compare: jest.fn(),
+    };
+});
+jest.mock('crypto', () => {
+    return {
+        randomBytes: jest.fn(() => {
+            return {
+                toString: jest.fn().mockReturnValue('mock-token'),
+            };
+        }),
+        createHash: jest.fn(() => {
+            return {
+                update: jest.fn().mockReturnThis(),
+                digest: jest.fn().mockReturnValue('mock-hashed-token'),
+            };
+        }),
+    };
+});
+jest.mock('nodemailer', () => {
+    return {
+        createTransport: jest.fn().mockReturnValue({
+            sendMail: jest.fn(),
+            verify: jest.fn(),
+        }),
+    };
+});
 jest.mock('jsonwebtoken');
 jest.mock('uuid');
+jest.mock('fs');
+jest.mock('../../../src/db/models/user');
+jest.mock('../../../src/utils/jwtHelper');
 jest.mock('../../../src/configs/redis');
+jest.mock('../../../src/utils/mailer');
 
 const { fakerID_ID: faker } = require('@faker-js/faker');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const crypto = require('crypto');
 const AuthService = require('../../../src/services/auth.service');
 const User = require('../../../src/db/models/user');
 const HTTPError = require('../../../src/utils/httpError');
 const { sign } = require('../../../src/utils/jwtHelper');
 const { redisClient } = require('../../../src/configs/redis');
+const mailer = require('../../../src/utils/mailer');
 
 describe('Authentication Service Unit Tests', () => {
+    const originalEnv = process.env;
+
     beforeAll(() => {
         jest.useFakeTimers().setSystemTime(
             new Date('2025-12-05T00:00:00.000Z'),
@@ -28,10 +64,12 @@ describe('Authentication Service Unit Tests', () => {
 
     beforeEach(() => {
         jest.resetModules();
+        process.env.CORS_ORIGIN = 'http://localhost';
     });
 
     afterEach(() => {
         jest.clearAllMocks();
+        process.env = originalEnv;
     });
 
     describe('register Tests', () => {
@@ -373,6 +411,59 @@ describe('Authentication Service Unit Tests', () => {
                 },
             );
             expect(AuthService.logout(mockJWTClaim)).resolves.not.toThrow();
+        });
+    });
+
+    describe('sendResetPasswordMail Tests', () => {
+        it('should read the template, compile it, and send an email', async () => {
+            const mockEmail = 'johndoe@mail.com';
+            const mockUser = { id: 1, fullName: 'John Doe', email: mockEmail };
+            const mockToken = 'mock-token';
+            const mockHashedToken = 'mock-hashed-token';
+
+            User.findOne.mockResolvedValue(mockUser);
+            crypto.randomBytes.mockReturnValue({
+                toString: () => {
+                    return mockToken;
+                },
+            });
+            crypto.createHash().update.mockReturnValue({
+                digest: () => {
+                    return mockHashedToken;
+                },
+            });
+            fs.readFileSync.mockReturnValue('Hello {{fullName}}');
+            mailer.mockResolvedValue();
+
+            await AuthService.sendResetPasswordMail({ email: mockEmail });
+
+            expect(User.findOne).toHaveBeenCalledWith({
+                where: { email: mockEmail },
+            });
+            expect(redisClient.set).toHaveBeenCalledWith(
+                `user:${mockUser.id}:resetPasswordToken`,
+                mockHashedToken,
+                { expiration: { type: 'EX', value: 900 } },
+            );
+            expect(fs.readFileSync).toHaveBeenCalled();
+            expect(mailer).toHaveBeenCalledWith(
+                mockEmail,
+                'Permintaan Reset Password - Informatics Learning Center',
+                expect.any(String),
+                'Hello John Doe',
+            );
+        });
+
+        it('should ignore and return void with email does not exist', async () => {
+            const mockEmail = 'nonexistent@mail.com';
+            User.findOne.mockResolvedValue(null);
+
+            await AuthService.sendResetPasswordMail({ email: mockEmail });
+
+            expect(User.findOne).toHaveBeenCalledWith({
+                where: { email: mockEmail },
+            });
+            expect(mailer).not.toHaveBeenCalled();
         });
     });
 });

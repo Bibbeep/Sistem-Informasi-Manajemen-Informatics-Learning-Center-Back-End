@@ -5,12 +5,14 @@ jest.mock('../../../src/validations/validator');
 const {
     validateRegister,
     validateLogin,
+    validateForgotPassword,
 } = require('../../../src/validations/validator');
 const AuthService = require('../../../src/services/auth.service');
 const {
     register,
     login,
     logout,
+    forgotPassword,
 } = require('../../../src/controllers/auth.controller');
 const { ValidationError } = require('joi');
 
@@ -216,6 +218,81 @@ describe('Authentication Controller Unit Tests', () => {
             await logout(req, res, next);
 
             expect(AuthService.logout).toHaveBeenCalledWith(req.tokenPayload);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('forgotPassword Tests', () => {
+        it('should sends 200 on success and does not call next', async () => {
+            req.body = {
+                email: 'johndoe@mail.com',
+            };
+            const mockValidationReturnData = {
+                error: undefined,
+                value: {
+                    email: req.body.email,
+                },
+            };
+            validateForgotPassword.mockReturnValue(mockValidationReturnData);
+            AuthService.sendResetPasswordMail.mockResolvedValue();
+
+            await forgotPassword(req, res, next);
+
+            expect(validateForgotPassword).toHaveBeenCalledWith(req.body);
+            expect(AuthService.sendResetPasswordMail).toHaveBeenCalledWith(
+                mockValidationReturnData.value,
+            );
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message:
+                        'Successfully sent password reset link to your email.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should calls next with Joi.ValidationError when validation fails', async () => {
+            req.body = {
+                email: 'invalid-email',
+            };
+            const mockValidationError = new ValidationError();
+            validateForgotPassword.mockReturnValue({
+                error: mockValidationError,
+            });
+
+            await forgotPassword(req, res, next);
+
+            expect(validateForgotPassword).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockValidationError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.body = {
+                email: 'valid@mail.com',
+            };
+            const serviceError = new Error('Boom');
+            const mockValidationReturnData = {
+                error: undefined,
+                value: {
+                    email: req.body.email,
+                },
+            };
+            validateForgotPassword.mockReturnValue(mockValidationReturnData);
+            AuthService.sendResetPasswordMail.mockRejectedValue(serviceError);
+
+            await forgotPassword(req, res, next);
+
+            expect(AuthService.sendResetPasswordMail).toHaveBeenCalledWith(
+                req.body,
+            );
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();

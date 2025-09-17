@@ -1,4 +1,8 @@
-const { validateRegister, validateLogin } = require('../validations/validator');
+const {
+    validateRegister,
+    validateLogin,
+    validateForgotPassword,
+} = require('../validations/validator');
 const AuthService = require('../services/auth.service');
 
 module.exports = {
@@ -56,6 +60,27 @@ module.exports = {
                 success: true,
                 statusCode: 200,
                 message: 'Successfully logged out.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    forgotPassword: async (req, res, next) => {
+        try {
+            const { error, value } = validateForgotPassword(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            await AuthService.sendResetPasswordMail(value);
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully sent password reset link to your email.',
                 data: null,
                 errors: null,
             });
