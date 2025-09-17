@@ -1,0 +1,76 @@
+{
+    "BadRequest": {
+        "summary": "Validation Error",
+        "value": {
+            "success": false,
+            "statusCode": 400,
+            "data": null,
+            "message": "Request body validation error.",
+            "errors": [
+                {
+                    "message": "\"email\" must be a valid email",
+                    "context": {
+                        "key": "email",
+                        "value": "invalid-email"
+                    }
+                }
+            ]
+        }
+    },
+    "Unauthorized": {
+        "summary": "Unauthorized",
+        "value": {
+            "success": false,
+            "statusCode": 401,
+            "message": "Unauthorized.",
+            "data": null,
+            "errors": [
+                {
+                    "message": "Invalid or expired token.",
+                    "context": {
+                        "key": "request.headers.authorization",
+                        "value": null
+                    }
+                }
+            ]
+        }
+    },
+    "Conflict": {
+        "summary": "Conflict",
+        "value": {
+            "success": false,
+            "statusCode": 409,
+            "data": null,
+            "message": "Resource conflict.",
+            "errors": [
+                {
+                    "message": "email is already registered.",
+                    "context": {
+                        "key": "email",
+                        "value": "johndoe@mail.com"
+                    }
+                }
+            ]
+        }
+    },
+    "TooManyRequests": {
+        "summary": "Too Many Requests",
+        "value": {
+            "success": false,
+            "statusCode": 429,
+            "message": "Too many requests.",
+            "data": null,
+            "errors": null
+        }
+    },
+    "InternalServerError": {
+        "summary": "Internal Server Error",
+        "value": {
+            "success": false,
+            "statusCode": 500,
+            "data": null,
+            "message": "There is an issue with the server.",
+            "errors": null
+        }
+    }
+}

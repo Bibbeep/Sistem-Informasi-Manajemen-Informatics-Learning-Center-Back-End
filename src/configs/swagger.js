@@ -1,12 +1,13 @@
 const swaggerJSDoc = require('swagger-jsdoc');
 const { version, description } = require('../../package.json');
 const endpointSchemas = require('../validations/schemas/swagger.json');
+const endpointExamples = require('../validations/schemas/swaggerExamples.json');
 
 const options = {
     definition: {
         openapi: '3.1.1',
         info: {
-            title: 'Sistem Informasi Manajemen Informatics Learning Center Back End',
+            title: 'Sistem Informasi Manajemen Informatics Learning Center API',
             version,
             description,
         },
@@ -19,6 +20,7 @@ const options = {
                 },
             },
             schemas: endpointSchemas,
+            examples: endpointExamples,
         },
         servers: [
             {
