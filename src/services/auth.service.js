@@ -120,15 +120,7 @@ class Auth {
         });
 
         if (!isUserExist) {
-            throw new HTTPError(400, 'Request body validation error.', [
-                {
-                    message: '"email" is not registered',
-                    context: {
-                        key: 'email',
-                        value: email,
-                    },
-                },
-            ]);
+            return;
         }
 
         const token = randomBytes(32).toString('hex');

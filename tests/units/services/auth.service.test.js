@@ -454,23 +454,16 @@ describe('Authentication Service Unit Tests', () => {
             );
         });
 
-        it('should throw error if user with email does not exist', async () => {
+        it('should ignore and return void with email does not exist', async () => {
             const mockEmail = 'nonexistent@mail.com';
             User.findOne.mockResolvedValue(null);
 
-            await expect(
-                AuthService.sendResetPasswordMail({ email: mockEmail }),
-            ).rejects.toThrow(
-                new HTTPError(400, 'Request body validation error.', [
-                    {
-                        message: '"email" is not registered',
-                        context: { key: 'email', value: mockEmail },
-                    },
-                ]),
-            );
+            await AuthService.sendResetPasswordMail({ email: mockEmail });
+
             expect(User.findOne).toHaveBeenCalledWith({
                 where: { email: mockEmail },
             });
+            expect(mailer).not.toHaveBeenCalled();
         });
     });
 });

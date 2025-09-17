@@ -450,4 +450,18 @@ describe('Authentication Integration Test', () => {
             );
         });
     });
+
+    describe('POST /api/v1/auth/forgot-password', () => {
+        it('should return 200 and success fully sent password reset link', async () => {
+            //
+        });
+
+        it('should return 200 when email is not registered', async () => {
+            //
+        });
+
+        it('should return 400 when email is invalid', async () => {
+            //
+        });
+    });
 });
