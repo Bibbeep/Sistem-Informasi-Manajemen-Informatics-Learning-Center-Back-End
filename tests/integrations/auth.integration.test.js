@@ -1,4 +1,5 @@
 /* eslint-disable no-undef */
+jest.mock('../../src/utils/mailer');
 const request = require('supertest');
 const { fakerID_ID: faker } = require('@faker-js/faker');
 const bcrypt = require('bcrypt');
@@ -13,6 +14,7 @@ const User = require('../../src/db/models/user');
 const AuthService = require('../../src/services/auth.service');
 const { verify } = require('../../src/utils/jwtHelper');
 const jwtOptions = require('../../src/configs/jsonwebtoken');
+const mailer = require('../../src/utils/mailer');
 
 describe('Authentication Integration Test', () => {
     const mockUserPassword = 'password123';
@@ -58,6 +60,19 @@ describe('Authentication Integration Test', () => {
                 {
                     ...jwtOptions.sign,
                     expiresIn: 0,
+                },
+            ),
+            tempered: jwt.sign(
+                {
+                    sub: users.user.id,
+                    admin: false,
+                    unregisteredField: 'TEMPERED',
+                    jti: uuidv4(),
+                },
+                process.env.JWT_SECRET_KEY,
+                {
+                    ...jwtOptions.sign,
+                    expiresIn: '7d',
                 },
             ),
         };
@@ -450,6 +465,31 @@ describe('Authentication Integration Test', () => {
             );
         });
 
+        it('should return 401 when token is tempered', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/logout')
+                .set('Authorization', `Bearer ${tokens.tempered}`);
+
+            expect(response.status).toBe(401);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 401,
+                    message: 'Unauthorized.',
+                    data: null,
+                    errors: [
+                        {
+                            message: 'Invalid or expired token.',
+                            context: {
+                                key: 'request.headers.authorization',
+                                value: null,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
         it('should return 500 if redis client fails', async () => {
             const originalSet = redisClient.set;
             redisClient.set = jest
@@ -499,11 +539,73 @@ describe('Authentication Integration Test', () => {
         });
 
         it('should return 200 when email is not registered', async () => {
-            //
+            const mockReqBody = {
+                email: 'unregistered@mail.com',
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/forgot-password')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message:
+                        'Successfully sent password reset link to your email.',
+                    data: null,
+                    errors: null,
+                }),
+            );
         });
 
         it('should return 400 when email is invalid', async () => {
-            //
+            const mockReqBody = {
+                email: 'invalid-mail.com',
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/forgot-password')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 400,
+                    data: null,
+                    message: 'Request body validation error.',
+                    errors: [
+                        {
+                            message: '"email" must be a valid email',
+                            context: {
+                                key: 'email',
+                                value: mockReqBody.email,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 500 if mailer fails', async () => {
+            mailer.mockRejectedValue(new Error('Mailer service is down'));
+
+            const response = await request(server)
+                .post('/api/v1/auth/forgot-password')
+                .send({ email: users.user.email });
+
+            expect(response.status).toBe(500);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 500,
+                    message: 'There is an issue with the server.',
+                    data: null,
+                    errors: null,
+                }),
+            );
         });
     });
 });
