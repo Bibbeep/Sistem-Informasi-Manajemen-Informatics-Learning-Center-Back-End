@@ -1,3 +1,4 @@
+const chalk = require('chalk');
 const { app } = require('./app');
 const { connectDb } = require('./configs/database');
 const { connectRedis } = require('./configs/redis');
@@ -9,7 +10,7 @@ const server = app.listen(PORT, async () => {
     await connectDb();
     await connectRedis();
     await connectNodemailer();
-    console.log(`Server is listening on port ${PORT}`);
+    console.log(chalk.inverse.bold(`Server is listening on port ${PORT}`));
 });
 
 module.exports = { server };

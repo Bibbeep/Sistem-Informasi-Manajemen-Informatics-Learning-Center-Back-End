@@ -449,11 +449,53 @@ describe('Authentication Integration Test', () => {
                 }),
             );
         });
+
+        it('should return 500 if redis client fails', async () => {
+            const originalSet = redisClient.set;
+            redisClient.set = jest
+                .fn()
+                .mockRejectedValue(new Error('Redis connection lost'));
+
+            const response = await request(server)
+                .post('/api/v1/auth/logout')
+                .set('Authorization', `Bearer ${tokens.valid}`);
+
+            redisClient.set = originalSet;
+
+            expect(response.status).toBe(500);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 500,
+                    message: 'There is an issue with the server.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
     });
 
     describe('POST /api/v1/auth/forgot-password', () => {
         it('should return 200 and success fully sent password reset link', async () => {
-            //
+            const mockReqBody = {
+                email: users.user.email,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/forgot-password')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message:
+                        'Successfully sent password reset link to your email.',
+                    data: null,
+                    errors: null,
+                }),
+            );
         });
 
         it('should return 200 when email is not registered', async () => {

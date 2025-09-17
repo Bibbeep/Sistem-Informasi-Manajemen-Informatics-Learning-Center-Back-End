@@ -3,24 +3,42 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 const nodemailer = require('nodemailer');
+const chalk = require('chalk');
 
-const transporter = nodemailer.createTransport({
-    service: process.env.NODEMAILER_SERVICE,
-    auth: {
-        user: process.env.NODEMAILER_USER,
-        pass: process.env.NODEMAILER_PASS,
-    },
-});
+const transportConfig =
+    process.env.NODE_ENV === 'production'
+        ? {
+              service: process.env.NODEMAILER_SERVICE,
+              auth: {
+                  user: process.env.NODEMAILER_USER,
+                  pass: process.env.NODEMAILER_PASS,
+              },
+          }
+        : {
+              host: process.env.NODEMAILER_HOST,
+              port: process.env.NODEMAILER_PORT,
+              secure: false,
+              auth: {
+                  user: process.env.NODEMAILER_USER,
+                  pass: process.env.NODEMAILER_PASS,
+              },
+          };
+
+const transporter = nodemailer.createTransport(transportConfig);
 
 const connectNodemailer = async () => {
-    console.log('[Nodemailer] Checking mailer service connection...');
+    console.log(
+        chalk.yellow('[Nodemailer]'),
+        'Checking mailer service connection...',
+    );
 
     try {
         await transporter.verify();
-        console.log('[Nodemailer] Nodemailer is ready');
+        console.log(chalk.yellow('[Nodemailer]'), 'Nodemailer is ready');
     } catch (err) {
         console.log(
-            '[Nodemailer] Failed to connect to the server. Error:',
+            chalk.red('[Nodemailer]'),
+            'Failed to connect to the server. Error:',
             err,
         );
         process.exit(1);
