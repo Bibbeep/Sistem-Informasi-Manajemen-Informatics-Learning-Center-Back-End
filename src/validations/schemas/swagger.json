@@ -256,5 +256,60 @@
                 }
             }
         }
+    },
+    "ResetPasswordRequestBody": {
+        "type": "object",
+        "properties": {
+            "userId": {
+                "type": "integer"
+            },
+            "token": {
+                "type": "string",
+                "description": "The 64-character hexadecimal reset token"
+            },
+            "newPassword": {
+                "type": "string",
+                "format": "password"
+            },
+            "confirmNewPassword": {
+                "type": "string",
+                "format": "password"
+            }
+        },
+        "example": {
+            "userId": 1,
+            "token": "c0ae8bc1c8ad1eea5d936c622a6850b984459d5bfd999552dc4cbecb54d02efe",
+            "newPassword": "NewStrongPassword123!",
+            "confirmNewPassword": "NewStrongPassword123!"
+        }
+    },
+    "ResetPasswordSuccessResponse200": {
+        "type": "object",
+        "properties": {
+            "success": {
+                "type": "boolean"
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
+                "type": "string"
+            },
+            "data": {
+                "type": "object",
+                "nullable": true
+            },
+            "errors": {
+                "type": "array",
+                "nullable": true
+            }
+        },
+        "example": {
+            "success": true,
+            "statusCode": 200,
+            "message": "Successfully reset your password.",
+            "data": null,
+            "errors": null
+        }
     }
 }

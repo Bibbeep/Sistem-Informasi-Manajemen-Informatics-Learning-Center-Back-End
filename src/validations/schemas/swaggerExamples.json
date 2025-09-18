@@ -35,6 +35,24 @@
             ]
         }
     },
+    "NotFound": {
+        "summary": "Not Found",
+        "value": {
+            "success": false,
+            "statusCode": 404,
+            "data": null,
+            "message": "Resource not found.",
+            "errors": [
+                {
+                    "message": "User with \"userId\" does not exist",
+                    "context": {
+                        "key": "userId",
+                        "value": 9999
+                    }
+                }
+            ]
+        }
+    },
     "Conflict": {
         "summary": "Conflict",
         "value": {
