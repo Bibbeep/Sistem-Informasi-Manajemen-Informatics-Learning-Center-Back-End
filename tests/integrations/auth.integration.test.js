@@ -15,6 +15,7 @@ const AuthService = require('../../src/services/auth.service');
 const { verify } = require('../../src/utils/jwtHelper');
 const jwtOptions = require('../../src/configs/jsonwebtoken');
 const mailer = require('../../src/utils/mailer');
+const { randomBytes, createHash } = require('crypto');
 
 describe('Authentication Integration Test', () => {
     const mockUserPassword = 'password123';
@@ -516,7 +517,7 @@ describe('Authentication Integration Test', () => {
     });
 
     describe('POST /api/v1/auth/forgot-password', () => {
-        it('should return 200 and success fully sent password reset link', async () => {
+        it('should return 200 and successfully sent password reset link', async () => {
             const mockReqBody = {
                 email: users.user.email,
             };
@@ -589,7 +590,7 @@ describe('Authentication Integration Test', () => {
             );
         });
 
-        it('should return 500 if mailer fails', async () => {
+        it('should return 500 when mailer fails', async () => {
             mailer.mockRejectedValue(new Error('Mailer service is down'));
 
             const response = await request(server)
@@ -604,6 +605,154 @@ describe('Authentication Integration Test', () => {
                     message: 'There is an issue with the server.',
                     data: null,
                     errors: null,
+                }),
+            );
+        });
+    });
+
+    describe('POST /api/v1/auth/reset-password', () => {
+        it('should return 200 and successfully reset user password', async () => {
+            const token = randomBytes(32).toString('hex');
+            const hashedToken = createHash('sha256')
+                .update(token)
+                .digest('hex');
+            await redisClient.set(
+                `user:${users.user.id}:resetPasswordToken`,
+                hashedToken,
+                {
+                    expiration: {
+                        type: 'EX',
+                        value: 900,
+                    },
+                },
+            );
+
+            const newPassword = 'newStrongPassword123';
+            const mockReqBody = {
+                userId: users.user.id,
+                token,
+                newPassword,
+                confirmNewPassword: newPassword,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/reset-password')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully reset your password.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should return 400 with invalid request body', async () => {
+            const mockReqBody = {
+                userId: 'not a number',
+                token: 'not a hex string',
+                newPassword: 'short',
+                confirmNewPassword: 'short',
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/reset-password')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(400);
+            expect(response.body.success).toBe(false);
+            expect(response.body.statusCode).toBe(400);
+            expect(response.body.message).toBe(
+                'Request body validation error.',
+            );
+            expect(response.body.errors.length).toBe(4);
+        });
+
+        it('should return 400 with invalid token', async () => {
+            const newPassword = 'newStrongPassword123';
+            const mockReqBody = {
+                userId: users.user.id,
+                token: 'c0ae8bc1c8ad1eea5d936c622a6850b984459d5bfd999552dc4cbecb54d02efe',
+                newPassword,
+                confirmNewPassword: newPassword,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/auth/reset-password')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 400,
+                    message: 'Request body validation error.',
+                    errors: [
+                        {
+                            message: '"token" is invalid or expired',
+                            context: {
+                                key: 'token',
+                                value: '*'.repeat(mockReqBody.token.length),
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 404 when user does not exist', async () => {
+            const token = randomBytes(32).toString('hex');
+            const hashedToken = createHash('sha256')
+                .update(token)
+                .digest('hex');
+            await redisClient.set(
+                `user:${users.user.id}:resetPasswordToken`,
+                hashedToken,
+                {
+                    expiration: {
+                        type: 'EX',
+                        value: 900,
+                    },
+                },
+            );
+
+            const newPassword = 'newpassword';
+            const mockReqBody = {
+                userId: users.user.id,
+                token,
+                newPassword,
+                confirmNewPassword: newPassword,
+            };
+
+            await User.destroy({
+                where: {
+                    id: users.user.id,
+                },
+            });
+
+            const response = await request(server)
+                .post('/api/v1/auth/reset-password')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(404);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 404,
+                    message: 'Resource not found.',
+                    errors: [
+                        {
+                            message: 'User with "userId" does not exist',
+                            context: {
+                                key: 'userId',
+                                value: mockReqBody.userId,
+                            },
+                        },
+                    ],
                 }),
             );
         });
