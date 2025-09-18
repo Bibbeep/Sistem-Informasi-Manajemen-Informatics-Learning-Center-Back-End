@@ -3,6 +3,8 @@ const {
     validateRegister,
     validateLogin,
     validateTokenPayload,
+    validateForgotPassword,
+    validateResetPassword,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -338,6 +340,53 @@ describe('Authentication Validation Unit Tests', () => {
                     'string.base',
                 ]),
             );
+        });
+    });
+
+    describe('validateForgotPassword Tests', () => {
+        it('should pass validation with valid email', async () => {
+            const mockEmail = 'valid@mail.com';
+
+            const { error, value } = validateForgotPassword({
+                email: mockEmail,
+            });
+
+            expect(error).toBeUndefined();
+            expect(value).toStrictEqual({ email: mockEmail });
+        });
+
+        it('should fail validation with invalid email', async () => {
+            const mockEmail = 'invalidmail.com';
+
+            const { error } = validateForgotPassword({
+                email: mockEmail,
+            });
+
+            expect(error).toBeInstanceOf(ValidationError);
+            expect(
+                error.details.map((d) => {
+                    return d.type;
+                }),
+            ).toEqual(expect.arrayContaining(['string.email']));
+        });
+
+        it('should fail validation with missing field', async () => {
+            const { error } = validateForgotPassword({
+                notemail: 1,
+            });
+
+            expect(error).toBeInstanceOf(ValidationError);
+            expect(
+                error.details.map((d) => {
+                    return d.path[0];
+                }),
+            ).toEqual(expect.arrayContaining(['email']));
+        });
+    });
+
+    describe('validateResetPassword Tests', () => {
+        it('should', async () => {
+            //
         });
     });
 });
