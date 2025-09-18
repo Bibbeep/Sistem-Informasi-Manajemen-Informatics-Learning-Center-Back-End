@@ -164,6 +164,57 @@ class Auth {
             html,
         );
     }
+
+    static async resetPassword(data) {
+        const { userId, token, newPassword } = data;
+
+        const key = `user:${userId}:resetPasswordToken`;
+        const userHashedResetToken = await redisClient.get(key);
+
+        if (
+            !userHashedResetToken ||
+            userHashedResetToken !==
+                createHash('sha256').update(token).digest('hex')
+        ) {
+            throw new HTTPError(400, 'Request body validation error.', [
+                {
+                    message: '"token" is invalid or expired',
+                    context: {
+                        key: 'token',
+                        value: '*'.repeat(token.length),
+                    },
+                },
+            ]);
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+        const [affectedRowsNum] = await User.update(
+            {
+                hashedPassword,
+            },
+            {
+                where: {
+                    id: userId,
+                },
+            },
+        );
+
+        if (affectedRowsNum == 0) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'User with "userId" does not exist',
+                    context: {
+                        key: 'userId',
+                        value: userId,
+                    },
+                },
+            ]);
+        }
+
+        await redisClient.del(key);
+    }
 }
 
 module.exports = Auth;

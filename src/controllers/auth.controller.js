@@ -2,6 +2,7 @@ const {
     validateRegister,
     validateLogin,
     validateForgotPassword,
+    validateResetPassword,
 } = require('../validations/validator');
 const AuthService = require('../services/auth.service');
 
@@ -81,6 +82,27 @@ module.exports = {
                 success: true,
                 statusCode: 200,
                 message: 'Successfully sent password reset link to your email.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    resetPassword: async (req, res, next) => {
+        try {
+            const { error, value } = validateResetPassword(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            await AuthService.resetPassword(value);
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully reset your password.',
                 data: null,
                 errors: null,
             });
