@@ -466,4 +466,125 @@ describe('Authentication Service Unit Tests', () => {
             expect(mailer).not.toHaveBeenCalled();
         });
     });
+
+    describe('resetPassword Tests', () => {
+        it('should change user password and delete token from redis', async () => {
+            const mockData = {
+                userId: 1,
+                token: 'mock-password-reset-token',
+                newPassword: 'new-password',
+            };
+            const mockKey = `user:${mockData.userId}:resetPasswordToken`;
+            const mockSalt = 'mock-salt';
+            const mockHashedPassword = 'mock-password';
+
+            redisClient.get.mockResolvedValue('mock-hashed-token');
+            bcrypt.genSalt.mockResolvedValue(mockSalt);
+            bcrypt.hash.mockResolvedValue(mockHashedPassword);
+            User.update.mockResolvedValue([1]);
+            redisClient.del.mockResolvedValue();
+
+            await AuthService.resetPassword(mockData);
+
+            expect(redisClient.get).toHaveBeenCalledWith(mockKey);
+            expect(bcrypt.genSalt).toHaveBeenCalledWith(10);
+            expect(bcrypt.hash).toHaveBeenCalledWith(
+                mockData.newPassword,
+                mockSalt,
+            );
+            expect(User.update).toHaveBeenCalledWith(
+                { hashedPassword: mockHashedPassword },
+                { where: { id: mockData.userId } },
+            );
+            expect(redisClient.del).toHaveBeenCalledWith(mockKey);
+        });
+
+        it('should throw error when user key does not exist in redis', async () => {
+            const mockData = {
+                userId: 1,
+                token: 'mock-password-reset-token',
+                newPassword: 'new-password',
+            };
+            const mockKey = `user:${mockData.userId}:resetPasswordToken`;
+
+            redisClient.get.mockResolvedValue(null);
+
+            await expect(AuthService.resetPassword(mockData)).rejects.toThrow(
+                new HTTPError(400, 'Request body validation error.', [
+                    {
+                        message: '"token" is invalid or expired',
+                        context: {
+                            key: 'token',
+                            value: '*'.repeat(mockData.token.length),
+                        },
+                    },
+                ]),
+            );
+            expect(redisClient.get).toHaveBeenCalledWith(mockKey);
+        });
+
+        it('should throw error when token is invalid or expired', async () => {
+            const mockData = {
+                userId: 1,
+                token: 'invalid-token',
+                newPassword: 'new-password',
+            };
+            const mockKey = `user:${mockData.userId}:resetPasswordToken`;
+
+            redisClient.get.mockResolvedValue('mock-different-hashed-token');
+
+            await expect(AuthService.resetPassword(mockData)).rejects.toThrow(
+                new HTTPError(400, 'Request body validation error.', [
+                    {
+                        message: '"token" is invalid or expired',
+                        context: {
+                            key: 'token',
+                            value: '*'.repeat(mockData.token.length),
+                        },
+                    },
+                ]),
+            );
+            expect(redisClient.get).toHaveBeenCalledWith(mockKey);
+        });
+
+        it('should throw error when user with userId does not exist', async () => {
+            const mockData = {
+                userId: 1,
+                token: 'mock-password-reset-token',
+                newPassword: 'new-password',
+            };
+            const mockKey = `user:${mockData.userId}:resetPasswordToken`;
+            const mockSalt = 'mock-salt';
+            const mockHashedPassword = 'mock-password';
+
+            redisClient.get.mockResolvedValue('mock-hashed-token');
+            bcrypt.genSalt.mockResolvedValue(mockSalt);
+            bcrypt.hash.mockResolvedValue(mockHashedPassword);
+            User.update.mockResolvedValue([0]);
+
+            await expect(AuthService.resetPassword(mockData)).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'User with "userId" does not exist',
+                        context: {
+                            key: 'userId',
+                            value: mockData.userId,
+                        },
+                    },
+                ]),
+            );
+
+            expect(redisClient.get).toHaveBeenCalledWith(mockKey);
+            expect(bcrypt.genSalt).toHaveBeenCalledWith(10);
+            expect(bcrypt.hash).toHaveBeenCalledWith(
+                mockData.newPassword,
+                mockSalt,
+            );
+            expect(User.update).toHaveBeenCalledWith(
+                { hashedPassword: mockHashedPassword },
+                { where: { id: mockData.userId } },
+            );
+            expect(redisClient.del).not.toHaveBeenCalled();
+        });
+    });
 });
