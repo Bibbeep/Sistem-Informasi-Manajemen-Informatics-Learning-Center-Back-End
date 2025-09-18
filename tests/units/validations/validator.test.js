@@ -385,8 +385,54 @@ describe('Authentication Validation Unit Tests', () => {
     });
 
     describe('validateResetPassword Tests', () => {
-        it('should', async () => {
-            //
+        it('should pass validation with valid data', async () => {
+            const mockData = {
+                userId: 1,
+                token: 'c0ae8bc1c8ad1eea5d936c622a6850b984459d5bfd999552dc4cbecb54d02efe',
+                newPassword: 'mock-new-password',
+                confirmNewPassword: 'mock-new-password',
+            };
+
+            const { error, value } = validateResetPassword(mockData);
+
+            expect(error).toBeUndefined();
+            expect(value).toEqual(expect.objectContaining(mockData));
+        });
+
+        it('should fail validation with missing field', async () => {
+            const { error } = validateResetPassword({
+                notemail: 1,
+            });
+
+            expect(error).toBeInstanceOf(ValidationError);
+            expect(
+                error.details.map((d) => {
+                    return d.path[0];
+                }),
+            ).toEqual(
+                expect.arrayContaining([
+                    'userId',
+                    'token',
+                    'newPassword',
+                    'confirmNewPassword',
+                ]),
+            );
+        });
+
+        it('should fail validation with different confirmNewPassword', async () => {
+            const mockData = {
+                userId: 1,
+                token: 'c0ae8bc1c8ad1eea5d936c622a6850b984459d5bfd999552dc4cbecb54d02efe',
+                newPassword: 'mock-new-password',
+                confirmNewPassword: 'diff-mock-new-password',
+            };
+
+            const { error } = validateResetPassword(mockData);
+
+            expect(error).toBeInstanceOf(ValidationError);
+            expect(error.details[0].context.valids[0].path[0]).toStrictEqual(
+                'newPassword',
+            );
         });
     });
 });
