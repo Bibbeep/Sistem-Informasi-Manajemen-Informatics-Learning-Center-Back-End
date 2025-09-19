@@ -36,7 +36,7 @@ services:
     build:
       context: .
       args:
-        APP_VERSION: "${APP_VERSION: $(npm pkg get version --json | jq -r .)}"
+        APP_VERSION: "${APP_VERSION}"
     image: sim-ilc-api:${APP_VERSION:-latest}
     environment:
       NODE_ENV: production
