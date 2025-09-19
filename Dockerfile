@@ -45,8 +45,8 @@ RUN chmod +x /entrypoint.sh
 # Copy the rest of the source files into the image.
 # COPY . .
 
-# COPY --from=builder /usr/src/app .
-COPY --from=builder /usr/src/app/src ./src
+COPY --from=builder /usr/src/app .
+# COPY --from=builder /usr/src/app/src ./src
 
 # Run the application as a non-root user.
 USER node
