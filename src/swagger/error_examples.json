@@ -71,6 +71,24 @@
             ]
         }
     },
+    "UnsupportedMediaType": {
+        "summary": "Unsupported Media Type",
+        "value": {
+            "success": false,
+            "statusCode": 415,
+            "data": null,
+            "message": "Unsupported Media Type.",
+            "errors": [
+                {
+                    "message": "Content-Type headers must be application/json",
+                    "context": {
+                        "key": "Content-Type",
+                        "value": "multipart/form-data; boundary=--------------------------006985592206444069082103"
+                    }
+                }
+            ]
+        }
+    },
     "TooManyRequests": {
         "summary": "Too Many Requests",
         "value": {

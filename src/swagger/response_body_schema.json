@@ -1,52 +1,46 @@
 {
-    "RegisterRequestBody": {
+    "FailedResponse": {
         "type": "object",
         "properties": {
-            "fullName": {
+            "success": {
+                "type": "boolean",
+                "example": false
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
                 "type": "string"
             },
-            "email": {
-                "type": "string",
-                "format": "email"
+            "data": {
+                "type": "object",
+                "nullable": true,
+                "example": null
             },
-            "password": {
-                "type": "string",
-                "format": "password"
+            "errors": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "context": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": ["string", "integer", "object"],
+                                    "nullable": true
+                                }
+                            }
+                        }
+                    }
+                }
             }
-        },
-        "example": {
-            "fullName": "John Doe",
-            "email": "johndoe@mail.com",
-            "password": "Weakpassword321"
-        }
-    },
-    "LoginRequestBody": {
-        "type": "object",
-        "properties": {
-            "email": {
-                "type": "string",
-                "format": "email"
-            },
-            "password": {
-                "type": "string",
-                "format": "password"
-            }
-        },
-        "example": {
-            "email": "johndoe@mail.com",
-            "password": "Weakpassword321"
-        }
-    },
-    "ForgotPasswordRequestBody": {
-        "type": "object",
-        "properties": {
-            "email": {
-                "type": "string",
-                "format": "email"
-            }
-        },
-        "example": {
-            "email": "johndoe@mail.com"
         }
     },
     "RegisterSuccessResponse201": {
@@ -211,76 +205,6 @@
             "message": "Successfully sent password reset link to your email.",
             "data": null,
             "errors": null
-        }
-    },
-    "FailedResponse": {
-        "type": "object",
-        "properties": {
-            "success": {
-                "type": "boolean",
-                "example": false
-            },
-            "statusCode": {
-                "type": "integer"
-            },
-            "message": {
-                "type": "string"
-            },
-            "data": {
-                "type": "object",
-                "nullable": true,
-                "example": null
-            },
-            "errors": {
-                "type": "array",
-                "nullable": true,
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "message": {
-                            "type": "string"
-                        },
-                        "context": {
-                            "type": "object",
-                            "properties": {
-                                "key": {
-                                    "type": "string"
-                                },
-                                "value": {
-                                    "type": ["string", "integer", "object"],
-                                    "nullable": true
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    },
-    "ResetPasswordRequestBody": {
-        "type": "object",
-        "properties": {
-            "userId": {
-                "type": "integer"
-            },
-            "token": {
-                "type": "string",
-                "description": "The 64-character hexadecimal reset token"
-            },
-            "newPassword": {
-                "type": "string",
-                "format": "password"
-            },
-            "confirmNewPassword": {
-                "type": "string",
-                "format": "password"
-            }
-        },
-        "example": {
-            "userId": 1,
-            "token": "c0ae8bc1c8ad1eea5d936c622a6850b984459d5bfd999552dc4cbecb54d02efe",
-            "newPassword": "NewStrongPassword123!",
-            "confirmNewPassword": "NewStrongPassword123!"
         }
     },
     "ResetPasswordSuccessResponse200": {
