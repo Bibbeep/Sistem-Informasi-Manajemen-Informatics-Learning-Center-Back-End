@@ -200,6 +200,59 @@ describe('Authentication Integration Test', () => {
             ]);
         });
 
+        it('should return 415 if request headers Content-Type is not application/json', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/register')
+                .set('Content-Type', 'multipart/form-data')
+                .send();
+
+            expect(response.status).toBe(415);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 415,
+                    data: null,
+                    message: 'Unsupported Media Type.',
+                    errors: [
+                        {
+                            message:
+                                'Content-Type headers must be application/json',
+                            context: {
+                                key: 'Content-Type',
+                                value: 'multipart/form-data',
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 415 if request headers Content-Type is not specified', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/register')
+                .send();
+
+            expect(response.status).toBe(415);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 415,
+                    data: null,
+                    message: 'Unsupported Media Type.',
+                    errors: [
+                        {
+                            message:
+                                'Content-Type headers must be application/json',
+                            context: {
+                                key: 'Content-Type',
+                                value: null,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
         it('should return 500 if server encounters an internal error', async () => {
             const mockData = {
                 email: faker.internet.email(),
@@ -370,6 +423,33 @@ describe('Authentication Integration Test', () => {
                     },
                 },
             ]);
+        });
+
+        it('should return 415 if request headers Content-Type is not application/json', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/login')
+                .set('Content-Type', 'multipart/form-data')
+                .send();
+
+            expect(response.status).toBe(415);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 415,
+                    data: null,
+                    message: 'Unsupported Media Type.',
+                    errors: [
+                        {
+                            message:
+                                'Content-Type headers must be application/json',
+                            context: {
+                                key: 'Content-Type',
+                                value: 'multipart/form-data',
+                            },
+                        },
+                    ],
+                }),
+            );
         });
     });
 
@@ -590,6 +670,33 @@ describe('Authentication Integration Test', () => {
             );
         });
 
+        it('should return 415 if request headers Content-Type is not application/json', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/forgot-password')
+                .set('Content-Type', 'multipart/form-data')
+                .send();
+
+            expect(response.status).toBe(415);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 415,
+                    data: null,
+                    message: 'Unsupported Media Type.',
+                    errors: [
+                        {
+                            message:
+                                'Content-Type headers must be application/json',
+                            context: {
+                                key: 'Content-Type',
+                                value: 'multipart/form-data',
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
         it('should return 500 when mailer fails', async () => {
             mailer.mockRejectedValue(new Error('Mailer service is down'));
 
@@ -750,6 +857,33 @@ describe('Authentication Integration Test', () => {
                             context: {
                                 key: 'userId',
                                 value: mockReqBody.userId,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 415 if request headers Content-Type is not application/json', async () => {
+            const response = await request(server)
+                .post('/api/v1/auth/reset-password')
+                .set('Content-Type', 'multipart/form-data')
+                .send();
+
+            expect(response.status).toBe(415);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 415,
+                    data: null,
+                    message: 'Unsupported Media Type.',
+                    errors: [
+                        {
+                            message:
+                                'Content-Type headers must be application/json',
+                            context: {
+                                key: 'Content-Type',
+                                value: 'multipart/form-data',
                             },
                         },
                     ],
