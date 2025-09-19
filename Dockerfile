@@ -46,6 +46,7 @@ RUN chmod +x /entrypoint.sh
 # COPY . .
 
 COPY --from=builder /usr/src/app .
+# COPY --from=builder /usr/src/app/src ./src
 
 # Run the application as a non-root user.
 USER node

@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgres:17
+    image: postgres:17.6-alpine
     restart: always
     volumes:
       - db-data:/var/lib/postgresql/data
@@ -15,21 +15,55 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  cache:
+    image: redis:8.0.3-alpine
+    restart: always
+    volumes:
+      - cache:/data
+    expose: 
+      - 6379
+    environment:
+      - REDIS_USER=${REDIS_USER}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDIS_DB=${REDIS_DB}
+    command: redis-server --save 20 1 --loglevel warning --requirepass ${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 5
   api:
     build:
       context: .
+      args:
+        APP_VERSION: "${APP_VERSION}"
+    image: sim-ilc-api:${APP_VERSION:-latest}
     environment:
       NODE_ENV: production
+      HOST_NAME: ${HOST_NAME}
+      CORS_ORIGIN: ${CORS_ORIGIN}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_HOST: db
       POSTGRES_PORT: 5432
       JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      JWT_EXP: ${JWT_EXP}
+      NODEMAILER_SERVICE: ${NODEMAILER_SERVICE}
+      NODEMAILER_USER: ${NODEMAILER_USER}
+      NODEMAILER_PASS: ${NODEMAILER_PASS}
+      REDIS_USER: ${REDIS_USER}
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_DB: ${REDIS_DB}
+      REDIS_HOST: cache
+      REDIS_PORT: 6379
     ports:
-      - 3000:3000
+      - ${PORT}:${PORT}
     depends_on:
       db:
         condition: service_healthy
+      cache:
+        condition: service_healthy
 volumes:
   db-data:
+  cache:

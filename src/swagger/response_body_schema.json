@@ -1,52 +1,46 @@
 {
-    "RegisterRequestBody": {
+    "FailedResponse": {
         "type": "object",
         "properties": {
-            "fullName": {
+            "success": {
+                "type": "boolean",
+                "example": false
+            },
+            "statusCode": {
+                "type": "integer"
+            },
+            "message": {
                 "type": "string"
             },
-            "email": {
-                "type": "string",
-                "format": "email"
+            "data": {
+                "type": "object",
+                "nullable": true,
+                "example": null
             },
-            "password": {
-                "type": "string",
-                "format": "password"
+            "errors": {
+                "type": "array",
+                "nullable": true,
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "message": {
+                            "type": "string"
+                        },
+                        "context": {
+                            "type": "object",
+                            "properties": {
+                                "key": {
+                                    "type": "string"
+                                },
+                                "value": {
+                                    "type": ["string", "integer", "object"],
+                                    "nullable": true
+                                }
+                            }
+                        }
+                    }
+                }
             }
-        },
-        "example": {
-            "fullName": "John Doe",
-            "email": "johndoe@mail.com",
-            "password": "Weakpassword321"
-        }
-    },
-    "LoginRequestBody": {
-        "type": "object",
-        "properties": {
-            "email": {
-                "type": "string",
-                "format": "email"
-            },
-            "password": {
-                "type": "string",
-                "format": "password"
-            }
-        },
-        "example": {
-            "email": "johndoe@mail.com",
-            "password": "Weakpassword321"
-        }
-    },
-    "ForgotPasswordRequestBody": {
-        "type": "object",
-        "properties": {
-            "email": {
-                "type": "string",
-                "format": "email"
-            }
-        },
-        "example": {
-            "email": "johndoe@mail.com"
         }
     },
     "RegisterSuccessResponse201": {
@@ -213,12 +207,11 @@
             "errors": null
         }
     },
-    "FailedResponse": {
+    "ResetPasswordSuccessResponse200": {
         "type": "object",
         "properties": {
             "success": {
-                "type": "boolean",
-                "example": false
+                "type": "boolean"
             },
             "statusCode": {
                 "type": "integer"
@@ -228,33 +221,19 @@
             },
             "data": {
                 "type": "object",
-                "nullable": true,
-                "example": null
+                "nullable": true
             },
             "errors": {
                 "type": "array",
-                "nullable": true,
-                "items": {
-                    "type": "object",
-                    "properties": {
-                        "message": {
-                            "type": "string"
-                        },
-                        "context": {
-                            "type": "object",
-                            "properties": {
-                                "key": {
-                                    "type": "string"
-                                },
-                                "value": {
-                                    "type": ["string", "integer", "object"],
-                                    "nullable": true
-                                }
-                            }
-                        }
-                    }
-                }
+                "nullable": true
             }
+        },
+        "example": {
+            "success": true,
+            "statusCode": 200,
+            "message": "Successfully reset your password.",
+            "data": null,
+            "errors": null
         }
     }
 }

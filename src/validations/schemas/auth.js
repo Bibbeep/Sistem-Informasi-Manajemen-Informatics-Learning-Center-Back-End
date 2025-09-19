@@ -30,8 +30,17 @@ const tokenPayload = Joi.object({
         .required(),
 }).unknown(false);
 
+// Password reset request
 const forgotPassword = Joi.object({
     email: Joi.string().email().required(),
+});
+
+// Password reset
+const resetPassword = Joi.object({
+    userId: Joi.number().integer().positive().required(),
+    token: Joi.string().hex().length(64).required(),
+    newPassword: Joi.string().min(8).max(72).required(),
+    confirmNewPassword: Joi.string().valid(Joi.ref('newPassword')).required(),
 });
 
 module.exports = {
@@ -39,4 +48,5 @@ module.exports = {
     login,
     tokenPayload,
     forgotPassword,
+    resetPassword,
 };

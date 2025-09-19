@@ -1,38 +1,44 @@
-const swaggerJSDoc = require('swagger-jsdoc');
 const { version, description } = require('../../package.json');
-const endpointSchemas = require('../validations/schemas/swagger.json');
-const endpointExamples = require('../validations/schemas/swaggerExamples.json');
+const requestBodySchemas = require('../swagger/request_body_schema.json');
+const responseBodySchemas = require('../swagger/response_body_schema.json');
+const failedResponseExamples = require('../swagger/error_examples.json');
+const endpointPaths = require('../swagger/endpoint_paths.json');
 
-const options = {
-    definition: {
-        openapi: '3.1.1',
-        info: {
-            title: 'Sistem Informasi Manajemen Informatics Learning Center API',
-            version,
-            description,
-        },
-        components: {
-            securitySchemes: {
-                bearerAuth: {
-                    type: 'http',
-                    scheme: 'bearer',
-                    bearerFormat: 'JWT',
-                },
-            },
-            schemas: endpointSchemas,
-            examples: endpointExamples,
-        },
-        servers: [
-            {
-                url:
-                    process.env.HOST_NAME !== 'http://localhost'
-                        ? process.env.HOST_NAME
-                        : `http://localhost:${process.env.PORT}`,
-            },
-        ],
-        basePath: '/api/v1/',
+const swaggerSpec = {
+    openapi: '3.1.1',
+    info: {
+        title: 'Sistem Informasi Manajemen Informatics Learning Center API',
+        version,
+        description,
     },
-    apis: ['./src/routes/*.js'],
+    components: {
+        securitySchemes: {
+            bearerAuth: {
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'JWT',
+            },
+        },
+        schemas: {
+            ...requestBodySchemas,
+            ...responseBodySchemas,
+        },
+        examples: failedResponseExamples,
+    },
+    servers: [
+        {
+            url:
+                process.env.HOST_NAME !== 'http://localhost'
+                    ? process.env.HOST_NAME
+                    : `http://localhost:${process.env.PORT}`,
+        },
+    ],
+    basePath: '/api/v1/',
+    ...endpointPaths,
 };
 
-module.exports = swaggerJSDoc(options);
+const swaggerOptions = {
+    customSiteTitle: 'SIM ILC API v1 Documentation',
+};
+
+module.exports = { swaggerSpec, swaggerOptions };

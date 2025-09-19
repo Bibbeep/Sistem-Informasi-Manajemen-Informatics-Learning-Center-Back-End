@@ -179,6 +179,7 @@
 	curl -X POST http://localhost:3000/api/v1/auth/reset-password \
 		-H "Content-Type: application/json" \
 		-d '{
+			"userId": 1,
 			"token": "704c1ece2588f9a407053d488b2d2df58a8c1843c16c38fd5206a30917a93e6a",
 			"newPassword": "newpassword",
 			"confirmNewPassword": "newpassword"

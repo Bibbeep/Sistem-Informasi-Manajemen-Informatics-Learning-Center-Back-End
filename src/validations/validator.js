@@ -3,6 +3,7 @@ const {
     login,
     tokenPayload,
     forgotPassword,
+    resetPassword,
 } = require('./schemas/auth');
 
 const validator = (schema) => {
@@ -16,4 +17,5 @@ module.exports = {
     validateLogin: validator(login),
     validateTokenPayload: validator(tokenPayload),
     validateForgotPassword: validator(forgotPassword),
+    validateResetPassword: validator(resetPassword),
 };
