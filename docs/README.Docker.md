@@ -1,7 +1,7 @@
 ### Building and running your application
 
 When you're ready, start your application by running (with production environment variable):
-`docker compose --env-file .env.production up -d --build`.
+`APP_VERSION=$(npm pkg get version --json | jq -r .) docker compose --env-file .env.production up -d --build`.
 
 Your application will be available at http://localhost:3000.
 
