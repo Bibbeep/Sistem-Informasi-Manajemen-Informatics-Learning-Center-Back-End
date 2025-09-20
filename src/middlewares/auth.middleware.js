@@ -32,4 +32,28 @@ module.exports = {
             next(err);
         }
     },
+    authorize: (allowRule) => {
+        return async (req, res, next) => {
+            try {
+                const isAdmin = req.tokenPayload.admin;
+
+                if (allowRule === 'admin' && isAdmin) {
+                    return next();
+                }
+
+                throw new HTTPError(403, 'Forbidden.', [
+                    {
+                        message:
+                            'You do not have the necessary permissions to access this resource.',
+                        context: {
+                            key: 'role',
+                            value: isAdmin ? 'Admin' : 'User',
+                        },
+                    },
+                ]);
+            } catch (err) {
+                next(err);
+            }
+        };
+    },
 };
