@@ -20,6 +20,7 @@
     "db:create": "npx sequelize-cli db:create --env test",
     "db:create:silent": "npx sequelize-cli db:create --env test >/dev/null 2>&1",
     "db:drop:silent": "npx sequelize-cli db:drop --env test --config src/configs/sequelize.js >/dev/null 2>&1",
+    "db:seed:all": "npx sequelize-cli db:seed:all",
     "pretest": "NODE_ENV=test npx sequelize db:drop && npm run db:create && npm run db:migrate",
     "pretest:silent": "NODE_ENV=test npm run db:drop:silent && npm run db:create:silent && npm run db:migrate:silent",
     "test": "npm run pretest && NODE_ENV=test jest --detectOpenHandles --silent --coverage --verbose",
@@ -61,6 +62,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "chalk": "^4.1.2",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "handlebars": "^4.7.8",
