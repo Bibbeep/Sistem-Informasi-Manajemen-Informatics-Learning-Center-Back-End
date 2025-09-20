@@ -47,7 +47,7 @@ module.exports = {
                             'You do not have the necessary permissions to access this resource.',
                         context: {
                             key: 'role',
-                            value: isAdmin ? 'Admin' : 'User',
+                            value: 'User',
                         },
                     },
                 ]);

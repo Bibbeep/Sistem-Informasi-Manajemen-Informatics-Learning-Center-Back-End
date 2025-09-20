@@ -1,7 +1,10 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/utils/jwtHelper');
 jest.mock('../../../src/configs/redis');
-const { authenticate } = require('../../../src/middlewares/auth.middleware');
+const {
+    authenticate,
+    authorize,
+} = require('../../../src/middlewares/auth.middleware');
 const { verify } = require('../../../src/utils/jwtHelper');
 const { redisClient } = require('../../../src/configs/redis');
 const HTTPError = require('../../../src/utils/httpError');
@@ -111,6 +114,45 @@ describe('Authentication Middleware Unit Tests', () => {
                 `user:${mockDecoded.sub}:JWT:${mockDecoded.jti}:logoutAt`,
             );
             expect(next).toHaveBeenCalledWith(mockError);
+        });
+    });
+
+    describe('authorize Tests', () => {
+        it('should call next without error', async () => {
+            req.tokenPayload = { admin: true };
+            const mockAllowRule = 'admin';
+
+            await authorize(mockAllowRule)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith();
+        });
+
+        it('should call next with error when user is not admin', async () => {
+            req.tokenPayload = { admin: false };
+            const mockAllowRule = 'admin';
+
+            await authorize(mockAllowRule)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(
+                new HTTPError(403, 'Forbidden.', [
+                    {
+                        message:
+                            'You do not have the necessary permissions to access this resource.',
+                        context: {
+                            key: 'role',
+                            value: 'User',
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should', async () => {
+            //
+        });
+
+        it('should', async () => {
+            //
         });
     });
 });
