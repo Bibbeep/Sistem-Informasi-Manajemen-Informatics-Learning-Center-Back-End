@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const User = require('../db/models/user');
 const HTTPError = require('../utils/httpError');
 
@@ -67,6 +68,51 @@ class UserService {
             pictureUrl: user.pictureUrl,
             createdAt: user.createdAt,
             updatedAt: user.updatedAt,
+        };
+    }
+
+    static async updateOne(data) {
+        const { userId, fullName, email, password } = data;
+
+        if (!(await User.findByPk(userId))) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'User with "userId" does not exist',
+                    context: {
+                        key: 'userId',
+                        value: userId,
+                    },
+                },
+            ]);
+        }
+
+        const updateData = {
+            ...(fullName && { fullName }),
+            ...(email && { email }),
+        };
+
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            updateData.hashedPassword = await bcrypt.hash(password, salt);
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const [count, rows] = await User.update(updateData, {
+            where: {
+                id: userId,
+            },
+            returning: true,
+        });
+
+        return {
+            id: rows[0].id,
+            email: rows[0].email,
+            fullName: rows[0].fullName,
+            memberLevel: rows[0].memberLevel,
+            role: rows[0].role,
+            pictureUrl: rows[0].pictureUrl,
+            createdAt: rows[0].createdAt,
+            updatedAt: rows[0].updatedAt,
         };
     }
 }

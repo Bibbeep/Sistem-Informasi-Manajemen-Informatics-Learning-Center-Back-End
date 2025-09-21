@@ -46,6 +46,15 @@ const resetPassword = Joi.object({
 // Any auto-increment integer id
 const uniqueIdentifier = Joi.number().integer().positive().required();
 
+// Request body of PATCH /api/v1/users/:userId
+const userUpdate = Joi.object({
+    fullName: Joi.string().optional(),
+    email: Joi.string().email().optional(),
+    password: Joi.string().min(8).max(72).optional(),
+})
+    .min(1)
+    .unknown(false);
+
 module.exports = {
     register,
     login,
@@ -53,4 +62,5 @@ module.exports = {
     forgotPassword,
     resetPassword,
     uniqueIdentifier,
+    userUpdate,
 };

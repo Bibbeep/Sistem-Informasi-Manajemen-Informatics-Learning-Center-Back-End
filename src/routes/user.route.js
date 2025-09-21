@@ -3,7 +3,11 @@ const UserController = require('../controllers/user.controller.js');
 const {
     authenticate,
     authorize,
+    validatePathParameterId,
 } = require('../middlewares/auth.middleware.js');
+const {
+    requireJsonContent,
+} = require('../middlewares/contentType.middleware.js');
 
 router.get(
     '/',
@@ -14,8 +18,17 @@ router.get(
 router.get(
     '/:userId',
     authenticate,
+    validatePathParameterId('userId'),
     authorize({ rules: ['self', 'admin'] }),
     UserController.getById,
+);
+router.patch(
+    '/:userId',
+    authenticate,
+    requireJsonContent,
+    validatePathParameterId('userId'),
+    authorize({ rules: ['self', 'admin'] }),
+    UserController.updateById,
 );
 
 module.exports = router;

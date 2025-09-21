@@ -3,7 +3,7 @@ const HTTPError = require('../utils/httpError');
 const requireJsonContent = (req, res, next) => {
     try {
         if (
-            req.method === 'POST' &&
+            ['POST', 'PATCH', 'PUT'].includes(req.method) &&
             req.headers['content-type'] !== 'application/json'
         ) {
             throw new HTTPError(415, 'Unsupported Media Type.', [

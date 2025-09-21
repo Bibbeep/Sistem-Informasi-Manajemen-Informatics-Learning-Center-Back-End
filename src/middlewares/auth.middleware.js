@@ -1,6 +1,7 @@
 const HTTPError = require('../utils/httpError');
 const { verify } = require('../utils/jwtHelper');
 const { redisClient } = require('../configs/redis');
+const { validateId } = require('../validations/validator');
 
 module.exports = {
     authenticate: async (req, res, next) => {
@@ -65,6 +66,21 @@ module.exports = {
                         },
                     },
                 ]);
+            } catch (err) {
+                next(err);
+            }
+        };
+    },
+    validatePathParameterId: (paramName) => {
+        return (req, res, next) => {
+            try {
+                const { error } = validateId(req.params[paramName]);
+
+                if (error) {
+                    throw error;
+                }
+
+                next();
             } catch (err) {
                 next(err);
             }
