@@ -165,16 +165,6 @@ describe('Authentication Middleware Unit Tests', () => {
             expect(next).toHaveBeenCalledWith();
         });
 
-        it('should call next without error when user access the their own resource by request query', async () => {
-            req.tokenPayload = { sub: 1, admin: false };
-            req.query = { userId: '1' };
-            const mockOptions = { rules: ['self', 'admin'] };
-
-            await authorize(mockOptions)(req, res, next);
-
-            expect(next).toHaveBeenCalledWith();
-        });
-
         it('should call next with error when user access the resource not theirs by request query', async () => {
             req.tokenPayload = { sub: 1, admin: false };
             req.query = { userId: '2' };

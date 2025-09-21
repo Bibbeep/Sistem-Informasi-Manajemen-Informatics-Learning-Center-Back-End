@@ -46,7 +46,7 @@ module.exports = {
                 }
 
                 if (rules.includes('self')) {
-                    const targetUserId = req.params.userId || req.query.userId;
+                    const targetUserId = req.params.userId;
 
                     if (
                         targetUserId &&
