@@ -1,16 +1,25 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/services/user.service');
 jest.mock('../../../src/validations/validator');
-const { getAll } = require('../../../src/controllers/user.controller');
+const { getAll, getById } = require('../../../src/controllers/user.controller');
 const UserService = require('../../../src/services/user.service');
-const { validateUserQuery } = require('../../../src/validations/validator');
+const {
+    validateUserQuery,
+    validateId,
+} = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
 describe('User Controller Unit Tests', () => {
     let req, res, next;
 
     beforeEach(() => {
-        req = { body: {} };
+        req = {
+            headers: {},
+            tokenPayload: {},
+            params: {},
+            query: {},
+        };
+
         res = {
             status: jest.fn().mockReturnThis?.() || { json: jest.fn() },
             json: jest.fn(),
@@ -125,6 +134,75 @@ describe('User Controller Unit Tests', () => {
 
             expect(validateUserQuery).toHaveBeenCalledWith(req.query);
             expect(UserService.getMany).toHaveBeenCalledWith(mockValue);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getById Tests', () => {
+        it('should sends 200 on success and does not call next', async () => {
+            req.params = { userId: 1 };
+            const mockValue = req.params.userId;
+            const mockUserData = {
+                id: 1,
+                email: 'johndoe@mail.com',
+                fullName: 'John Doe',
+                memberLevel: 'Basic',
+                role: 'User',
+                pictureUrl: null,
+                createdAt: '2025-09-20T15:37:25.953Z',
+                updatedAt: '2025-09-20T15:37:25.953Z',
+            };
+
+            validateId.mockReturnValue({ error: null, value: mockValue });
+            UserService.getOne.mockResolvedValue(mockUserData);
+
+            await getById(req, res, next);
+
+            expect(validateId).toHaveBeenCalledWith(mockValue);
+            expect(UserService.getOne).toHaveBeenCalledWith(mockValue);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully retrieved user data.',
+                    data: {
+                        user: mockUserData,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should calls next with Joi.ValidationError when validation fails', async () => {
+            req.params = { userId: 'a' };
+            const mockValidationError = new ValidationError();
+            validateId.mockReturnValue({ error: mockValidationError });
+
+            await getById(req, res, next);
+
+            expect(validateId).toHaveBeenCalledWith(req.params.userId);
+            expect(next).toHaveBeenCalledWith(mockValidationError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.params = { userId: 'a' };
+            const mockValue = req.params.userId;
+            const serviceError = new Error('BOOM');
+            validateId.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            UserService.getOne.mockRejectedValue(serviceError);
+
+            await getById(req, res, next);
+
+            expect(validateId).toHaveBeenCalledWith(req.params.userId);
+            expect(UserService.getOne).toHaveBeenCalledWith(mockValue);
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
