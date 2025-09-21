@@ -32,13 +32,9 @@ module.exports = {
     },
     getById: async (req, res, next) => {
         try {
-            const { error, value } = validateId(req.params.userId);
-
-            if (error) {
-                throw error;
-            }
-
-            const user = await UserService.getOne(value);
+            const user = await UserService.getOne(
+                parseInt(req.params.userId, 10),
+            );
 
             return res.status(200).json({
                 success: true,

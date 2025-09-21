@@ -1,13 +1,16 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/utils/jwtHelper');
 jest.mock('../../../src/configs/redis');
+jest.mock('../../../src/validations/validator');
 const {
     authenticate,
     authorize,
+    validatePathParameterId,
 } = require('../../../src/middlewares/auth.middleware');
 const { verify } = require('../../../src/utils/jwtHelper');
 const { redisClient } = require('../../../src/configs/redis');
 const HTTPError = require('../../../src/utils/httpError');
+const { validateId } = require('../../../src/validations/validator');
 
 const mockRes = () => {
     const res = {};
@@ -191,6 +194,31 @@ describe('Authentication Middleware Unit Tests', () => {
                     },
                 ]),
             );
+        });
+    });
+
+    describe('validatePathParameterId Tests', () => {
+        it('should call next without error', () => {
+            req.params = { userId: 1 };
+            const mockParamName = 'userId';
+            validateId.mockReturnValue({ error: null });
+
+            validatePathParameterId(mockParamName)(req, res, next);
+
+            expect(validateId).toHaveBeenCalledWith(req.params.userId);
+            expect(next).toHaveBeenCalledWith();
+        });
+
+        it('should call next with error when id is invalid', () => {
+            req.params = { userId: 'abc' };
+            const mockParamName = 'userId';
+            const mockError = new Error();
+            validateId.mockReturnValue({ error: mockError });
+
+            validatePathParameterId(mockParamName)(req, res, next);
+
+            expect(validateId).toHaveBeenCalledWith(req.params.userId);
+            expect(next).toHaveBeenCalledWith(mockError);
         });
     });
 });
