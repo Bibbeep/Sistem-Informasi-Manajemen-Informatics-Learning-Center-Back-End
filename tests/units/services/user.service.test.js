@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models/user');
+jest.mock('../../../src/services/auth.service');
 jest.mock('bcrypt', () => {
     return {
         genSalt: jest.fn(),
@@ -8,6 +9,7 @@ jest.mock('bcrypt', () => {
     };
 });
 const UserService = require('../../../src/services/user.service');
+const AuthService = require('../../../src/services/auth.service');
 const User = require('../../../src/db/models/user');
 const HTTPError = require('../../../src/utils/httpError');
 const bcrypt = require('bcrypt');
@@ -402,6 +404,98 @@ describe('User Service Unit Tests', () => {
             });
 
             expect(result).toEqual(mockReturnData);
+        });
+    });
+
+    describe('deleteOne Tests', () => {
+        it('should deletes a user as the account owner', async () => {
+            const mockData = {
+                userId: 1,
+                tokenPayload: {
+                    sub: 1,
+                    exp: 111111111,
+                    jti: 'mock-jti',
+                },
+            };
+            const mockUserData = {
+                id: 1,
+                email: 'johndoe@mail.com',
+                fullName: 'John Doe',
+                memberLevel: 'Basic',
+                role: 'User',
+                pictureUrl: null,
+                createdAt: '2025-09-20T15:37:25.953Z',
+                updatedAt: '2025-09-20T15:37:25.953Z',
+            };
+            User.findByPk.mockResolvedValue(mockUserData);
+            User.destroy.mockResolvedValue(true);
+            AuthService.logout.mockResolvedValue();
+
+            await UserService.deleteOne(mockData);
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+            expect(User.destroy).toHaveBeenCalledWith({
+                where: { id: mockData.userId },
+            });
+            expect(AuthService.logout).toHaveBeenCalledWith(
+                mockData.tokenPayload,
+            );
+        });
+
+        it('should deletes a user as the admin', async () => {
+            const mockData = {
+                userId: 2,
+                tokenPayload: {
+                    sub: 1,
+                    exp: 111111111,
+                    jti: 'mock-jti',
+                },
+            };
+            const mockUserData = {
+                id: 2,
+                email: 'johndoe@mail.com',
+                fullName: 'John Doe',
+                memberLevel: 'Basic',
+                role: 'User',
+                pictureUrl: null,
+                createdAt: '2025-09-20T15:37:25.953Z',
+                updatedAt: '2025-09-20T15:37:25.953Z',
+            };
+            User.findByPk.mockResolvedValue(mockUserData);
+            User.destroy.mockResolvedValue(true);
+
+            await UserService.deleteOne(mockData);
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+            expect(User.destroy).toHaveBeenCalledWith({
+                where: { id: mockData.userId },
+            });
+        });
+
+        it('should throw error when user does not exist', async () => {
+            const mockData = {
+                userId: 404,
+                tokenPayload: {
+                    sub: 1,
+                    exp: 111111111,
+                    jti: 'mock-jti',
+                },
+            };
+            User.findByPk.mockResolvedValue(null);
+
+            await expect(UserService.deleteOne(mockData)).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'User with "userId" does not exist',
+                        context: {
+                            key: 'userId',
+                            value: mockData.userId,
+                        },
+                    },
+                ]),
+            );
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
         });
     });
 });

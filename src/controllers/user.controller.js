@@ -74,4 +74,22 @@ module.exports = {
             next(err);
         }
     },
+    deleteById: async (req, res, next) => {
+        try {
+            await UserService.deleteOne({
+                userId: parseInt(req.params.userId, 10),
+                tokenPayload: req.tokenPayload,
+            });
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a user account.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

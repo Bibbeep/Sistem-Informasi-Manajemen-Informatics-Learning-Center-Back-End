@@ -30,5 +30,12 @@ router.patch(
     authorize({ rules: ['self', 'admin'] }),
     UserController.updateById,
 );
+router.delete(
+    '/:userId',
+    authenticate,
+    validatePathParameterId('userId'),
+    authorize({ rules: ['self', 'admin'] }),
+    UserController.deleteById,
+);
 
 module.exports = router;

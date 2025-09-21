@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const User = require('../db/models/user');
 const HTTPError = require('../utils/httpError');
+const AuthService = require('./auth.service');
 
 class UserService {
     static async getMany(data) {
@@ -114,6 +115,29 @@ class UserService {
             createdAt: rows[0].createdAt,
             updatedAt: rows[0].updatedAt,
         };
+    }
+
+    static async deleteOne(data) {
+        const { userId, tokenPayload } = data;
+        const isUserExist = await User.findByPk(userId);
+
+        if (!isUserExist) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'User with "userId" does not exist',
+                    context: {
+                        key: 'userId',
+                        value: userId,
+                    },
+                },
+            ]);
+        }
+
+        await User.destroy({ where: { id: userId } });
+
+        if (tokenPayload.sub === userId) {
+            await AuthService.logout(tokenPayload);
+        }
     }
 }
 
