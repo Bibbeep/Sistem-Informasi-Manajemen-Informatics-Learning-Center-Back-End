@@ -450,7 +450,7 @@ describe('User Management Integration Tests', () => {
             expect(response.body).toMatchObject({
                 success: true,
                 statusCode: 200,
-                message: 'Successfully retrieved user data.',
+                message: 'Successfully updated user data.',
                 data: {
                     user: {
                         id: 1,
@@ -482,7 +482,7 @@ describe('User Management Integration Tests', () => {
             expect(response.body).toMatchObject({
                 success: true,
                 statusCode: 200,
-                message: 'Successfully retrieved user data.',
+                message: 'Successfully updated user data.',
                 data: {
                     user: {
                         id: 1,

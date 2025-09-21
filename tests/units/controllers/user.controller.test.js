@@ -232,7 +232,7 @@ describe('User Controller Unit Tests', () => {
             expect(res.json).toHaveBeenCalledWith({
                 success: true,
                 statusCode: 200,
-                message: 'Successfully retrieved user data.',
+                message: 'Successfully updated user data.',
                 data: {
                     user: mockUser,
                 },

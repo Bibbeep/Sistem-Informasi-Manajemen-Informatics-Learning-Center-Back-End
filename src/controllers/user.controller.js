@@ -64,7 +64,7 @@ module.exports = {
             return res.status(200).json({
                 success: true,
                 statusCode: 200,
-                message: 'Successfully retrieved user data.',
+                message: 'Successfully updated user data.',
                 data: {
                     user,
                 },
