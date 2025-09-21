@@ -6,5 +6,6 @@ const {
 } = require('../middlewares/auth.middleware.js');
 
 router.get('/', authenticate, authorize('admin'), UserController.getAll);
+router.get('/:userId', authenticate, UserController.getById);
 
 module.exports = router;

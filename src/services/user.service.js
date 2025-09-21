@@ -1,4 +1,5 @@
 const User = require('../db/models/user');
+const HTTPError = require('../utils/httpError');
 
 class UserService {
     static async getMany(data) {
@@ -39,6 +40,33 @@ class UserService {
                     page > totalPages + 1 ? null : page > 1 ? page - 1 : null,
             },
             users: rows,
+        };
+    }
+
+    static async getOne(userId) {
+        const user = await User.findByPk(userId);
+
+        if (!user) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'User with "userId" does not exist',
+                    context: {
+                        key: 'userId',
+                        value: userId,
+                    },
+                },
+            ]);
+        }
+
+        return {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            memberLevel: user.memberLevel,
+            role: user.role,
+            pictureUrl: user.pictureUrl,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt,
         };
     }
 }
