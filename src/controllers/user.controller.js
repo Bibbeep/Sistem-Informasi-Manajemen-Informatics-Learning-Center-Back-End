@@ -1,6 +1,5 @@
 const {
     validateUserQuery,
-    validateId,
     validateUpdateUserData,
 } = require('../validations/validator');
 const UserService = require('../services/user.service');
