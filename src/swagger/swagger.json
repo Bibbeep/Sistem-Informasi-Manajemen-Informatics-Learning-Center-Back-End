@@ -1,5 +1,160 @@
 {
     "paths": {
+        "/api/v1/users": {
+            "get": {
+                "summary": "Retrieves a list of all users",
+                "tags": ["User Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "description": "The page number to retrieve."
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "description": "The number of users per page."
+                    },
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "-id",
+                                "fullName",
+                                "-fullName",
+                                "createdAt",
+                                "-createdAt"
+                            ],
+                            "default": "id"
+                        },
+                        "description": "The field to sort by. Use a '-' prefix for descending order (e.g., -fullName)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "role",
+                        "schema": {
+                            "type": "string",
+                            "enum": ["user", "admin", "all"],
+                            "default": "all"
+                        },
+                        "description": "Filter users by their role."
+                    },
+                    {
+                        "in": "query",
+                        "name": "level",
+                        "schema": {
+                            "type": "string",
+                            "enum": ["basic", "premium", "all"],
+                            "default": "all"
+                        },
+                        "description": "Filter users by their member level."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the list of users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserListSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/register": {
             "post": {
                 "summary": "Registers a new user account",
@@ -481,6 +636,64 @@
     },
     "components": {
         "schemas": {
+            "User": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "memberLevel": {
+                        "type": "string"
+                    },
+                    "role": {
+                        "type": "string"
+                    },
+                    "pictureUrl": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "Pagination": {
+                "type": "object",
+                "properties": {
+                    "currentRecords": {
+                        "type": "integer"
+                    },
+                    "totalRecords": {
+                        "type": "integer"
+                    },
+                    "currentPage": {
+                        "type": "integer"
+                    },
+                    "totalPages": {
+                        "type": "integer"
+                    },
+                    "nextPage": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "prevPage": {
+                        "type": "integer",
+                        "nullable": true
+                    }
+                }
+            },
             "RegisterRequestBody": {
                 "type": "object",
                 "properties": {
@@ -621,34 +834,7 @@
                         "type": "object",
                         "properties": {
                             "user": {
-                                "type": "object",
-                                "properties": {
-                                    "id": {
-                                        "type": "integer"
-                                    },
-                                    "email": {
-                                        "type": "string",
-                                        "format": "email"
-                                    },
-                                    "fullName": {
-                                        "type": "string"
-                                    },
-                                    "memberLevel": {
-                                        "type": "string"
-                                    },
-                                    "role": {
-                                        "type": "string"
-                                    },
-                                    "pictureUrl": {
-                                        "type": "string"
-                                    },
-                                    "createdAt": {
-                                        "type": "string"
-                                    },
-                                    "updatedAt": {
-                                        "type": "string"
-                                    }
-                                }
+                                "$ref": "#/components/schemas/User"
                             }
                         }
                     },
@@ -797,6 +983,66 @@
                     "data": null,
                     "errors": null
                 }
+            },
+            "UserListSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "users": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/User"
+                                }
+                            }
+                        }
+                    },
+                    "pagination": {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved all user data.",
+                    "data": {
+                        "users": [
+                            {
+                                "id": 1,
+                                "email": "admin@example.com",
+                                "fullName": "Admin User",
+                                "memberLevel": "Premium",
+                                "role": "Admin",
+                                "pictureUrl": "https://example.com/pic.jpg",
+                                "createdAt": "2025-09-21T12:00:00.000Z",
+                                "updatedAt": "2025-09-21T12:00:00.000Z"
+                            }
+                        ]
+                    },
+                    "pagination": {
+                        "currentRecords": 1,
+                        "totalRecords": 1,
+                        "currentPage": 1,
+                        "totalPages": 1,
+                        "nextPage": null,
+                        "prevPage": null
+                    },
+                    "errors": null
+                }
             }
         },
         "examples": {
@@ -831,6 +1077,24 @@
                             "context": {
                                 "key": "request.headers.authorization",
                                 "value": null
+                            }
+                        }
+                    ]
+                }
+            },
+            "Forbidden": {
+                "summary": "Forbidden",
+                "value": {
+                    "success": false,
+                    "statusCode": 403,
+                    "data": null,
+                    "message": "Forbidden.",
+                    "errors": [
+                        {
+                            "message": "You do not have the necessary permissions to access this resource.",
+                            "context": {
+                                "key": "role",
+                                "value": "User"
                             }
                         }
                     ]
