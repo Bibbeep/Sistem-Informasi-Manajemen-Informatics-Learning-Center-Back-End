@@ -5,6 +5,7 @@ const {
     getAll,
     getById,
     updateById,
+    deleteById,
 } = require('../../../src/controllers/user.controller');
 const UserService = require('../../../src/services/user.service');
 const {
@@ -280,6 +281,50 @@ describe('User Controller Unit Tests', () => {
                 userId: parseInt(req.params.userId, 10),
                 ...mockValue,
             });
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('deleteById', () => {
+        it('should sends 200 on success and does not call next', async () => {
+            req.params = {
+                userId: 1,
+            };
+            req.tokenPayload = {
+                sub: 1,
+                jti: 'mock-token',
+            };
+            UserService.deleteOne.mockResolvedValue(true);
+
+            await deleteById(req, res, next);
+
+            expect(UserService.deleteOne).toHaveBeenCalledWith({
+                userId: parseInt(req.params.userId, 10),
+                tokenPayload: req.tokenPayload,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a user account.',
+                data: null,
+                errors: null,
+            });
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.params = { userId: 1 };
+            req.tokenPayload = {
+                sub: 1,
+                jti: 'mock-token',
+            };
+            const serviceError = new Error('BOOM');
+            UserService.deleteOne.mockRejectedValue(serviceError);
+
+            await deleteById(req, res, next);
+
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
