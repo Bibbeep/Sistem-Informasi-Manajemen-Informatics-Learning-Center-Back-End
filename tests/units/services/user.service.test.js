@@ -2,6 +2,7 @@
 jest.mock('../../../src/db/models/user');
 const UserService = require('../../../src/services/user.service');
 const User = require('../../../src/db/models/user');
+const HTTPError = require('../../../src/utils/httpError');
 
 describe('User Service Unit Tests', () => {
     afterEach(() => {
@@ -222,6 +223,62 @@ describe('User Service Unit Tests', () => {
                     users: mockFetchRows,
                 }),
             );
+        });
+    });
+
+    describe('getOne Tests', () => {
+        it('should fetches user data', async () => {
+            const mockUserId = 1;
+            const mockUserData = {
+                id: 1,
+                email: 'johndoe@mail.com',
+                hashedPassword: 'hashedpassword',
+                fullName: 'John Doe',
+                memberLevel: 'Basic',
+                role: 'User',
+                pictureUrl: null,
+                createdAt: '2025-09-20T15:37:25.953Z',
+                updatedAt: '2025-09-20T15:37:25.953Z',
+            };
+
+            User.findByPk.mockResolvedValue(mockUserData);
+
+            const result = await UserService.getOne(mockUserId);
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockUserId);
+            expect(result).toEqual(
+                expect.objectContaining({
+                    id: 1,
+                    email: 'johndoe@mail.com',
+                    fullName: 'John Doe',
+                    memberLevel: 'Basic',
+                    role: 'User',
+                    pictureUrl: null,
+                    createdAt: '2025-09-20T15:37:25.953Z',
+                    updatedAt: '2025-09-20T15:37:25.953Z',
+                }),
+            );
+        });
+
+        it('should throw error when user does not exist', async () => {
+            const mockUserId = 404;
+            const mockUserData = null;
+
+            User.findByPk.mockResolvedValue(mockUserData);
+
+            await expect(UserService.getOne(mockUserId)).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'User with "userId" does not exist',
+                        context: {
+                            key: 'userId',
+                            value: mockUserId,
+                        },
+                    },
+                ]),
+            );
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockUserId);
         });
     });
 });
