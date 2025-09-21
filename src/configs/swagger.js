@@ -1,8 +1,5 @@
 const { version, description } = require('../../package.json');
-const requestBodySchemas = require('../swagger/request_body_schema.json');
-const responseBodySchemas = require('../swagger/response_body_schema.json');
-const failedResponseExamples = require('../swagger/error_examples.json');
-const endpointPaths = require('../swagger/endpoint_paths.json');
+const swaggerDefinition = require('../swagger/swagger.json');
 
 const swaggerSpec = {
     openapi: '3.1.1',
@@ -19,11 +16,7 @@ const swaggerSpec = {
                 bearerFormat: 'JWT',
             },
         },
-        schemas: {
-            ...requestBodySchemas,
-            ...responseBodySchemas,
-        },
-        examples: failedResponseExamples,
+        ...swaggerDefinition.components,
     },
     servers: [
         {
@@ -34,7 +27,7 @@ const swaggerSpec = {
         },
     ],
     basePath: '/api/v1/',
-    ...endpointPaths,
+    paths: swaggerDefinition.paths,
 };
 
 const swaggerOptions = {
