@@ -1,9 +1,16 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/services/user.service');
 jest.mock('../../../src/validations/validator');
-const { getAll, getById } = require('../../../src/controllers/user.controller');
+const {
+    getAll,
+    getById,
+    updateById,
+} = require('../../../src/controllers/user.controller');
 const UserService = require('../../../src/services/user.service');
-const { validateUserQuery } = require('../../../src/validations/validator');
+const {
+    validateUserQuery,
+    validateUpdateUserData,
+} = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
 describe('User Controller Unit Tests', () => {
@@ -182,6 +189,97 @@ describe('User Controller Unit Tests', () => {
             expect(UserService.getOne).toHaveBeenCalledWith(
                 parseInt(req.params.userId, 10),
             );
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('updateById', () => {
+        it('should sends 200 on success and does not call next', async () => {
+            req.body = {
+                fullName: 'Rick Flag Jr',
+                email: 'RFJR@mail.com',
+                password: 'christophersmithkilledme!',
+            };
+            req.params.userId = '1';
+            const mockValue = req.body;
+            const mockUser = {
+                id: 1,
+                fullName: req.body.fullName,
+                email: req.body.email,
+                role: 'User',
+                memberLevel: 'Basic',
+                pictureUrl: null,
+                createdAt: '2025-09-20T15:37:25.953Z',
+                updatedAt: '2025-09-21T16:40:39.343Z',
+            };
+
+            validateUpdateUserData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            UserService.updateOne.mockResolvedValue(mockUser);
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateUserData).toHaveBeenCalledWith(req.body);
+            expect(UserService.updateOne).toHaveBeenCalledWith({
+                userId: parseInt(req.params.userId, 10),
+                ...mockValue,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved user data.',
+                data: {
+                    user: mockUser,
+                },
+                errors: null,
+            });
+        });
+
+        it('should calls next with Joi.ValidationError when validation fails', async () => {
+            req.body = {
+                fullName: 1,
+                password: '123',
+            };
+            const mockValidationError = new ValidationError();
+            validateUpdateUserData.mockReturnValue({
+                error: mockValidationError,
+            });
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateUserData).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockValidationError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.body = {
+                fullName: 'Rick Flag Jr',
+                email: 'RFJR@mail.com',
+                password: 'christophersmithkilledme!',
+            };
+            req.params.userId = '1';
+            const mockValue = req.body;
+            const serviceError = new Error('BOOM');
+            validateUpdateUserData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            UserService.updateOne.mockRejectedValue(serviceError);
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateUserData).toHaveBeenCalledWith(req.body);
+            expect(UserService.updateOne).toHaveBeenCalledWith({
+                userId: parseInt(req.params.userId, 10),
+                ...mockValue,
+            });
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
