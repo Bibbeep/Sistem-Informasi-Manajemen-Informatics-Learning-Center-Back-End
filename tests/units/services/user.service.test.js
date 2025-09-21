@@ -1,8 +1,16 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models/user');
+jest.mock('bcrypt', () => {
+    return {
+        genSalt: jest.fn(),
+        hash: jest.fn(),
+        compare: jest.fn(),
+    };
+});
 const UserService = require('../../../src/services/user.service');
 const User = require('../../../src/db/models/user');
 const HTTPError = require('../../../src/utils/httpError');
+const bcrypt = require('bcrypt');
 
 describe('User Service Unit Tests', () => {
     afterEach(() => {
@@ -279,6 +287,121 @@ describe('User Service Unit Tests', () => {
             );
 
             expect(User.findByPk).toHaveBeenCalledWith(mockUserId);
+        });
+    });
+
+    describe('updateOne Tests', () => {
+        it('should updates user data with fullName, email, password', async () => {
+            const mockData = {
+                userId: 1,
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+                password: 'password',
+            };
+
+            const mockUpdateData = {
+                fullName: mockData.fullName,
+                email: mockData.email,
+                hashedPassword: 'hashed-password',
+            };
+
+            const mockReturnData = {
+                id: 1,
+                email: 'johndoe@mail.com',
+                fullName: 'John Doe',
+                memberLevel: 'Basic',
+                role: 'User',
+                pictureUrl: null,
+                createdAt: 'NOW',
+                updatedAt: 'NOW',
+            };
+
+            User.findByPk.mockResolvedValue(true);
+            const mockSalt = 'salt';
+            bcrypt.genSalt.mockResolvedValue(mockSalt);
+            bcrypt.hash.mockResolvedValue(mockUpdateData.hashedPassword);
+            User.update.mockResolvedValue([1, [mockReturnData]]);
+
+            const result = await UserService.updateOne(mockData);
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+            expect(bcrypt.genSalt).toHaveBeenCalledWith(10);
+            expect(bcrypt.hash).toHaveBeenCalledWith(
+                mockData.password,
+                mockSalt,
+            );
+            expect(User.update).toHaveBeenCalledWith(mockUpdateData, {
+                where: {
+                    id: mockData.userId,
+                },
+                returning: true,
+            });
+
+            expect(result).toEqual(mockReturnData);
+        });
+
+        it('should throw not found error', async () => {
+            const mockData = {
+                userId: 404,
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+                password: 'password',
+            };
+
+            User.findByPk.mockResolvedValue(false);
+
+            await expect(UserService.updateOne(mockData)).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'User with "userId" does not exist',
+                        context: {
+                            key: 'userId',
+                            value: mockData.userId,
+                        },
+                    },
+                ]),
+            );
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+        });
+
+        it('should updates user data without password', async () => {
+            const mockData = {
+                userId: 1,
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+            };
+
+            const mockUpdateData = {
+                fullName: mockData.fullName,
+                email: mockData.email,
+            };
+
+            const mockReturnData = {
+                id: 1,
+                email: 'johndoe@mail.com',
+                fullName: 'John Doe',
+                memberLevel: 'Basic',
+                role: 'User',
+                pictureUrl: null,
+                createdAt: 'NOW',
+                updatedAt: 'NOW',
+            };
+
+            User.findByPk.mockResolvedValue(true);
+            User.update.mockResolvedValue([1, [mockReturnData]]);
+
+            const result = await UserService.updateOne(mockData);
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+            expect(User.update).toHaveBeenCalledWith(mockUpdateData, {
+                where: {
+                    id: mockData.userId,
+                },
+                returning: true,
+            });
+
+            expect(result).toEqual(mockReturnData);
         });
     });
 });
