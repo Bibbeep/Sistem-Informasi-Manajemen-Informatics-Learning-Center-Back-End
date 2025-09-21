@@ -32,13 +32,27 @@ module.exports = {
             next(err);
         }
     },
-    authorize: (allowRule) => {
+    authorize: (options) => {
+        const { rules } = options;
+
         return async (req, res, next) => {
             try {
-                const isAdmin = req.tokenPayload.admin;
+                const { sub: loggedInUserId, admin: isAdmin } =
+                    req.tokenPayload;
 
-                if (allowRule === 'admin' && isAdmin) {
+                if (rules.includes('admin') && isAdmin) {
                     return next();
+                }
+
+                if (rules.includes('self')) {
+                    const targetUserId = req.params.userId || req.query.userId;
+
+                    if (
+                        targetUserId &&
+                        parseInt(targetUserId, 10) === loggedInUserId
+                    ) {
+                        return next();
+                    }
                 }
 
                 throw new HTTPError(403, 'Forbidden.', [

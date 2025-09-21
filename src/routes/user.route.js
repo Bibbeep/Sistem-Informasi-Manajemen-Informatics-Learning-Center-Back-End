@@ -5,7 +5,17 @@ const {
     authorize,
 } = require('../middlewares/auth.middleware.js');
 
-router.get('/', authenticate, authorize('admin'), UserController.getAll);
-router.get('/:userId', authenticate, UserController.getById);
+router.get(
+    '/',
+    authenticate,
+    authorize({ rules: ['admin'] }),
+    UserController.getAll,
+);
+router.get(
+    '/:userId',
+    authenticate,
+    authorize({ rules: ['self', 'admin'] }),
+    UserController.getById,
+);
 
 module.exports = router;

@@ -20,7 +20,12 @@ describe('Authentication Middleware Unit Tests', () => {
     let req, res, next;
 
     beforeEach(() => {
-        req = { headers: {} };
+        req = {
+            headers: {},
+            tokenPayload: {},
+            params: {},
+            query: {},
+        };
         res = mockRes();
         next = jest.fn();
     });
@@ -118,20 +123,20 @@ describe('Authentication Middleware Unit Tests', () => {
     });
 
     describe('authorize Tests', () => {
-        it('should call next without error', async () => {
+        it('should call next without error when admin access', async () => {
             req.tokenPayload = { admin: true };
-            const mockAllowRule = 'admin';
+            const mockOptions = { rules: ['admin'] };
 
-            await authorize(mockAllowRule)(req, res, next);
+            await authorize(mockOptions)(req, res, next);
 
             expect(next).toHaveBeenCalledWith();
         });
 
         it('should call next with error when user is not admin', async () => {
             req.tokenPayload = { admin: false };
-            const mockAllowRule = 'admin';
+            const mockOptions = { rules: ['admin'] };
 
-            await authorize(mockAllowRule)(req, res, next);
+            await authorize(mockOptions)(req, res, next);
 
             expect(next).toHaveBeenCalledWith(
                 new HTTPError(403, 'Forbidden.', [
@@ -147,12 +152,45 @@ describe('Authentication Middleware Unit Tests', () => {
             );
         });
 
-        it('should', async () => {
-            //
+        it('should call next without error when user access the their own resource by request parameter', async () => {
+            req.tokenPayload = { sub: 1, admin: false };
+            req.params = { userId: '1' };
+            const mockOptions = { rules: ['self', 'admin'] };
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith();
         });
 
-        it('should', async () => {
-            //
+        it('should call next without error when user access the their own resource by request query', async () => {
+            req.tokenPayload = { sub: 1, admin: false };
+            req.query = { userId: '1' };
+            const mockOptions = { rules: ['self', 'admin'] };
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith();
+        });
+
+        it('should call next with error when user access the resource not theirs by request query', async () => {
+            req.tokenPayload = { sub: 1, admin: false };
+            req.query = { userId: '2' };
+            const mockOptions = { rules: ['self', 'admin'] };
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(
+                new HTTPError(403, 'Forbidden.', [
+                    {
+                        message:
+                            'You do not have the necessary permissions to access this resource.',
+                        context: {
+                            key: 'role',
+                            value: 'User',
+                        },
+                    },
+                ]),
+            );
         });
     });
 });
