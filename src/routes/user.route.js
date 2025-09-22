@@ -8,6 +8,8 @@ const {
 const {
     requireJsonContent,
 } = require('../middlewares/contentType.middleware.js');
+const { upload } = require('../middlewares/multer.middleware.js');
+const { image } = require('../utils/fileType.js');
 
 router.get(
     '/',
@@ -36,6 +38,14 @@ router.delete(
     validatePathParameterId('userId'),
     authorize({ rules: ['self', 'admin'] }),
     UserController.deleteById,
+);
+router.put(
+    '/:userId/profilePhotos',
+    authenticate,
+    validatePathParameterId('userId'),
+    authorize({ rules: ['self', 'admin'] }),
+    upload(image).single('photo'),
+    UserController.uploadProfilePhoto,
 );
 
 module.exports = router;

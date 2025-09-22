@@ -60,20 +60,25 @@
     "supertest": "^7.1.4"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.893.0",
+    "@aws-sdk/lib-storage": "^3.893.0",
     "bcrypt": "^6.0.0",
     "chalk": "^4.1.2",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
     "express": "^5.1.0",
+    "file-type": "^21.0.0",
     "handlebars": "^4.7.8",
     "joi": "^18.0.1",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
     "nodemailer": "^7.0.6",
     "pg": "^8.16.0",
     "pg-hstore": "^2.3.4",
     "redis": "^5.8.2",
     "sequelize": "^6.37.7",
+    "sharp": "^0.34.4",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^11.1.0"
   }

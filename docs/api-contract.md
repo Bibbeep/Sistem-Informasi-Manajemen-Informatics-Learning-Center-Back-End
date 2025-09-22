@@ -1,19 +1,23 @@
 # Sistem Informasi Manajemen Informatics Learning Center API Contract
 
-## Endpoints
+<details open>
+
+<summary>List of endpoints available</summary>
+
+### REST API Endpoints
 
 | Method   | URL                                                             | Functionality                                | Authentication | Authorization |
 | -------- | --------------------------------------------------------------- | -------------------------------------------- | -------------- | ------------- |
 | `POST`   | `/api/v1/auth/register`                                         | Registers a new user account                 | Not required   | Any           |
 | `POST`   | `/api/v1/auth/login`                                            | Logs in a user account                       | Required       | Self          |
 | `POST`   | `/api/v1/auth/logout`                                           | Logs out a user account                      | Required       | Self          |
-| `POST`   | `/api/v1/auth/forgot-password`                                  | Sends an email with a URL to reset password  | Not required   | Self          |
+| `POST`   | `/api/v1/auth/forgot-password`                                  | Sends an email with a URL to reset password  | Not required   | Any           |
 | `POST`   | `/api/v1/auth/reset-password`                                   | Resets password of a user account            | Required       | Self          |
 | `GET`    | `/api/v1/users`                                                 | Retrieves all user data                      | Required       | Admin         |
 | `GET`    | `/api/v1/users/{userId}`                                        | Retrieves a user data                        | Required       | Self          |
 | `PATCH`  | `/api/v1/users/{userId}`                                        | Updates a user data                          | Required       | Self          |
 | `DELETE` | `/api/v1/users/{userId}`                                        | Deletes a user account                       | Required       | Self          |
-| `POST`   | `/api/v1/users/{userId}/picture`                                | Uploads a profile picture                    | Required       | Self          |
+| `PUT`    | `/api/v1/users/{userId}/profilePhotos`                          | Uploads a profile picture                    | Required       | Self          |
 | `GET`    | `/api/v1/enrollments`                                           | Retrieves all enrollments                    | Required       | Self          |
 | `GET`    | `/api/v1/enrollments/{enrollmentId}`                            | Retrieves an enrollment details              | Required       | Self          |
 | `POST`   | `/api/v1/enrollments`                                           | Creates an enrollment/enroll to a program    | Required       | Self          |
@@ -56,11 +60,15 @@
 | `GET`    | `/api/v1/feedbacks`                                             | Retrieves all feedbacks                      | Required       | Admin         |
 | `GET`    | `/api/v1/feedbacks/{feedbackId}`                                | Retrieves a feedback details                 | Required       | Admin         |
 | `POST`   | `/api/v1/feedbacks`                                             | Creates/sends a feedback                     | Not required   | Any           |
-| `POST`   | `/api/v1/feedbacks/{feedbackId}/responses`                      | Responds to a feedback                       | Requires       | Admin         |
+| `POST`   | `/api/v1/feedbacks/{feedbackId}/responses`                      | Responds to a feedback                       | Required       | Admin         |
 
----
+</details>
 
 ## Request/Response Examples
+
+<details>
+
+<summary><h3 style="display:inline-block">User Authentication Management</h3></summary>
 
 - `POST /api/v1/auth/register` - Registers a new user account
 
@@ -197,6 +205,12 @@
 		"errors": null
 	}
 	```
+
+</details>
+
+<details>
+
+<summary><h3 style="display:inline-block">User Profile Management</h3></summary>
 
 - `GET /api/v1/users` - Retrieves all user data
 
@@ -398,30 +412,6 @@
 	}
 	```
 
-- `POST /api/v1/users/{userId}/picture` - Uploads a profile picture
-
-	- Request:
-
-	```bash
-	curl -X POST http://localhost:3000/api/v1/users/1/picture \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
-		-F "picture=@/path/to/profile.jpg"
-	```
-
-	- Response (201):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 201,
-		"message": "Successfully uploaded a profile picture.",
-		"data": {
-			"pictureUrl": "https://static.image.com/profile-user1.png"
-		},	
-		"errors": null
-	}
-	```
-
 - `DELETE /api/v1/users/{userId}` - Deletes a user account
 
 	- Request:
@@ -443,180 +433,14 @@
 	}
 	```
 
-- `GET /api/v1/enrollments` - Retrieves all enrollments
+- `PUT /api/v1/users/{userId}/profilePhotos` - Uploads a profile photo
 
 	- Request:
 
 	```bash
-	curl -X GET http://localhost:3000/api/v1/enrollments?userId=1&type=Course&sort=-updatedAt&limit=5&page=1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully retrieved all program enrollments.",
-		"data": {
-			"enrollments": [
-				{
-					"id": 1,
-					"userId": 1,
-					"program": {
-						"id": 3,
-						"title": "VueJS untuk Pemula",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p3.png"
-					},
-					"progressPercentage": 80.00,
-					"status": "In Progress",
-					"completedAt": null,
-					"createdAt": "2025-12-31T08:00:00.069Z",
-					"updatedAt": "2026-01-01T12:12:12.121Z"
-				},
-				{
-					"id": 5,
-					"userId": 1,
-					"program": {
-						"id": 9,
-						"title": "DevOps Fundamental",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p9.png"
-					},
-					"progressPercentage": 20.00,
-					"status": "In Progress",
-					"completedAt": null,
-					"createdAt": "2025-12-25T13:00:00.000Z",
-					"updatedAt": "2025-12-31T09:00:00.000Z"
-				},
-				{
-					"id": 2,
-					"userId": 1,
-					"program": {
-						"id": 5,
-						"title": "ReactJS Lanjutan",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p5.png"
-					},
-					"progressPercentage": 100.00,
-					"status": "Completed",
-					"completedAt": "2025-12-30T10:00:00.000Z",
-					"createdAt": "2025-12-01T09:00:00.000Z",
-					"updatedAt": "2025-12-30T10:00:00.000Z"
-				},
-				{
-					"id": 3,
-					"userId": 1,
-					"program": {
-						"id": 7,
-						"title": "Dasar Pemrograman Python",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p7.png"
-					},
-					"progressPercentage": 60.00,
-					"status": "In Progress",
-					"completedAt": null,
-					"createdAt": "2025-12-15T08:30:00.000Z",
-					"updatedAt": "2025-12-28T14:00:00.000Z"
-				},
-				{
-					"id": 4,
-					"userId": 1,
-					"program": {
-						"id": 2,
-						"title": "Machine Learning Dasar",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p2.png"
-					},
-					"progressPercentage": 100.00,
-					"status": "Completed",
-					"completedAt": "2025-12-20T16:45:00.000Z",
-					"createdAt": "2025-11-20T10:00:00.000Z",
-					"updatedAt": "2025-12-20T16:45:00.000Z"
-				}
-			]
-		},
-		"pagination": {
-			"currentRecords": 5,
-			"totalRecords": 10,
-			"currentPage": 1,
-			"totalPages": 2,
-			"nextPage": 2,
-			"prevPage": null
-		},
-		"errors": null
-	}
-	```
-
-- `GET /api/v1/enrollments/{enrollmentId}` - Retrieves an enrollment details
-
-	- Request:
-
-	```bash
-	curl -X GET http://localhost:3000/api/v1/enrollments/1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully retrieved program enrollment details.",
-		"data": {
-			"enrollment": {
-				"id": 1,
-				"userId": 1,
-				"program": {
-					"id": 3,
-					"title": "VueJS untuk Pemula",
-					"type": "Course",
-					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
-				},
-				"progressPercentage": 80.00,
-				"status": "In Progress",
-				"completedAt": null,
-				"completedModules": [
-					{
-						"moduleId": 23,
-						"completedAt": "2025-12-31T09:00:00.069Z"
-					},
-					{
-						"moduleId": 24,
-						"completedAt": "2025-12-31T10:00:00.069Z"
-					},
-					{
-						"moduleId": 25,
-						"completedAt": "2025-12-31T11:00:00.069Z"
-					},
-					{
-						"moduleId": 26,
-						"completedAt": "2026-01-01T12:12:12.121Z"
-					}
-				],
-				"createdAt": "2025-12-31T08:00:00.069Z",
-				"updatedAt": "2026-01-01T12:12:12.121Z"
-			}
-		},
-		"errors": null
-	}
-	```
-
-
-- `POST /api/v1/enrollments` - Creates an enrollment/enrolls to a program
-
-	- Request:
-
-	```bash
-	curl -X POST http://localhost:3000/api/v1/enrollments \
+	curl -X PUT 'http://localhost:3000/users/1/profilePhotos' \
 		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
-		-H "Content-Type: application/json" \
-		-d '{
-			"programId": 3
-		}'
+		--form 'photo=@"/C:/picture.jpeg"'
 	```
 
 	- Response (201):
@@ -625,617 +449,19 @@
 	{
 		"success": true,
 		"statusCode": 201,
-		"message": "Successfully created an enrollment. Please complete the payment to access the contents.",
+		"message": "Successfully uploaded a profile picture.",
 		"data": {
-			"enrollment": {
-				"id": 1,
-				"userId": 1,
-				"program": {
-					"id": 3,
-					"title": "VueJS untuk Pemula",
-					"type": "Course",
-					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
-				},
-				"progressPercentage": 0.00,
-				"status": "Unpaid",
-				"completedAt": null,
-				"createdAt": "2025-12-31T08:00:00.069Z",
-				"updatedAt": "2025-12-31T08:00:00.069Z"
-			},
-			"invoice": {
-				"id": 1,
-				"virtualAccountNumber": "1234279807578",
-				"amountIdr": 150000.00,
-				"paymentDueDatetime": "2025-12-31T23:59:59.999"
-			}
-		},
+			"pictureUrl": "http://127.0.0.1:9000/sim-ilc-untan/images/1-photo-1758557065548.webp"
+		},	
 		"errors": null
 	}
 	```
 
-- `PATCH /api/v1/enrollments/{enrollmentId}` - Updates an enrollment
+</details>
 
-	- Request:
+<details>
 
-	```bash
-	curl -X PATCH http://localhost:3000/api/v1/enrollments/3 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
-		-H "Content-Type: application/json" \
-		-d '{
-			"status": "Completed"
-		}'
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully updated program enrollment details.",
-		"data": {
-			"enrollment": {
-				"id": 3,
-				"userId": 1,
-				"program": {
-					"id": 19,
-					"title": "AI Ethics Seminar",
-					"type": "Seminar",
-					"thumbnailUrl": "https://static.image.com/thumb_p19.png"
-				},
-				"progressPercentage": 100.00,
-				"status": "Completed",
-				"completedAt": "2026-01-01T12:12:12.121Z",
-				"createdAt": "2025-12-31T08:00:00.069Z",
-				"updatedAt": "2026-01-01T12:12:12.121Z"
-			}
-		},
-		"errors": null
-	}
-	```
-
-- `DELETE /api/v1/enrollments/{enrollmentId}` - Deletes an enrollment
-
-	- Request:
-
-	```bash
-	curl -X DELETE http://localhost:3000/api/v1/enrollments/1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully deleted an enrollment.",
-		"data": null,
-		"errors": null
-	}
-	```
-
-- `POST /api/v1/enrollments/{enrollmentId}/completed-modules` - Mark a module as completed. Only works on programs with "Course" type
-
-	- Request:
-
-	```bash
-	curl -X POST http://localhost:3000/api/v1/enrollments/1/completed-modules \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
-		-H "Content-Type: application/json" \
-		-d '{
-			"moduleId": 23
-		}'
-	```
-
-	- Response (201):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 201,
-		"message": "Successfully completed a module.",
-		"data": {
-			"completedModule": {
-				"id": 200,
-				"moduleId": 23,
-				"completedAt": "2025-12-31T09:00:00.000Z"
-			}
-		},
-		"errors": null
-	}
-	```
-
-- `GET /api/v1/certificates` - Retrieves all certificates
-
-	- Request:
-
-	```bash
-	curl -X GET http://localhost:3000/api/v1/users/1/certificates?userId=1&limit=5&page=1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully retrieved all certificates.",
-		"data": {
-			"certificates": [
-				{
-					"id": 1,
-					"userId": 1,
-					"enrollmentId": 1,
-					"program": {
-						"id": 3,
-						"title": "VueJS untuk Pemula",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p3.png"
-					},
-					"title": "VueJS untuk Pemula Certificate of Completion",
-					"credential": "ASJ2316-AHUA17",
-					"issuedAt": "2025-12-09T12:45:55.091Z",
-					"expiredAt": "2030-12-09T12:45:55.091Z",
-					"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf"
-				},
-				{
-					"id": 2,
-					"userId": 1,
-					"enrollmentId": 2,
-					"program": {
-						"id": 5,
-						"title": "Back-End Web Development",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p5.png"
-					},
-					"title": "Back-End Web Development Certificate of Completion",
-					"credential": "YAGS617-AJSB98",
-					"issuedAt": "2025-12-14T11:00:00.000Z",
-					"expiredAt": "2030-12-14T11:00:00.000Z",
-					"documentUrl": "https://example.storage.com/cert/backend0119119.pdf"
-				},
-				{
-					"id": 3,
-					"userId": 1,
-					"enrollmentId": 3,
-					"program": {
-						"id": 7,
-						"title": "Dasar Pemrograman Python",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p7.png"
-					},
-					"title": "Dasar Pemrograman Python Certificate of Completion",
-					"credential": "PYTH123-DFG456",
-					"issuedAt": "2025-12-20T10:00:00.000Z",
-					"expiredAt": "2030-12-20T10:00:00.000Z",
-					"documentUrl": "https://example.storage.com/cert/python0119222.pdf"
-				},
-				{
-					"id": 4,
-					"userId": 1,
-					"enrollmentId": 4,
-					"program": {
-						"id": 2,
-						"title": "Machine Learning Dasar",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p2.png"
-					},
-					"title": "Machine Learning Dasar Certificate of Completion",
-					"credential": "MLD789-HJK321",
-					"issuedAt": "2025-12-25T15:30:00.000Z",
-					"expiredAt": "2030-12-25T15:30:00.000Z",
-					"documentUrl": "https://example.storage.com/cert/ml0119333.pdf"
-				},
-				{
-					"id": 5,
-					"userId": 1,
-					"enrollmentId": 5,
-					"program": {
-						"id": 9,
-						"title": "DevOps Fundamental",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p9.png"
-					},
-					"title": "DevOps Fundamental Certificate of Completion",
-					"credential": "DEVOPS456-XYZ789",
-					"issuedAt": "2026-01-01T12:00:00.000Z",
-					"expiredAt": "2031-01-01T12:00:00.000Z",
-					"documentUrl": "https://example.storage.com/cert/devops0119444.pdf"
-				}
-			]
-		},
-		"pagination": {
-			"currentRecords": 5,
-			"totalRecords": 5,
-			"currentPage": 1,
-			"totalPages": 1,
-			"nextPage": null,
-			"prevPage": null
-		},
-		"errors": null
-	}
-	```
-
-- `GET /api/v1/certificates/{certificateId}` - Retrieves a certificate details
-
-	- Request:
-
-	```bash
-	curl -X GET http://localhost:3000/api/v1/users/1/certificates/1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully retrieved a certificate.",
-		"data": {
-			"certificate": {
-				"id": 1,
-				"userId": 1,
-				"enrollmentId": 1,
-				"program": {
-					"id": 3,
-					"title": "VueJS untuk Pemula",
-					"type": "Course",
-					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
-				},
-				"title": "VueJS untuk Pemula Certificate of Completion",
-				"credential": "ASJ2316-AHUA17",
-				"issuedAt": "2025-12-09T12:45:55.091Z",
-				"expiredAt": "2030-12-09T12:45:55.091Z",
-				"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf",
-				"createdAt": "2025-12-09T12:45:55.091Z",
-				"updatedAt": "2025-12-09T12:45:55.091Z"
-			}
-		},
-		"errors": null
-	}
-	```
-
-- `POST /api/v1/certificates` - Creates a certificate
-
-	- Request:
-
-	```bash
-	curl -X POST http://localhost:3000/api/v1/certificates \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
-		-H "Content-Type: application/json" \
-		-d '{
-			"title": "Mobile Development Certificate of Completion",
-			"issuedAt": "2025-12-09T12:45:55.091Z",
-			"expiredAt": "2030-12-09T12:45:55.091Z",
-			"userId": 23,
-			"enrollmentId": 33
-		}'
-	```
-
-	- Response (201):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 201,
-		"message": "Successfully created a certificate.",
-		"data": {
-			"certificate": {
-				"id": 200,
-				"userId": 23,
-				"enrollmentId": 33,
-				"program": {
-					"id": 79,
-					"title": "Mobile Development",
-					"type": "Course",
-					"thumbnailUrl": "https://static.image.com/thumb_p79.png"
-				},
-				"title": "Mobile Development Certificate of Completion",
-				"credential": "MBD2316-AGSA22",
-				"issuedAt": "2025-12-09T12:45:55.091Z",
-				"expiredAt": "2030-12-09T12:45:55.091Z",
-				"documentUrl": "https://example.storage.com/cert/mobiledev0119999.pdf",
-				"createdAt": "2025-12-09T12:45:55.091Z",
-				"updatedAt": "2025-12-09T12:45:55.091Z"
-			}
-		},
-		"errors": null
-	}
-	```
-
-- `PATCH /api/v1/certificates/{certificateId}` - Updates a certificate
-
-	- Request:
-
-	```bash
-	curl -X PATCH http://localhost:3000/api/v1/certificates/1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
-		-H "Content-Type: application/json" \
-		-d '{
-			"title": "VueJS Front-End Web Development Certificate of Completion"
-		}'
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully updated a certificate.",
-		"data": {
-			"certificate": {
-				"id": 1,
-				"userId": 1,
-				"enrollmentId": 1,
-				"program": {
-					"id": 3,
-					"title": "VueJS untuk Pemula",
-					"type": "Course",
-					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
-				},
-				"title": "VueJS Front-End Web Development Certificate of Completion",
-				"credential": "ASJ2316-AHUA17",
-				"issuedAt": "2025-12-09T12:45:55.091Z",
-				"expiredAt": "2030-12-09T12:45:55.091Z",
-				"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf",
-				"createdAt": "2025-12-09T12:45:55.091Z",
-				"updatedAt": "2025-12-31T12:45:55.091Z"
-			}
-		},
-		"errors": null
-	}
-	```
-
-- `DELETE /api/v1/certificates/{certificateId}` - Deletes a certificate
-
-	- Request:
-
-	```bash
-	curl -X DELETE http://localhost:3000/api/v1/certificates/1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully deleted a certificate.",
-		"data": null,
-		"errors": null
-	}
-	```
-
-- `GET /api/v1/invoices` - Retrieves all invoices
-
-	- Request:
-
-	```bash
-	curl -X GET http://localhost:3000/api/v1/invoices?userId=1&limit=5&page=1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully retrieved all invoices.",
-		"data": {
-			"invoices": [
-				{
-					"id": 1,
-					"userId": 1,
-					"enrollmentId": 1,
-					"program": {
-						"id": 3,
-						"title": "VueJS untuk Pemula",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p3.png"
-					},
-					"virtualAccountNumber": "1234279807578",
-					"amountIdr": 150000.00,
-					"paymentDueDatetime": "2025-12-31T23:59:59.999",
-					"status": "Verified",
-					"payment": {
-						"id": 1,
-						"amountPaidIdr": 150000.00,
-						"createdAt": "2025-12-30T23:59:59.999",
-						"updatedAt": "2025-12-30T23:59:59.999"
-					},
-					"createdAt": "2025-12-27T23:59:59.999",
-					"updatedAt": "2025-12-30T23:59:59.999"
-				},
-				{
-					"id": 2,
-					"userId": 1,
-					"enrollmentId": 2,
-					"program": {
-						"id": 5,
-						"title": "Back-End Web Development",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p5.png"
-					},
-					"virtualAccountNumber": "1234279807579",
-					"amountIdr": 200000.00,
-					"paymentDueDatetime": "2025-12-31T23:59:59.999",
-					"status": "Unverified",
-					"payment": null,
-					"createdAt": "2025-12-28T10:00:00.000",
-					"updatedAt": "2025-12-28T10:00:00.000"
-				},
-				{
-					"id": 3,
-					"userId": 1,
-					"enrollmentId": 3,
-					"program": {
-						"id": 7,
-						"title": "Dasar Pemrograman Python",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p7.png"
-					},
-					"virtualAccountNumber": "1234279807580",
-					"amountIdr": 175000.00,
-					"paymentDueDatetime": "2025-12-31T23:59:59.999",
-					"status": "Expired",
-					"payment": null,
-					"createdAt": "2025-12-29T11:00:00.000",
-					"updatedAt": "2025-12-31T23:59:59.999"
-				},
-				{
-					"id": 4,
-					"userId": 1,
-					"enrollmentId": 4,
-					"program": {
-						"id": 2,
-						"title": "Machine Learning Dasar",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p2.png"
-					},
-					"virtualAccountNumber": "1234279807581",
-					"amountIdr": 250000.00,
-					"paymentDueDatetime": "2025-12-31T23:59:59.999",
-					"status": "Verified",
-					"payment": {
-						"id": 2,
-						"amountPaidIdr": 250000.00,
-						"createdAt": "2025-12-30T15:00:00.000",
-						"updatedAt": "2025-12-30T15:00:00.000"
-					},
-					"createdAt": "2025-12-30T12:00:00.000",
-					"updatedAt": "2025-12-30T15:00:00.000"
-				},
-				{
-					"id": 5,
-					"userId": 1,
-					"enrollmentId": 5,
-					"program": {
-						"id": 9,
-						"title": "DevOps Fundamental",
-						"type": "Course",
-						"thumbnailUrl": "https://static.image.com/thumb_p9.png"
-					},
-					"virtualAccountNumber": "1234279807582",
-					"amountIdr": 180000.00,
-					"paymentDueDatetime": "2025-12-31T23:59:59.999",
-					"status": "Unverified",
-					"payment": null,
-					"createdAt": "2025-12-31T08:00:00.000",
-					"updatedAt": "2025-12-31T08:00:00.000"
-				}
-			]
-		},
-		"pagination": {
-			"currentRecords": 5,
-			"totalRecords": 7,
-			"currentPage": 1,
-			"totalPages": 2,
-			"nextPage": 2,
-			"prevPage": null
-		},
-		"errors": null
-	}
-	```
-
-- `GET /api/v1/invoices/{invoiceId}` - Retrieves an invoice details
-
-	- Request:
-
-	```bash
-	curl -X GET http://localhost:3000/api/v1/invoices/1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully retrieved an invoice details.",
-		"data": {
-			"invoice": {
-				"id": 1,
-				"userId": 1,
-				"enrollmentId": 1,
-				"program": {
-					"id": 3,
-					"title": "VueJS untuk Pemula",
-					"type": "Course",
-					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
-				},
-				"virtualAccountNumber": "1234279807578",
-				"amountIdr": 150000.00,
-				"paymentDueDatetime": "2025-12-31T23:59:59.999",
-				"status": "Verified",
-				"payment": {
-					"id": 1,
-					"amountPaidIdr": 150000.00,
-					"createdAt": "2025-12-30T23:59:59.999",
-					"updatedAt": "2025-12-30T23:59:59.999"
-				},
-				"createdAt": "2025-12-27T23:59:59.999",
-				"updatedAt": "2025-12-30T23:59:59.999"
-			}
-		},
-		"errors": null
-	}
-	```
-
-- `DELETE /api/v1/invoices/{invoiceId}` - Deletes an invoice
-
-	- Request:
-
-	```bash
-	curl -X DELETE http://localhost:3000/api/v1/invoices/1 \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (200):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully deleted an invoice.",
-		"data": null,
-		"errors": null
-	}
-	```
-
-- `POST /api/v1/invoices/{invoiceId}/payments` - Creates a payment
-
-	- Request:
-
-	```bash
-	curl -X POST http://localhost:3000/api/v1/invoices/1/payments \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
-	```
-
-	- Response (201):
-
-	```json
-	{
-		"success": true,
-		"statusCode": 201,
-		"message": "Successfully created a payment.",
-		"data": {
-			"payment": {
-				"id": 1,
-				"amountPaidIdr": 150000.00,
-				"createdAt": "2025-12-30T23:59:59.999",
-				"updatedAt": "2025-12-30T23:59:59.999"
-			}
-		},
-		"errors": null
-	}
-	```
+<summary><h3 style="display:inline-block">Program Management</h3></summary>
 
 - `GET /api/v1/programs` - Retrieves all programs
 
@@ -1753,6 +979,824 @@
 		"errors": null
 	}
 	```
+
+</details>
+
+<details>
+
+<summary><h3 style="display:inline-block">Program Enrollment Management</h3></summary>
+
+- `GET /api/v1/enrollments` - Retrieves all enrollments
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/enrollments?userId=1&type=Course&sort=-updatedAt&limit=5&page=1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all program enrollments.",
+		"data": {
+			"enrollments": [
+				{
+					"id": 1,
+					"userId": 1,
+					"program": {
+						"id": 3,
+						"title": "VueJS untuk Pemula",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+					},
+					"progressPercentage": 80.00,
+					"status": "In Progress",
+					"completedAt": null,
+					"createdAt": "2025-12-31T08:00:00.069Z",
+					"updatedAt": "2026-01-01T12:12:12.121Z"
+				},
+				{
+					"id": 5,
+					"userId": 1,
+					"program": {
+						"id": 9,
+						"title": "DevOps Fundamental",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p9.png"
+					},
+					"progressPercentage": 20.00,
+					"status": "In Progress",
+					"completedAt": null,
+					"createdAt": "2025-12-25T13:00:00.000Z",
+					"updatedAt": "2025-12-31T09:00:00.000Z"
+				},
+				{
+					"id": 2,
+					"userId": 1,
+					"program": {
+						"id": 5,
+						"title": "ReactJS Lanjutan",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p5.png"
+					},
+					"progressPercentage": 100.00,
+					"status": "Completed",
+					"completedAt": "2025-12-30T10:00:00.000Z",
+					"createdAt": "2025-12-01T09:00:00.000Z",
+					"updatedAt": "2025-12-30T10:00:00.000Z"
+				},
+				{
+					"id": 3,
+					"userId": 1,
+					"program": {
+						"id": 7,
+						"title": "Dasar Pemrograman Python",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p7.png"
+					},
+					"progressPercentage": 60.00,
+					"status": "In Progress",
+					"completedAt": null,
+					"createdAt": "2025-12-15T08:30:00.000Z",
+					"updatedAt": "2025-12-28T14:00:00.000Z"
+				},
+				{
+					"id": 4,
+					"userId": 1,
+					"program": {
+						"id": 2,
+						"title": "Machine Learning Dasar",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p2.png"
+					},
+					"progressPercentage": 100.00,
+					"status": "Completed",
+					"completedAt": "2025-12-20T16:45:00.000Z",
+					"createdAt": "2025-11-20T10:00:00.000Z",
+					"updatedAt": "2025-12-20T16:45:00.000Z"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 5,
+			"totalRecords": 10,
+			"currentPage": 1,
+			"totalPages": 2,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/enrollments/{enrollmentId}` - Retrieves an enrollment details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/enrollments/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved program enrollment details.",
+		"data": {
+			"enrollment": {
+				"id": 1,
+				"userId": 1,
+				"program": {
+					"id": 3,
+					"title": "VueJS untuk Pemula",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+				},
+				"progressPercentage": 80.00,
+				"status": "In Progress",
+				"completedAt": null,
+				"completedModules": [
+					{
+						"moduleId": 23,
+						"completedAt": "2025-12-31T09:00:00.069Z"
+					},
+					{
+						"moduleId": 24,
+						"completedAt": "2025-12-31T10:00:00.069Z"
+					},
+					{
+						"moduleId": 25,
+						"completedAt": "2025-12-31T11:00:00.069Z"
+					},
+					{
+						"moduleId": 26,
+						"completedAt": "2026-01-01T12:12:12.121Z"
+					}
+				],
+				"createdAt": "2025-12-31T08:00:00.069Z",
+				"updatedAt": "2026-01-01T12:12:12.121Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+
+- `POST /api/v1/enrollments` - Creates an enrollment/enrolls to a program
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/enrollments \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"programId": 3
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created an enrollment. Please complete the payment to access the contents.",
+		"data": {
+			"enrollment": {
+				"id": 1,
+				"userId": 1,
+				"program": {
+					"id": 3,
+					"title": "VueJS untuk Pemula",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+				},
+				"progressPercentage": 0.00,
+				"status": "Unpaid",
+				"completedAt": null,
+				"createdAt": "2025-12-31T08:00:00.069Z",
+				"updatedAt": "2025-12-31T08:00:00.069Z"
+			},
+			"invoice": {
+				"id": 1,
+				"virtualAccountNumber": "1234279807578",
+				"amountIdr": 150000.00,
+				"paymentDueDatetime": "2025-12-31T23:59:59.999"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `PATCH /api/v1/enrollments/{enrollmentId}` - Updates an enrollment
+
+	- Request:
+
+	```bash
+	curl -X PATCH http://localhost:3000/api/v1/enrollments/3 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"status": "Completed"
+		}'
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully updated program enrollment details.",
+		"data": {
+			"enrollment": {
+				"id": 3,
+				"userId": 1,
+				"program": {
+					"id": 19,
+					"title": "AI Ethics Seminar",
+					"type": "Seminar",
+					"thumbnailUrl": "https://static.image.com/thumb_p19.png"
+				},
+				"progressPercentage": 100.00,
+				"status": "Completed",
+				"completedAt": "2026-01-01T12:12:12.121Z",
+				"createdAt": "2025-12-31T08:00:00.069Z",
+				"updatedAt": "2026-01-01T12:12:12.121Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/enrollments/{enrollmentId}` - Deletes an enrollment
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/enrollments/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted an enrollment.",
+		"data": null,
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/enrollments/{enrollmentId}/completed-modules` - Mark a module as completed. Only works on programs with "Course" type
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/enrollments/1/completed-modules \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"moduleId": 23
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully completed a module.",
+		"data": {
+			"completedModule": {
+				"id": 200,
+				"moduleId": 23,
+				"completedAt": "2025-12-31T09:00:00.000Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+</details>
+
+<details>
+
+<summary><h3 style="display:inline-block">Certificate Management</h3></summary>
+
+- `GET /api/v1/certificates` - Retrieves all certificates
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/users/1/certificates?userId=1&limit=5&page=1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all certificates.",
+		"data": {
+			"certificates": [
+				{
+					"id": 1,
+					"userId": 1,
+					"enrollmentId": 1,
+					"program": {
+						"id": 3,
+						"title": "VueJS untuk Pemula",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+					},
+					"title": "VueJS untuk Pemula Certificate of Completion",
+					"credential": "ASJ2316-AHUA17",
+					"issuedAt": "2025-12-09T12:45:55.091Z",
+					"expiredAt": "2030-12-09T12:45:55.091Z",
+					"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf"
+				},
+				{
+					"id": 2,
+					"userId": 1,
+					"enrollmentId": 2,
+					"program": {
+						"id": 5,
+						"title": "Back-End Web Development",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p5.png"
+					},
+					"title": "Back-End Web Development Certificate of Completion",
+					"credential": "YAGS617-AJSB98",
+					"issuedAt": "2025-12-14T11:00:00.000Z",
+					"expiredAt": "2030-12-14T11:00:00.000Z",
+					"documentUrl": "https://example.storage.com/cert/backend0119119.pdf"
+				},
+				{
+					"id": 3,
+					"userId": 1,
+					"enrollmentId": 3,
+					"program": {
+						"id": 7,
+						"title": "Dasar Pemrograman Python",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p7.png"
+					},
+					"title": "Dasar Pemrograman Python Certificate of Completion",
+					"credential": "PYTH123-DFG456",
+					"issuedAt": "2025-12-20T10:00:00.000Z",
+					"expiredAt": "2030-12-20T10:00:00.000Z",
+					"documentUrl": "https://example.storage.com/cert/python0119222.pdf"
+				},
+				{
+					"id": 4,
+					"userId": 1,
+					"enrollmentId": 4,
+					"program": {
+						"id": 2,
+						"title": "Machine Learning Dasar",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p2.png"
+					},
+					"title": "Machine Learning Dasar Certificate of Completion",
+					"credential": "MLD789-HJK321",
+					"issuedAt": "2025-12-25T15:30:00.000Z",
+					"expiredAt": "2030-12-25T15:30:00.000Z",
+					"documentUrl": "https://example.storage.com/cert/ml0119333.pdf"
+				},
+				{
+					"id": 5,
+					"userId": 1,
+					"enrollmentId": 5,
+					"program": {
+						"id": 9,
+						"title": "DevOps Fundamental",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p9.png"
+					},
+					"title": "DevOps Fundamental Certificate of Completion",
+					"credential": "DEVOPS456-XYZ789",
+					"issuedAt": "2026-01-01T12:00:00.000Z",
+					"expiredAt": "2031-01-01T12:00:00.000Z",
+					"documentUrl": "https://example.storage.com/cert/devops0119444.pdf"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 5,
+			"totalRecords": 5,
+			"currentPage": 1,
+			"totalPages": 1,
+			"nextPage": null,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/certificates/{certificateId}` - Retrieves a certificate details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/users/1/certificates/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved a certificate.",
+		"data": {
+			"certificate": {
+				"id": 1,
+				"userId": 1,
+				"enrollmentId": 1,
+				"program": {
+					"id": 3,
+					"title": "VueJS untuk Pemula",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+				},
+				"title": "VueJS untuk Pemula Certificate of Completion",
+				"credential": "ASJ2316-AHUA17",
+				"issuedAt": "2025-12-09T12:45:55.091Z",
+				"expiredAt": "2030-12-09T12:45:55.091Z",
+				"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf",
+				"createdAt": "2025-12-09T12:45:55.091Z",
+				"updatedAt": "2025-12-09T12:45:55.091Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/certificates` - Creates a certificate
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/certificates \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"title": "Mobile Development Certificate of Completion",
+			"issuedAt": "2025-12-09T12:45:55.091Z",
+			"expiredAt": "2030-12-09T12:45:55.091Z",
+			"userId": 23,
+			"enrollmentId": 33
+		}'
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a certificate.",
+		"data": {
+			"certificate": {
+				"id": 200,
+				"userId": 23,
+				"enrollmentId": 33,
+				"program": {
+					"id": 79,
+					"title": "Mobile Development",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p79.png"
+				},
+				"title": "Mobile Development Certificate of Completion",
+				"credential": "MBD2316-AGSA22",
+				"issuedAt": "2025-12-09T12:45:55.091Z",
+				"expiredAt": "2030-12-09T12:45:55.091Z",
+				"documentUrl": "https://example.storage.com/cert/mobiledev0119999.pdf",
+				"createdAt": "2025-12-09T12:45:55.091Z",
+				"updatedAt": "2025-12-09T12:45:55.091Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `PATCH /api/v1/certificates/{certificateId}` - Updates a certificate
+
+	- Request:
+
+	```bash
+	curl -X PATCH http://localhost:3000/api/v1/certificates/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+		-H "Content-Type: application/json" \
+		-d '{
+			"title": "VueJS Front-End Web Development Certificate of Completion"
+		}'
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully updated a certificate.",
+		"data": {
+			"certificate": {
+				"id": 1,
+				"userId": 1,
+				"enrollmentId": 1,
+				"program": {
+					"id": 3,
+					"title": "VueJS untuk Pemula",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+				},
+				"title": "VueJS Front-End Web Development Certificate of Completion",
+				"credential": "ASJ2316-AHUA17",
+				"issuedAt": "2025-12-09T12:45:55.091Z",
+				"expiredAt": "2030-12-09T12:45:55.091Z",
+				"documentUrl": "https://example.storage.com/cert/frontend0119999.pdf",
+				"createdAt": "2025-12-09T12:45:55.091Z",
+				"updatedAt": "2025-12-31T12:45:55.091Z"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/certificates/{certificateId}` - Deletes a certificate
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/certificates/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted a certificate.",
+		"data": null,
+		"errors": null
+	}
+	```
+
+</details>
+
+<details>
+
+<summary><h3 style="display:inline-block">Payment Management</h3></summary>
+
+- `GET /api/v1/invoices` - Retrieves all invoices
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/invoices?userId=1&limit=5&page=1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved all invoices.",
+		"data": {
+			"invoices": [
+				{
+					"id": 1,
+					"userId": 1,
+					"enrollmentId": 1,
+					"program": {
+						"id": 3,
+						"title": "VueJS untuk Pemula",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+					},
+					"virtualAccountNumber": "1234279807578",
+					"amountIdr": 150000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Verified",
+					"payment": {
+						"id": 1,
+						"amountPaidIdr": 150000.00,
+						"createdAt": "2025-12-30T23:59:59.999",
+						"updatedAt": "2025-12-30T23:59:59.999"
+					},
+					"createdAt": "2025-12-27T23:59:59.999",
+					"updatedAt": "2025-12-30T23:59:59.999"
+				},
+				{
+					"id": 2,
+					"userId": 1,
+					"enrollmentId": 2,
+					"program": {
+						"id": 5,
+						"title": "Back-End Web Development",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p5.png"
+					},
+					"virtualAccountNumber": "1234279807579",
+					"amountIdr": 200000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Unverified",
+					"payment": null,
+					"createdAt": "2025-12-28T10:00:00.000",
+					"updatedAt": "2025-12-28T10:00:00.000"
+				},
+				{
+					"id": 3,
+					"userId": 1,
+					"enrollmentId": 3,
+					"program": {
+						"id": 7,
+						"title": "Dasar Pemrograman Python",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p7.png"
+					},
+					"virtualAccountNumber": "1234279807580",
+					"amountIdr": 175000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Expired",
+					"payment": null,
+					"createdAt": "2025-12-29T11:00:00.000",
+					"updatedAt": "2025-12-31T23:59:59.999"
+				},
+				{
+					"id": 4,
+					"userId": 1,
+					"enrollmentId": 4,
+					"program": {
+						"id": 2,
+						"title": "Machine Learning Dasar",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p2.png"
+					},
+					"virtualAccountNumber": "1234279807581",
+					"amountIdr": 250000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Verified",
+					"payment": {
+						"id": 2,
+						"amountPaidIdr": 250000.00,
+						"createdAt": "2025-12-30T15:00:00.000",
+						"updatedAt": "2025-12-30T15:00:00.000"
+					},
+					"createdAt": "2025-12-30T12:00:00.000",
+					"updatedAt": "2025-12-30T15:00:00.000"
+				},
+				{
+					"id": 5,
+					"userId": 1,
+					"enrollmentId": 5,
+					"program": {
+						"id": 9,
+						"title": "DevOps Fundamental",
+						"type": "Course",
+						"thumbnailUrl": "https://static.image.com/thumb_p9.png"
+					},
+					"virtualAccountNumber": "1234279807582",
+					"amountIdr": 180000.00,
+					"paymentDueDatetime": "2025-12-31T23:59:59.999",
+					"status": "Unverified",
+					"payment": null,
+					"createdAt": "2025-12-31T08:00:00.000",
+					"updatedAt": "2025-12-31T08:00:00.000"
+				}
+			]
+		},
+		"pagination": {
+			"currentRecords": 5,
+			"totalRecords": 7,
+			"currentPage": 1,
+			"totalPages": 2,
+			"nextPage": 2,
+			"prevPage": null
+		},
+		"errors": null
+	}
+	```
+
+- `GET /api/v1/invoices/{invoiceId}` - Retrieves an invoice details
+
+	- Request:
+
+	```bash
+	curl -X GET http://localhost:3000/api/v1/invoices/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully retrieved an invoice details.",
+		"data": {
+			"invoice": {
+				"id": 1,
+				"userId": 1,
+				"enrollmentId": 1,
+				"program": {
+					"id": 3,
+					"title": "VueJS untuk Pemula",
+					"type": "Course",
+					"thumbnailUrl": "https://static.image.com/thumb_p3.png"
+				},
+				"virtualAccountNumber": "1234279807578",
+				"amountIdr": 150000.00,
+				"paymentDueDatetime": "2025-12-31T23:59:59.999",
+				"status": "Verified",
+				"payment": {
+					"id": 1,
+					"amountPaidIdr": 150000.00,
+					"createdAt": "2025-12-30T23:59:59.999",
+					"updatedAt": "2025-12-30T23:59:59.999"
+				},
+				"createdAt": "2025-12-27T23:59:59.999",
+				"updatedAt": "2025-12-30T23:59:59.999"
+			}
+		},
+		"errors": null
+	}
+	```
+
+- `DELETE /api/v1/invoices/{invoiceId}` - Deletes an invoice
+
+	- Request:
+
+	```bash
+	curl -X DELETE http://localhost:3000/api/v1/invoices/1 \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (200):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 200,
+		"message": "Successfully deleted an invoice.",
+		"data": null,
+		"errors": null
+	}
+	```
+
+- `POST /api/v1/invoices/{invoiceId}/payments` - Creates a payment
+
+	- Request:
+
+	```bash
+	curl -X POST http://localhost:3000/api/v1/invoices/1/payments \
+		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN"
+	```
+
+	- Response (201):
+
+	```json
+	{
+		"success": true,
+		"statusCode": 201,
+		"message": "Successfully created a payment.",
+		"data": {
+			"payment": {
+				"id": 1,
+				"amountPaidIdr": 150000.00,
+				"createdAt": "2025-12-30T23:59:59.999",
+				"updatedAt": "2025-12-30T23:59:59.999"
+			}
+		},
+		"errors": null
+	}
+	```
+
+</details>
+
+<details>
+
+<summary><h3 style="display:inline-block">Discussion Forum Management</h3></summary>
 
 - `GET /api/v1/discussions` - Retrieves all discussion forums
 
@@ -2328,6 +2372,12 @@
 	}
 	```
 
+</details>
+
+<details>
+
+<summary><h3 style="display:inline-block">Feedback Management</h3></summary>
+
 - `GET /api/v1/feedbacks` - Retrieves all feedbacks
 
 	- Request:
@@ -2574,3 +2624,5 @@
 		"errors": null
 	}	
 	```
+
+</details>

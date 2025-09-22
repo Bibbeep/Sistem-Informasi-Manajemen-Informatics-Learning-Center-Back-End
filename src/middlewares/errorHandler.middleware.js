@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 const Joi = require('joi');
+const { MulterError } = require('multer');
 const HTTPError = require('../utils/httpError');
 
 module.exports = (err, req, res, next) => {
@@ -21,6 +22,26 @@ module.exports = (err, req, res, next) => {
                       };
                   })
                 : [],
+        });
+    } else if (err instanceof MulterError) {
+        const statusCode = err.code === 'LIMIT_FILE_SIZE' ? 413 : 400;
+
+        /* istanbul ignore next */
+        return res.status(statusCode).json({
+            success: false,
+            statusCode: statusCode,
+            data: null,
+            message:
+                err.code === 'LIMIT_FILE_SIZE'
+                    ? 'Content Too Large.'
+                    : 'Invalid request.',
+            errors: {
+                message: err.message,
+                context: {
+                    key: err.field || 'file',
+                    value: null,
+                },
+            },
         });
     } else if (err instanceof HTTPError) {
         /* istanbul ignore next */

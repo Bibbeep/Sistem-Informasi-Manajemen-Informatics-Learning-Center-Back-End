@@ -92,4 +92,22 @@ module.exports = {
             next(err);
         }
     },
+    uploadProfilePhoto: async (req, res, next) => {
+        try {
+            const data = await UserService.uploadPhoto({
+                file: req.file,
+                userId: parseInt(req.params.userId, 10),
+            });
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully uploaded a profile picture.',
+                data,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

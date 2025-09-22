@@ -1,7 +1,12 @@
 const bcrypt = require('bcrypt');
+const sharp = require('sharp');
+const { fileTypeFromBuffer } = require('file-type');
+const { Upload } = require('@aws-sdk/lib-storage');
+const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const User = require('../db/models/user');
 const HTTPError = require('../utils/httpError');
 const AuthService = require('./auth.service');
+const { s3 } = require('../configs/s3');
 
 class UserService {
     static async getMany(data) {
@@ -138,6 +143,97 @@ class UserService {
         if (tokenPayload.sub === userId) {
             await AuthService.logout(tokenPayload);
         }
+    }
+
+    static async uploadPhoto(data) {
+        if (!data.file) {
+            throw new HTTPError(400, 'Invalid request.', [
+                {
+                    message: '"photo" is empty',
+                    context: {
+                        key: 'photo',
+                        value: null,
+                    },
+                },
+            ]);
+        }
+
+        const userData = await User.findByPk(data.userId);
+
+        if (!userData) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'User with "userId" does not exist',
+                    context: {
+                        key: 'userId',
+                        value: data.userId,
+                    },
+                },
+            ]);
+        }
+
+        const { file } = data;
+        const fileType = await fileTypeFromBuffer(file.buffer);
+
+        if (
+            !fileType ||
+            !['image/jpeg', 'image/png', 'image/webp'].includes(fileType.mime)
+        ) {
+            throw new HTTPError(415, 'Unsupported Media Type.', [
+                {
+                    message:
+                        'File MIME type must be "image/jpeg", "image/png", or "image/webp"',
+                    context: {
+                        key: 'File MIME Type',
+                        value: fileType.mime || null,
+                    },
+                },
+            ]);
+        }
+
+        const compressedImageBuffer = await sharp(file.buffer)
+            .webp({ quality: 40 })
+            .toBuffer();
+
+        const fileName = `images/${data.userId}-photo-${Date.now().toString()}.webp`;
+
+        const client = new Upload({
+            client: s3,
+            params: {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: compressedImageBuffer,
+                ContentType: 'image/webp',
+                ACL: 'public-read',
+            },
+        });
+
+        const { Location } = await client.done();
+
+        if (userData.pictureUrl) {
+            const oldKey = userData.pictureUrl.split('/').pop();
+            console.log('oldKey ==>', oldKey);
+
+            await s3.send(
+                new DeleteObjectCommand({
+                    Bucket: process.env.S3_BUCKET_NAME,
+                    Key: `images/${oldKey}`,
+                }),
+            );
+        }
+
+        await User.update(
+            { pictureUrl: Location },
+            {
+                where: {
+                    id: data.userId,
+                },
+            },
+        );
+
+        return {
+            pictureUrl: Location,
+        };
     }
 }
 
