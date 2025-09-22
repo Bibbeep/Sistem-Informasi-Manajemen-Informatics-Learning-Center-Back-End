@@ -12,7 +12,7 @@ const mockRes = () => {
 };
 
 describe('Error Handling Middleware Unit Tests', () => {
-    let err, req, res, next;
+    let req, res, next;
 
     beforeEach(() => {
         err = {};
