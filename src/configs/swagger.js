@@ -1,5 +1,5 @@
 const { version, description } = require('../../package.json');
-const swaggerDefinition = require('../swagger/swagger.json');
+const swaggerDefinition = require('../swagger.json');
 
 const swaggerSpec = {
     openapi: '3.1.1',
