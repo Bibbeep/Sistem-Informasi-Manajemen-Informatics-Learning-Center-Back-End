@@ -185,7 +185,7 @@ class UserService {
                         'File MIME type must be "image/jpeg", "image/png", or "image/webp"',
                     context: {
                         key: 'File MIME Type',
-                        value: fileType.mime || null,
+                        value: fileType ? fileType.mime : null,
                     },
                 },
             ]);
@@ -212,7 +212,6 @@ class UserService {
 
         if (userData.pictureUrl) {
             const oldKey = userData.pictureUrl.split('/').pop();
-            console.log('oldKey ==>', oldKey);
 
             await s3.send(
                 new DeleteObjectCommand({

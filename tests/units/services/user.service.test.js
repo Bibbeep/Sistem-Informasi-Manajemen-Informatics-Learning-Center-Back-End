@@ -1,6 +1,42 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models/user');
 jest.mock('../../../src/services/auth.service');
+jest.mock('file-type', () => {
+    return {
+        fileTypeFromBuffer: jest.fn(),
+    };
+});
+jest.mock('@aws-sdk/lib-storage', () => {
+    return {
+        Upload: jest.fn().mockImplementation(() => {
+            return {
+                done: jest.fn().mockResolvedValue({
+                    Location: 'https://mock-s3-location.com/new-photo.webp',
+                }),
+            };
+        }),
+    };
+});
+jest.mock('@aws-sdk/client-s3', () => {
+    return {
+        DeleteObjectCommand: jest.fn(),
+    };
+});
+jest.mock('../../../src/configs/s3', () => {
+    return {
+        s3: {
+            send: jest.fn(),
+        },
+    };
+});
+jest.mock('sharp', () => {
+    return jest.fn(() => {
+        return {
+            webp: jest.fn().mockReturnThis(),
+            toBuffer: jest.fn().mockResolvedValue('compressed-buffer'),
+        };
+    });
+});
 jest.mock('bcrypt', () => {
     return {
         genSalt: jest.fn(),
@@ -13,10 +49,26 @@ const AuthService = require('../../../src/services/auth.service');
 const User = require('../../../src/db/models/user');
 const HTTPError = require('../../../src/utils/httpError');
 const bcrypt = require('bcrypt');
+const { fileTypeFromBuffer } = require('file-type');
+const sharp = require('sharp');
+const { Upload } = require('@aws-sdk/lib-storage');
+const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { s3 } = require('../../../src/configs/s3');
 
 describe('User Service Unit Tests', () => {
-    afterEach(() => {
+    const originalEnv = process.env;
+
+    beforeEach(() => {
+        process.env = {
+            ...originalEnv,
+            BUCKET_NAME: 'my-bucket',
+        };
+
         jest.clearAllMocks();
+    });
+
+    afterEach(() => {
+        process.env = originalEnv;
     });
 
     describe('getMany Tests', () => {
@@ -496,6 +548,129 @@ describe('User Service Unit Tests', () => {
             );
 
             expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+        });
+    });
+
+    describe('uploadPhoto tests', () => {
+        it('should upload a new profile picture and update the user record', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                userId: 1,
+            };
+            const mockUser = {
+                id: 1,
+                pictureUrl: null,
+            };
+            User.findByPk.mockResolvedValue(mockUser);
+            fileTypeFromBuffer.mockResolvedValue({ mime: 'image/png' });
+
+            const result = await UserService.uploadPhoto(mockData);
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+            expect(sharp).toHaveBeenCalledWith(mockData.file.buffer);
+            expect(Upload).toHaveBeenCalledTimes(1);
+            expect(User.update).toHaveBeenCalledWith(
+                {
+                    pictureUrl: 'https://mock-s3-location.com/new-photo.webp',
+                },
+                { where: { id: mockData.userId } },
+            );
+            expect(s3.send).not.toHaveBeenCalled();
+            expect(result).toEqual({
+                pictureUrl: 'https://mock-s3-location.com/new-photo.webp',
+            });
+        });
+
+        it('should upload a new picture and delete the old one if it exists', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                userId: 1,
+            };
+            const mockUser = {
+                id: 1,
+                pictureUrl: 'https://my-bucket.com/images/old-photo.webp',
+            };
+            User.findByPk.mockResolvedValue(mockUser);
+            fileTypeFromBuffer.mockResolvedValue({ mime: 'image/jpeg' });
+
+            await UserService.uploadPhoto(mockData);
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+            expect(s3.send).toHaveBeenCalledTimes(1);
+            expect(DeleteObjectCommand).toHaveBeenCalledTimes(1);
+            expect(User.update).toHaveBeenCalledWith(
+                {
+                    pictureUrl: 'https://mock-s3-location.com/new-photo.webp',
+                },
+                { where: { id: mockData.userId } },
+            );
+        });
+
+        it('should throw an error if no file is provided', async () => {
+            const mockData = { file: null, userId: 1 };
+
+            await expect(UserService.uploadPhoto(mockData)).rejects.toThrow(
+                new HTTPError(400, 'Invalid request.', [
+                    {
+                        message: '"photo" is empty',
+                        context: { key: 'photo', value: null },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 404 error if the user is not found', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                userId: 999,
+            };
+            User.findByPk.mockResolvedValue(null);
+
+            await expect(UserService.uploadPhoto(mockData)).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'User with "userId" does not exist',
+                        context: { key: 'userId', value: 999 },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 415 error for an unsupported file type', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                userId: 1,
+            };
+            const mockUser = { id: 1, pictureUrl: null };
+            User.findByPk.mockResolvedValue(mockUser);
+            fileTypeFromBuffer.mockResolvedValue({ mime: 'application/pdf' });
+
+            await expect(UserService.uploadPhoto(mockData)).rejects.toThrow(
+                new HTTPError(415, 'Unsupported Media Type.', [
+                    {
+                        message:
+                            'File MIME type must be "image/jpeg", "image/png", or "image/webp"',
+                        context: {
+                            key: 'File MIME Type',
+                            value: 'application/pdf',
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 415 error if file type cannot be determined', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                userId: 1,
+            };
+            const mockUser = { id: 1, pictureUrl: null };
+            User.findByPk.mockResolvedValue(mockUser);
+            fileTypeFromBuffer.mockResolvedValue(undefined);
+
+            await expect(UserService.uploadPhoto(mockData)).rejects.toThrow(
+                new HTTPError(415, 'Unsupported Media Type.'),
+            );
         });
     });
 });
