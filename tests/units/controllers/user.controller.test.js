@@ -6,6 +6,7 @@ const {
     getById,
     updateById,
     deleteById,
+    uploadProfilePhoto,
 } = require('../../../src/controllers/user.controller');
 const UserService = require('../../../src/services/user.service');
 const {
@@ -23,6 +24,7 @@ describe('User Controller Unit Tests', () => {
             tokenPayload: {},
             params: {},
             query: {},
+            file: {},
         };
 
         res = {
@@ -328,6 +330,69 @@ describe('User Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('uploadProfilePhoto Tests', () => {
+        it('should send 201 on successful photo upload', async () => {
+            req.params.userId = '1';
+            req.file = { buffer: 'mock-image-buffer' };
+
+            const mockServiceResponse = {
+                pictureUrl: 'https://example.com/new-photo.webp',
+            };
+
+            UserService.uploadPhoto.mockResolvedValue(mockServiceResponse);
+
+            await uploadProfilePhoto(req, res, next);
+
+            expect(UserService.uploadPhoto).toHaveBeenCalledWith({
+                file: req.file,
+                userId: 1,
+            });
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully uploaded a profile picture.',
+                data: mockServiceResponse,
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to next', async () => {
+            req.params.userId = '1';
+            req.file = { buffer: 'mock-image-buffer' };
+
+            const serviceError = new Error('Upload failed');
+            UserService.uploadPhoto.mockRejectedValue(serviceError);
+
+            await uploadProfilePhoto(req, res, next);
+
+            expect(UserService.uploadPhoto).toHaveBeenCalledWith({
+                file: req.file,
+                userId: 1,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should handle cases where no file is uploaded', async () => {
+            req.params.userId = '1';
+            req.file = undefined;
+
+            const serviceError = new Error('No file provided');
+            UserService.uploadPhoto.mockRejectedValue(serviceError);
+
+            await uploadProfilePhoto(req, res, next);
+
+            expect(UserService.uploadPhoto).toHaveBeenCalledWith({
+                file: undefined,
+                userId: 1,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
 });
