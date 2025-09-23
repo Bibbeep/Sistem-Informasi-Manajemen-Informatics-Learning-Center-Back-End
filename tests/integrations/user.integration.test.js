@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 const request = require('supertest');
 const jwt = require('jsonwebtoken');
+const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
@@ -10,24 +11,29 @@ const AuthService = require('../../src/services/auth.service');
 const jwtOptions = require('../../src/configs/jsonwebtoken');
 const truncate = require('../../scripts/db/truncate');
 const userFactory = require('../../src/db/seeders/factories/user');
+const { createPublicTestBucket } = require('../../src/configs/s3TestSetup');
 
 describe('User Management Integration Tests', () => {
     const mockUserPassword = 'password123';
+    const originalBucketName = process.env.S3_BUCKET_NAME;
     let users, tokens;
     let userArrays = [],
         adminArrays = [];
 
-    beforeAll(() => {
-        //
+    beforeAll(async () => {
+        await createPublicTestBucket();
     });
 
     afterAll(async () => {
         server.close();
         await sequelize.close();
         await redisClient.close();
+        process.env.S3_BUCKET_NAME = originalBucketName;
     });
 
     beforeEach(async () => {
+        process.env.S3_BUCKET_NAME = process.env.S3_TEST_BUCKET_NAME;
+
         userArrays = [];
         adminArrays = [];
 
@@ -764,6 +770,154 @@ describe('User Management Integration Tests', () => {
                     },
                 ],
             });
+        });
+    });
+
+    describe('PUT /api/v1/users/:userId/profilePhotos', () => {
+        const testImagePath = path.join(
+            __dirname,
+            'fixtures',
+            'test-image.png',
+        );
+
+        it('should return 201 and successfully upload a profile photo as the resource owner', async () => {
+            const response = await request(server)
+                .put(`/api/v1/users/${users.user[0].id}/profilePhotos`)
+                .set('Authorization', `Bearer ${tokens.validUser}`)
+                .attach('photo', testImagePath);
+
+            expect(response.status).toBe(201);
+            expect(response.body).toMatchObject({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully uploaded a profile picture.',
+                data: {
+                    pictureUrl: expect.stringContaining('.webp'),
+                },
+                errors: null,
+            });
+        });
+
+        it('should return 201 and successfully upload a profile photo as an admin', async () => {
+            const response = await request(server)
+                .put(`/api/v1/users/${users.user[0].id}/profilePhotos`)
+                .set('Authorization', `Bearer ${tokens.validAdmin}`)
+                .attach('photo', testImagePath);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.pictureUrl).toBeDefined();
+        });
+
+        it('should return 400 when there is extra field', async () => {
+            const response = await request(server)
+                .put(`/api/v1/users/${users.user[0].id}/profilePhotos`)
+                .set('Authorization', `Bearer ${tokens.validAdmin}`)
+                .attach('photo', testImagePath)
+                .attach('photo2', testImagePath);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when file is empty', async () => {
+            const response = await request(server)
+                .put(`/api/v1/users/${users.user[0].id}/profilePhotos`)
+                .set('Authorization', `Bearer ${tokens.validAdmin}`)
+                .attach('photo');
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when path parameter is invalid', async () => {
+            const response = await request(server)
+                .put('/api/v1/users/abc/profilePhotos')
+                .set('Authorization', `Bearer ${tokens.validUser}`)
+                .send();
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when no authorization is provided', async () => {
+            const response = await request(server)
+                .put(`/api/v1/users/${users.user[0].id}/profilePhotos`)
+                .attach('photo', testImagePath);
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when a user tries to upload for another user', async () => {
+            const response = await request(server)
+                .put(`/api/v1/users/${users.admin[0].id}/profilePhotos`)
+                .set('Authorization', `Bearer ${tokens.validUser}`);
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when the user does not exist', async () => {
+            const response = await request(server)
+                .put('/api/v1/users/9999/profilePhotos')
+                .set('Authorization', `Bearer ${tokens.validAdmin}`)
+                .attach('photo', testImagePath);
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 413 when the file is too large', async () => {
+            const largeImagePath = path.join(
+                __dirname,
+                'fixtures',
+                'large-test-image.jpg',
+            );
+            const response = await request(server)
+                .put(`/api/v1/users/${users.user[0].id}/profilePhotos`)
+                .set('Authorization', `Bearer ${tokens.validUser}`)
+                .attach('photo', largeImagePath);
+
+            expect(response.status).toBe(413);
+        });
+
+        it('should return 415 for an unsupported file type', async () => {
+            const textFilePath = path.join(
+                __dirname,
+                'fixtures',
+                'test-file.txt',
+            );
+
+            const response = await request(server)
+                .put(`/api/v1/users/${users.user[0].id}/profilePhotos`)
+                .set('Authorization', `Bearer ${tokens.validUser}`)
+                .attach('photo', textFilePath);
+
+            expect(response.status).toBe(415);
+        });
+
+        it('should return 415 when the file type cannot be determined', async () => {
+            const emptyFilePath = path.join(
+                __dirname,
+                'fixtures',
+                'empty-file',
+            );
+
+            const response = await request(server)
+                .put(`/api/v1/users/${users.user[0].id}/profilePhotos`)
+                .set('Authorization', `Bearer ${tokens.validUser}`)
+                .attach('photo', emptyFilePath);
+
+            expect(response.status).toBe(415);
+        });
+
+        it('should return 415 for a fake image file', async () => {
+            const fakeImagePath = path.join(
+                __dirname,
+                'fixtures',
+                'fake-image.png',
+            );
+
+            const response = await request(server)
+                .put(`/api/v1/users/${users.user[0].id}/profilePhotos`)
+                .set('Authorization', `Bearer ${tokens.validUser}`)
+                .attach('photo', fakeImagePath);
+
+            expect(response.status).toBe(415);
         });
     });
 });

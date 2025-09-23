@@ -198,7 +198,7 @@ describe('User Controller Unit Tests', () => {
         });
     });
 
-    describe('updateById', () => {
+    describe('updateById Tests', () => {
         it('should sends 200 on success and does not call next', async () => {
             req.body = {
                 fullName: 'Rick Flag Jr',
@@ -289,7 +289,7 @@ describe('User Controller Unit Tests', () => {
         });
     });
 
-    describe('deleteById', () => {
+    describe('deleteById Tests', () => {
         it('should sends 200 on success and does not call next', async () => {
             req.params = {
                 userId: 1,

@@ -3,7 +3,7 @@ jest.mock('../../../src/db/models/user');
 jest.mock('../../../src/services/auth.service');
 jest.mock('file-type', () => {
     return {
-        fileTypeFromBuffer: jest.fn(),
+        fromBuffer: jest.fn(),
     };
 });
 jest.mock('@aws-sdk/lib-storage', () => {
@@ -49,7 +49,7 @@ const AuthService = require('../../../src/services/auth.service');
 const User = require('../../../src/db/models/user');
 const HTTPError = require('../../../src/utils/httpError');
 const bcrypt = require('bcrypt');
-const { fileTypeFromBuffer } = require('file-type');
+const { fromBuffer } = require('file-type');
 const sharp = require('sharp');
 const { Upload } = require('@aws-sdk/lib-storage');
 const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
@@ -562,7 +562,7 @@ describe('User Service Unit Tests', () => {
                 pictureUrl: null,
             };
             User.findByPk.mockResolvedValue(mockUser);
-            fileTypeFromBuffer.mockResolvedValue({ mime: 'image/png' });
+            fromBuffer.mockResolvedValue({ mime: 'image/png' });
 
             const result = await UserService.uploadPhoto(mockData);
 
@@ -591,7 +591,7 @@ describe('User Service Unit Tests', () => {
                 pictureUrl: 'https://my-bucket.com/images/old-photo.webp',
             };
             User.findByPk.mockResolvedValue(mockUser);
-            fileTypeFromBuffer.mockResolvedValue({ mime: 'image/jpeg' });
+            fromBuffer.mockResolvedValue({ mime: 'image/jpeg' });
 
             await UserService.uploadPhoto(mockData);
 
@@ -643,7 +643,7 @@ describe('User Service Unit Tests', () => {
             };
             const mockUser = { id: 1, pictureUrl: null };
             User.findByPk.mockResolvedValue(mockUser);
-            fileTypeFromBuffer.mockResolvedValue({ mime: 'application/pdf' });
+            fromBuffer.mockResolvedValue({ mime: 'application/pdf' });
 
             await expect(UserService.uploadPhoto(mockData)).rejects.toThrow(
                 new HTTPError(415, 'Unsupported Media Type.', [
@@ -666,7 +666,7 @@ describe('User Service Unit Tests', () => {
             };
             const mockUser = { id: 1, pictureUrl: null };
             User.findByPk.mockResolvedValue(mockUser);
-            fileTypeFromBuffer.mockResolvedValue(undefined);
+            fromBuffer.mockResolvedValue(undefined);
 
             await expect(UserService.uploadPhoto(mockData)).rejects.toThrow(
                 new HTTPError(415, 'Unsupported Media Type.'),

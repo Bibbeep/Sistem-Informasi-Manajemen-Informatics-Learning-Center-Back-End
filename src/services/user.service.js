@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const sharp = require('sharp');
-const { fileTypeFromBuffer } = require('file-type');
+const { fromBuffer } = require('file-type');
 const { Upload } = require('@aws-sdk/lib-storage');
 const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const User = require('../db/models/user');
@@ -173,7 +173,7 @@ class UserService {
         }
 
         const { file } = data;
-        const fileType = await fileTypeFromBuffer(file.buffer);
+        const fileType = await fromBuffer(file.buffer);
 
         if (
             !fileType ||
