@@ -221,14 +221,16 @@ class UserService {
             );
         }
 
-        await User.update(
-            { pictureUrl: Location },
-            {
-                where: {
-                    id: data.userId,
+        if (Location) {
+            await User.update(
+                { pictureUrl: Location },
+                {
+                    where: {
+                        id: data.userId,
+                    },
                 },
-            },
-        );
+            );
+        }
 
         return {
             pictureUrl: Location,

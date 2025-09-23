@@ -581,6 +581,34 @@ describe('User Service Unit Tests', () => {
             });
         });
 
+        it('should upload a new profile picture and not throw error even if failed to update to database', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                userId: 1,
+            };
+            const mockUser = {
+                id: 1,
+                pictureUrl: null,
+            };
+            User.findByPk.mockResolvedValue(mockUser);
+            fromBuffer.mockResolvedValue({ mime: 'image/png' });
+            Upload.mockImplementationOnce(() => {
+                return {
+                    done: jest.fn().mockResolvedValue({
+                        Location: undefined,
+                    }),
+                };
+            });
+
+            await UserService.uploadPhoto(mockData);
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+            expect(sharp).toHaveBeenCalledWith(mockData.file.buffer);
+            expect(Upload).toHaveBeenCalledTimes(1);
+            expect(User.update).not.toHaveBeenCalled();
+            expect(s3.send).not.toHaveBeenCalled();
+        });
+
         it('should upload a new picture and delete the old one if it exists', async () => {
             const mockData = {
                 file: { buffer: 'mock-buffer' },

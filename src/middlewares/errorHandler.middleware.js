@@ -68,7 +68,7 @@ module.exports = (err, req, res, next) => {
             console.error(err);
         }
 
-        console.error('500 Error ==>', err);
+        // console.log('500 Error ==>', err);
         return res.status(500).json({
             success: false,
             statusCode: 500,

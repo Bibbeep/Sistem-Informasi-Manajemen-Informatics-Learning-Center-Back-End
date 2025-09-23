@@ -571,6 +571,163 @@
                 }
             }
         },
+        "/api/v1/users/{userId}/profilePhotos": {
+            "put": {
+                "summary": "Uploads or updates a user's profile photo",
+                "tags": ["User Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "userId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the user whose profile photo is being uploaded."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "type": "object",
+                                "properties": {
+                                    "photo": {
+                                        "type": "string",
+                                        "format": "binary",
+                                        "description": "The image file to upload (JPEG, PNG, WEBP). Max size: 5MB."
+                                    }
+                                },
+                                "required": ["photo"]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully uploaded the profile photo.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProfilePhotoUploadSuccessResponse201"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid user ID format or the photo field is empty.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, the user is not an admin or the owner of the account.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User with the given ID was not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "413": {
+                        "description": "The uploaded file is too large (exceeds 5MB).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "PayloadTooLarge": {
+                                        "$ref": "#/components/examples/PayloadTooLarge"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "The uploaded file format is not supported.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/register": {
             "post": {
                 "summary": "Registers a new user account",
@@ -1554,6 +1711,33 @@
                     "data": null,
                     "errors": null
                 }
+            },
+            "ProfilePhotoUploadSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "pictureUrl": {
+                                "type": "string",
+                                "format": "uri"
+                            }
+                        }
+                    },
+                    "errors": { "type": "array", "nullable": true }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 201,
+                    "message": "Successfully uploaded a profile picture.",
+                    "data": {
+                        "pictureUrl": "http://localhost:9000/sim-ilc/images/1-photo-1758632370659.webp"
+                    },
+                    "errors": null
+                }
             }
         },
         "examples": {
@@ -1683,6 +1867,22 @@
                     "data": null,
                     "message": "There is an issue with the server.",
                     "errors": null
+                }
+            },
+            "PayloadTooLarge": {
+                "summary": "Payload Too Large",
+                "value": {
+                    "success": false,
+                    "statusCode": 413,
+                    "data": null,
+                    "message": "Content Too Large.",
+                    "errors": {
+                        "message": "File too large",
+                        "context": {
+                            "key": "photo",
+                            "value": null
+                        }
+                    }
                 }
             }
         }
