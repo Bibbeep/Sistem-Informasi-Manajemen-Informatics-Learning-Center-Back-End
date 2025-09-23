@@ -44,9 +44,6 @@ module.exports = sequelize.define(
             allowNull: true,
             type: DataTypes.TEXT,
             field: 'picture_url',
-            validate: {
-                isUrl: true,
-            },
         },
         createdAt: {
             allowNull: false,

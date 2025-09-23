@@ -21,7 +21,7 @@ export default defineConfig([
         rules: {
             'no-unused-vars': 'warn',
             'arrow-body-style': ['error', 'always'],
-            'capitalized-comments': ['error', 'always'],
+            'capitalized-comments': ['off', 'always'],
         },
     },
 ]);

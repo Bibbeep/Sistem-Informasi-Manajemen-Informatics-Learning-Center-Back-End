@@ -1,6 +1,7 @@
 const HTTPError = require('../utils/httpError');
 const { verify } = require('../utils/jwtHelper');
 const { redisClient } = require('../configs/redis');
+const { validateId } = require('../validations/validator');
 
 module.exports = {
     authenticate: async (req, res, next) => {
@@ -31,5 +32,58 @@ module.exports = {
         } catch (err) {
             next(err);
         }
+    },
+    authorize: (options) => {
+        const { rules } = options;
+
+        return async (req, res, next) => {
+            try {
+                const { sub: loggedInUserId, admin: isAdmin } =
+                    req.tokenPayload;
+
+                if (rules.includes('admin') && isAdmin) {
+                    return next();
+                }
+
+                if (rules.includes('self')) {
+                    const targetUserId = req.params.userId;
+
+                    if (
+                        targetUserId &&
+                        parseInt(targetUserId, 10) === loggedInUserId
+                    ) {
+                        return next();
+                    }
+                }
+
+                throw new HTTPError(403, 'Forbidden.', [
+                    {
+                        message:
+                            'You do not have the necessary permissions to access this resource.',
+                        context: {
+                            key: 'role',
+                            value: 'User',
+                        },
+                    },
+                ]);
+            } catch (err) {
+                next(err);
+            }
+        };
+    },
+    validatePathParameterId: (paramName) => {
+        return (req, res, next) => {
+            try {
+                const { error } = validateId(req.params[paramName]);
+
+                if (error) {
+                    throw error;
+                }
+
+                next();
+            } catch (err) {
+                next(err);
+            }
+        };
     },
 };

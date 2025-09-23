@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 const Joi = require('joi');
+const { MulterError } = require('multer');
 const errorHandler = require('../../../src/middlewares/errorHandler.middleware');
 const HTTPError = require('../../../src/utils/httpError');
 
@@ -14,6 +15,7 @@ describe('Error Handling Middleware Unit Tests', () => {
     let req, res, next;
 
     beforeEach(() => {
+        err = {};
         req = {};
         res = mockRes();
         next = jest.fn();
@@ -78,6 +80,50 @@ describe('Error Handling Middleware Unit Tests', () => {
             }),
         );
         expect(next).not.toHaveBeenCalled();
+    });
+
+    it('should handles MulterError with 413 error code', () => {
+        const mockError = new MulterError('LIMIT_FILE_SIZE', 'photo');
+
+        errorHandler(mockError, req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(413);
+        expect(res.json).toHaveBeenCalledWith(
+            expect.objectContaining({
+                success: false,
+                statusCode: 413,
+                data: null,
+                message: 'Content Too Large.',
+                errors: {
+                    message: 'File too large',
+                    context: {
+                        key: 'photo',
+                        value: null,
+                    },
+                },
+            }),
+        );
+    });
+
+    it('should handles MulterError with 400 error code', () => {
+        const mockError = new MulterError('LIMIT_FIELD_VALUE', 'photo');
+
+        errorHandler(mockError, req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            success: false,
+            statusCode: 400,
+            data: null,
+            message: 'Invalid request.',
+            errors: {
+                message: 'Field value too long',
+                context: {
+                    key: 'photo',
+                    value: null,
+                },
+            },
+        });
     });
 
     it('should handles generic Error with 500 and generic message', () => {

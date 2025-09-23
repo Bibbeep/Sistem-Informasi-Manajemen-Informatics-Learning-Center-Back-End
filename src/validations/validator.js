@@ -4,7 +4,10 @@ const {
     tokenPayload,
     forgotPassword,
     resetPassword,
+    uniqueIdentifier,
+    userUpdate,
 } = require('./schemas/auth');
+const { userQueryParam } = require('./schemas/user');
 
 const validator = (schema) => {
     return (payload) => {
@@ -18,4 +21,7 @@ module.exports = {
     validateTokenPayload: validator(tokenPayload),
     validateForgotPassword: validator(forgotPassword),
     validateResetPassword: validator(resetPassword),
+    validateUserQuery: validator(userQueryParam),
+    validateId: validator(uniqueIdentifier),
+    validateUpdateUserData: validator(userUpdate),
 };

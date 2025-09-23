@@ -5,12 +5,14 @@ if (process.env.NODE_ENV !== 'production') {
 
 const express = require('express');
 const cors = require('cors');
+const compression = require('compression');
 const morganMiddleware = require('./configs/morgan');
 const routes = require('./routes/index.route');
 const errorHandler = require('./middlewares/errorHandler.middleware');
 
 const app = express();
 
+app.use(compression());
 app.use(
     cors({
         origin: process.env.CORS_ORIGIN,

@@ -41,21 +41,9 @@ redisClient.on('error', (err) => {
     process.exit(-1);
 });
 
-redisClient.on('connect', () => {
-    if (process.env.NODE_ENV !== 'production') {
-        console.log(chalk.red('[Redis]'), 'Database connected');
-    }
-});
-
 redisClient.on('reconnecting', () => {
     if (process.env.NODE_ENV !== 'production') {
         console.log(chalk.red('[Redis]'), 'Client reconnecting');
-    }
-});
-
-redisClient.on('ready', () => {
-    if (process.env.NODE_ENV !== 'production') {
-        console.log(chalk.red('[Redis]'), 'Client is ready');
     }
 });
 

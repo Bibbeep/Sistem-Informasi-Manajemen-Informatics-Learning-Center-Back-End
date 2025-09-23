@@ -1,10 +1,16 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/utils/jwtHelper');
 jest.mock('../../../src/configs/redis');
-const { authenticate } = require('../../../src/middlewares/auth.middleware');
+jest.mock('../../../src/validations/validator');
+const {
+    authenticate,
+    authorize,
+    validatePathParameterId,
+} = require('../../../src/middlewares/auth.middleware');
 const { verify } = require('../../../src/utils/jwtHelper');
 const { redisClient } = require('../../../src/configs/redis');
 const HTTPError = require('../../../src/utils/httpError');
+const { validateId } = require('../../../src/validations/validator');
 
 const mockRes = () => {
     const res = {};
@@ -17,7 +23,12 @@ describe('Authentication Middleware Unit Tests', () => {
     let req, res, next;
 
     beforeEach(() => {
-        req = { headers: {} };
+        req = {
+            headers: {},
+            tokenPayload: {},
+            params: {},
+            query: {},
+        };
         res = mockRes();
         next = jest.fn();
     });
@@ -110,6 +121,93 @@ describe('Authentication Middleware Unit Tests', () => {
             expect(redisClient.get).toHaveBeenCalledWith(
                 `user:${mockDecoded.sub}:JWT:${mockDecoded.jti}:logoutAt`,
             );
+            expect(next).toHaveBeenCalledWith(mockError);
+        });
+    });
+
+    describe('authorize Tests', () => {
+        it('should call next without error when admin access', async () => {
+            req.tokenPayload = { admin: true };
+            const mockOptions = { rules: ['admin'] };
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith();
+        });
+
+        it('should call next with error when user is not admin', async () => {
+            req.tokenPayload = { admin: false };
+            const mockOptions = { rules: ['admin'] };
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(
+                new HTTPError(403, 'Forbidden.', [
+                    {
+                        message:
+                            'You do not have the necessary permissions to access this resource.',
+                        context: {
+                            key: 'role',
+                            value: 'User',
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should call next without error when user access the their own resource by request parameter', async () => {
+            req.tokenPayload = { sub: 1, admin: false };
+            req.params = { userId: '1' };
+            const mockOptions = { rules: ['self', 'admin'] };
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith();
+        });
+
+        it('should call next with error when user access the resource not theirs by request query', async () => {
+            req.tokenPayload = { sub: 1, admin: false };
+            req.query = { userId: '2' };
+            const mockOptions = { rules: ['self', 'admin'] };
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(
+                new HTTPError(403, 'Forbidden.', [
+                    {
+                        message:
+                            'You do not have the necessary permissions to access this resource.',
+                        context: {
+                            key: 'role',
+                            value: 'User',
+                        },
+                    },
+                ]),
+            );
+        });
+    });
+
+    describe('validatePathParameterId Tests', () => {
+        it('should call next without error', () => {
+            req.params = { userId: 1 };
+            const mockParamName = 'userId';
+            validateId.mockReturnValue({ error: null });
+
+            validatePathParameterId(mockParamName)(req, res, next);
+
+            expect(validateId).toHaveBeenCalledWith(req.params.userId);
+            expect(next).toHaveBeenCalledWith();
+        });
+
+        it('should call next with error when id is invalid', () => {
+            req.params = { userId: 'abc' };
+            const mockParamName = 'userId';
+            const mockError = new Error();
+            validateId.mockReturnValue({ error: mockError });
+
+            validatePathParameterId(mockParamName)(req, res, next);
+
+            expect(validateId).toHaveBeenCalledWith(req.params.userId);
             expect(next).toHaveBeenCalledWith(mockError);
         });
     });
