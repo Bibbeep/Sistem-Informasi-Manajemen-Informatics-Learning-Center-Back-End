@@ -3,7 +3,7 @@ Sistem Informasi Manajemen - Informatics Learning Center (SIM ILC) Back-End
 
 This is the back-end service for the SIM ILC project, providing a robust API for managing users, programs, enrollments, and more. It's built with Node.js, Express, and Sequelize.
 
-For a fully containerized setup using Docker, please see the [**Docker Setup Guide**](https://www.google.com/search?q=./docs/README.Docker.md).
+For a fully containerized setup using Docker, please see the [**Docker Setup Guide**](README.Docker.md).
 
 *   [**Live API Documentation (Postman)**](https://documenter.getpostman.com/view/37947000/2sB3HtFGYu)
     
