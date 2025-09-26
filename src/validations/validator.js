@@ -8,6 +8,7 @@ const {
     userUpdate,
 } = require('./schemas/auth');
 const { userQueryParam } = require('./schemas/user');
+const { feedbackQueryParam } = require('./schemas/feedback');
 
 const validator = (schema) => {
     return (payload) => {
@@ -24,4 +25,5 @@ module.exports = {
     validateUserQuery: validator(userQueryParam),
     validateId: validator(uniqueIdentifier),
     validateUpdateUserData: validator(userUpdate),
+    validateFeedbackQuery: validator(feedbackQueryParam),
 };

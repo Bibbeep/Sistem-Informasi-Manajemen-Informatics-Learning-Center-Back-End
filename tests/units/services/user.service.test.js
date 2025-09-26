@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-jest.mock('../../../src/db/models/user');
+jest.mock('../../../src/db/models');
 jest.mock('../../../src/services/auth.service');
 jest.mock('file-type', () => {
     return {
@@ -46,7 +46,7 @@ jest.mock('bcrypt', () => {
 });
 const UserService = require('../../../src/services/user.service');
 const AuthService = require('../../../src/services/auth.service');
-const User = require('../../../src/db/models/user');
+const { User } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
 const bcrypt = require('bcrypt');
 const { fromBuffer } = require('file-type');

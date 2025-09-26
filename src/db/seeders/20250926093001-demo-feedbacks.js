@@ -1,23 +1,16 @@
 /* eslint-disable no-unused-vars */
 'use strict';
 const { fakerID_ID: faker } = require('@faker-js/faker');
-const bcrypt = require('bcrypt');
 
-async function createUsers() {
-    const users = [];
+async function createFeedbacks() {
+    const feedbacks = [];
 
     for (let i = 0; i < 100; i++) {
         const createdAt = faker.date.past();
-        const user = {
+        const feedback = {
             email: faker.internet.email(),
-            hashed_password: await bcrypt.hash(
-                faker.internet.password(),
-                await bcrypt.genSalt(10),
-            ),
             full_name: faker.person.fullName(),
-            member_level: faker.helpers.arrayElement(['Basic', 'Premium']),
-            role: i % 2 === 0 ? 'User' : 'Admin',
-            picture_url: faker.internet.url(),
+            message: faker.lorem.text(),
             created_at: createdAt,
             updated_at: faker.date.between({
                 from: createdAt,
@@ -25,20 +18,24 @@ async function createUsers() {
             }),
         };
 
-        users.push(user);
+        feedbacks.push(feedback);
     }
 
-    return users;
+    return feedbacks;
 }
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.bulkInsert('users', await createUsers(), {});
+        await queryInterface.bulkInsert(
+            'feedbacks',
+            await createFeedbacks(),
+            {},
+        );
     },
 
     async down(queryInterface, Sequelize) {
-        await queryInterface.bulkDelete('users', null, {
+        await queryInterface.bulkDelete('feedbacks', null, {
             truncate: true,
             cascade: true,
             restartIdentity: true,

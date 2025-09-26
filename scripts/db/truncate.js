@@ -11,6 +11,7 @@ module.exports = async function truncate() {
             return models[key].destroy({
                 where: {},
                 truncate: true,
+                cascade: true,
                 restartIdentity: true,
                 force: true,
             });

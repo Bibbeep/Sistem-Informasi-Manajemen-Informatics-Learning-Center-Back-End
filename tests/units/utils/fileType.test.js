@@ -1,7 +1,7 @@
+/* eslint-disable no-undef */
 const { image } = require('../../../src/utils/fileType');
 const HTTPError = require('../../../src/utils/httpError');
 
-/* eslint-disable no-undef */
 describe('File Type Utility Unit Tests', () => {
     let req, cb;
 

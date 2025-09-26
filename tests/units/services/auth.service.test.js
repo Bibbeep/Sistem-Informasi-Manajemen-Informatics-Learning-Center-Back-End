@@ -31,8 +31,7 @@ jest.mock('nodemailer', () => {
 });
 jest.mock('jsonwebtoken');
 jest.mock('uuid');
-jest.mock('fs');
-jest.mock('../../../src/db/models/user');
+jest.mock('../../../src/db/models');
 jest.mock('../../../src/utils/jwtHelper');
 jest.mock('../../../src/configs/redis');
 jest.mock('../../../src/utils/mailer');
@@ -43,7 +42,7 @@ const { v4: uuidv4 } = require('uuid');
 const fs = require('fs');
 const crypto = require('crypto');
 const AuthService = require('../../../src/services/auth.service');
-const User = require('../../../src/db/models/user');
+const { User } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
 const { sign } = require('../../../src/utils/jwtHelper');
 const { redisClient } = require('../../../src/configs/redis');
@@ -432,7 +431,9 @@ describe('Authentication Service Unit Tests', () => {
                     return mockHashedToken;
                 },
             });
-            fs.readFileSync.mockReturnValue('Hello {{fullName}}');
+            const readFileSyncSpy = jest
+                .spyOn(fs, 'readFileSync')
+                .mockReturnValue('Hello {{fullName}}');
             mailer.mockResolvedValue();
 
             await AuthService.sendResetPasswordMail({ email: mockEmail });
@@ -445,13 +446,14 @@ describe('Authentication Service Unit Tests', () => {
                 mockHashedToken,
                 { expiration: { type: 'EX', value: 900 } },
             );
-            expect(fs.readFileSync).toHaveBeenCalled();
+            expect(readFileSyncSpy).toHaveBeenCalled();
             expect(mailer).toHaveBeenCalledWith(
                 mockEmail,
                 'Permintaan Reset Password - Informatics Learning Center',
                 expect.any(String),
                 'Hello John Doe',
             );
+            readFileSyncSpy.mockRestore();
         });
 
         it('should ignore and return void with email does not exist', async () => {
