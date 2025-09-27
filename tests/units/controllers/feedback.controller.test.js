@@ -1,8 +1,12 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/services/feedback.service');
 jest.mock('../../../src/validations/validator');
-const { getAll } = require('../../../src/controllers/feedback.controller');
+const {
+    getAll,
+    getById,
+} = require('../../../src/controllers/feedback.controller');
 const FeedbackService = require('../../../src/services/feedback.service');
+const HTTPError = require('../../../src/utils/httpError');
 const { validateFeedbackQuery } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -127,6 +131,75 @@ describe('Feedback Controller Unit Tests', () => {
             await getAll(req, res, next);
 
             expect(validateFeedbackQuery).toHaveBeenCalledWith(req.query);
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getById Tests', () => {
+        it('should sends 200 on success and does not call next', async () => {
+            req.params = { feedbackId: '1' };
+            const mockFeedback = {
+                id: 1,
+                email: 'Salsabila.Nasyiah@yahoo.co.id',
+                fullName: 'Zalindra Lestari',
+                message: 'Contigo possimus dignissimos tamdiu.',
+                createdAt: '2025-03-12T03:13:10.990Z',
+                updatedAt: '2025-07-19T16:11:02.483Z',
+                responses: [
+                    {
+                        id: 1,
+                        adminUserId: 2,
+                        message:
+                            'Considero tenus acidus acquiro demitto illo corporis degero. Optio tumultus vulgaris valde creptio vilicus fuga tertius ubi.',
+                        createdAt: '2025-03-20T20:45:47.619Z',
+                        updatedAt: '2025-05-18T11:04:15.275Z',
+                    },
+                ],
+            };
+
+            FeedbackService.getOne.mockResolvedValue(mockFeedback);
+
+            await getById(req, res, next);
+
+            expect(FeedbackService.getOne).toHaveBeenCalledWith(
+                parseInt(req.params.feedbackId, 10),
+            );
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully retrieved a feedback details.',
+                    data: {
+                        feedback: mockFeedback,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should sends 404 error thrown from service and call next', async () => {
+            req.params = { feedbackId: '404' };
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Feedback with "feedbackId" does not exist',
+                    context: {
+                        key: 'feedbackId',
+                        value: parseInt(req.params.feedbackId, 10),
+                    },
+                },
+            ]);
+
+            FeedbackService.getOne.mockRejectedValue(mockError);
+
+            await getById(req, res, next);
+
+            expect(FeedbackService.getOne).toHaveBeenCalledWith(
+                parseInt(req.params.feedbackId, 10),
+            );
             expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
