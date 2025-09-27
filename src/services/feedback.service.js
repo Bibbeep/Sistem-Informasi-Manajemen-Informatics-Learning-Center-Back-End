@@ -1,4 +1,5 @@
 const { Feedback, FeedbackResponse } = require('../db/models');
+const HTTPError = require('../utils/httpError');
 
 class FeedbackService {
     static async getMany(data) {
@@ -41,6 +42,34 @@ class FeedbackService {
             },
             feedbacks: rows,
         };
+    }
+
+    static async getOne(feedbackId) {
+        const feedback = await Feedback.findByPk(feedbackId, {
+            include: [
+                {
+                    model: FeedbackResponse,
+                    as: 'responses',
+                    attributes: {
+                        exclude: ['feedbackId'],
+                    },
+                },
+            ],
+        });
+
+        if (!feedback) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Feedback with "feedbackId" does not exist',
+                    context: {
+                        key: 'feedbackId',
+                        value: feedbackId,
+                    },
+                },
+            ]);
+        }
+
+        return feedback;
     }
 }
 
