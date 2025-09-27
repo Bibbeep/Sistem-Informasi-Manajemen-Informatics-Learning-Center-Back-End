@@ -235,4 +235,124 @@ describe('Feedback Management Integration Tests', () => {
             );
         });
     });
+
+    describe('GET /api/v1/feedbacks/:feedbackId', () => {
+        it('should return 200 and fetches feedback data', async () => {
+            const response = await request(server)
+                .get('/api/v1/feedbacks/1')
+                .set('Authorization', `Bearer ${tokens.validAdmin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully retrieved a feedback details.',
+                    data: {
+                        feedback: expect.any(Object),
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should return 400 with invalid path params', async () => {
+            const response = await request(server)
+                .get('/api/v1/feedbacks/abc')
+                .set('Authorization', `Bearer ${tokens.validAdmin}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 400,
+                    data: null,
+                    message: 'Validation error.',
+                    errors: [
+                        {
+                            message: '"value" must be a number',
+                            context: {
+                                value: 'abc',
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 401 with invalid access token', async () => {
+            const response = await request(server).get('/api/v1/feedbacks/1');
+
+            expect(response.status).toBe(401);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 401,
+                    data: null,
+                    message: 'Unauthorized.',
+                    errors: [
+                        {
+                            message: 'Invalid or expired token.',
+                            context: {
+                                key: 'request.headers.authorization',
+                                value: null,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 403 with user access token', async () => {
+            const response = await request(server)
+                .get('/api/v1/feedbacks/1')
+                .set('Authorization', `Bearer ${tokens.validUser}`);
+
+            expect(response.status).toBe(403);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 403,
+                    data: null,
+                    message: 'Forbidden.',
+                    errors: [
+                        {
+                            message:
+                                'You do not have the necessary permissions to access this resource.',
+                            context: {
+                                key: 'role',
+                                value: 'User',
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 404 when feedback does not exist', async () => {
+            const response = await request(server)
+                .get('/api/v1/feedbacks/404')
+                .set('Authorization', `Bearer ${tokens.validAdmin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 404,
+                    data: null,
+                    message: 'Resource not found.',
+                    errors: [
+                        {
+                            message:
+                                'Feedback with "feedbackId" does not exist',
+                            context: {
+                                key: 'feedbackId',
+                                value: 404,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+    });
 });
