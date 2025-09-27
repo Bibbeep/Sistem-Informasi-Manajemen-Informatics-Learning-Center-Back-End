@@ -1342,6 +1342,130 @@
                     }
                 }
             }
+        },
+        "/api/v1/feedbacks/{feedbackId}": {
+            "get": {
+                "summary": "Retrieves a specific feedback by their ID",
+                "tags": ["Feedback Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "feedbackId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the feedback to retrieve."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the feedback data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FeedbackSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid feedback ID format.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin or the owner of the account.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Feedback with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1993,6 +2117,57 @@
                         "totalPages": 1,
                         "nextPage": null,
                         "prevPage": null
+                    },
+                    "errors": null
+                }
+            },
+            "FeedbackSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "feedback": {
+                                "$ref": "#/components/schemas/Feedback"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved a feedback details.",
+                    "data": {
+                        "feedback": {
+                            "id": 1,
+                            "email": "Salsabila.Nasyiah@yahoo.co.id",
+                            "fullName": "Zalindra Lestari",
+                            "message": "Contigo possimus dignissimos tamdiu.",
+                            "createdAt": "2025-03-12T03:13:10.990Z",
+                            "updatedAt": "2025-07-19T16:11:02.483Z",
+                            "responses": [
+                                {
+                                    "id": 1,
+                                    "adminUserId": 2,
+                                    "message": "Considero tenus acidus acquiro demitto illo corporis degero. Optio tumultus vulgaris valde creptio vilicus fuga tertius ubi.",
+                                    "createdAt": "2025-03-20T20:45:47.619Z",
+                                    "updatedAt": "2025-05-18T11:04:15.275Z"
+                                }
+                            ]
+                        }
                     },
                     "errors": null
                 }
