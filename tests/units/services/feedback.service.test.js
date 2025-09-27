@@ -365,4 +365,29 @@ describe('Feedback Service Unit Tests', () => {
             });
         });
     });
+
+    describe('create Tests', () => {
+        it('should create a new feedback', async () => {
+            const mockData = {
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+                message: 'It would be helpful if you guys can add quizzes :)',
+            };
+            const mockReturnData = {
+                id: 1,
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+                message: 'It would be helpful if you guys can add quizzes :)',
+                updatedAt: '2025-09-27T14:12:22.993Z',
+                createdAt: '2025-09-27T14:12:22.993Z',
+            };
+
+            Feedback.create.mockResolvedValue(mockReturnData);
+
+            const returnValue = await FeedbackService.create(mockData);
+
+            expect(Feedback.create).toHaveBeenCalledWith({ ...mockData });
+            expect(returnValue).toStrictEqual(mockReturnData);
+        });
+    });
 });
