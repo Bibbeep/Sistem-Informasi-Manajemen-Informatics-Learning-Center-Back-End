@@ -2403,7 +2403,7 @@
 					"message": "It would be helpful if you guys can add quizzes :)",
 					"responses": [
 						{
-							"feedbackResponseId": 1,
+							"id": 1,
 							"adminUserId": 1,
 							"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!",
 							"createdAt": "2025-03-02T10:00:00.000Z",
@@ -2420,7 +2420,7 @@
 					"message": "Great platform! The course materials are very clear.",
 					"responses": [
 						{
-							"feedbackResponseId": 5,
+							"id": 5,
 							"adminUserId": 3,
 							"message": "Thanks Jane! We are happy to know that our website helped you!",
 							"createdAt": "2025-03-02T10:00:00.000Z",
@@ -2540,7 +2540,7 @@
 				"message": "It would be helpful if you guys can add quizzes :)",
 				"responses": [
 					{
-						"feedbackResponseId": 1,
+						"id": 1,
 						"adminUserId": 1,
 						"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!",
 						"createdAt": "2025-03-02T10:00:00.000Z",
@@ -2582,7 +2582,6 @@
 				"fullName": "John Doe",
 				"email": "johndoe@mail.com",
 				"message": "It would be helpful if you guys can add quizzes :)",
-				"responses": [],
 				"createdAt": "2025-03-01T10:00:00.000Z",
 				"updatedAt": "2025-03-01T10:00:00.000Z"
 			}
@@ -2614,9 +2613,9 @@
 		"data": {
 			"feedbackResponse": {
 				"id": 1,
-				"feedbackParentId": 1,
+				"feedbackId": 1,
 				"adminUserId": 1,
-				"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!"
+				"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!",
 				"createdAt": "2025-03-01T10:00:00.000Z",
 				"updatedAt": "2025-03-01T10:00:00.000Z"
 			}

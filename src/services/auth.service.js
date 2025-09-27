@@ -4,7 +4,7 @@ const { randomBytes, createHash } = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const handlebars = require('handlebars');
-const User = require('../db/models/user');
+const { User } = require('../db/models');
 const { redisClient } = require('../configs/redis');
 const HTTPError = require('../utils/httpError');
 const { sign } = require('../utils/jwtHelper');
@@ -176,7 +176,7 @@ class Auth {
             userHashedResetToken !==
                 createHash('sha256').update(token).digest('hex')
         ) {
-            throw new HTTPError(400, 'Request body validation error.', [
+            throw new HTTPError(400, 'Validation error.', [
                 {
                     message: '"token" is invalid or expired',
                     context: {

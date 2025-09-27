@@ -3,7 +3,7 @@ const sharp = require('sharp');
 const { fromBuffer } = require('file-type');
 const { Upload } = require('@aws-sdk/lib-storage');
 const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
-const User = require('../db/models/user');
+const { User } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 const AuthService = require('./auth.service');
 const { s3 } = require('../configs/s3');
@@ -147,7 +147,7 @@ class UserService {
 
     static async uploadPhoto(data) {
         if (!data.file) {
-            throw new HTTPError(400, 'Invalid request.', [
+            throw new HTTPError(400, 'Validation error.', [
                 {
                     message: '"photo" is empty',
                     context: {

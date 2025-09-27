@@ -10,7 +10,7 @@ const { redisClient } = require('../../src/configs/redis');
 const { server } = require('../../src/server');
 const truncate = require('../../scripts/db/truncate');
 const userFactory = require('../../src/db/seeders/factories/user');
-const User = require('../../src/db/models/user');
+const { User } = require('../../src/db/models');
 const AuthService = require('../../src/services/auth.service');
 const { verify } = require('../../src/utils/jwtHelper');
 const jwtOptions = require('../../src/configs/jsonwebtoken');
@@ -142,7 +142,7 @@ describe('Authentication Integration Test', () => {
 
             expect(success).toBe(false);
             expect(statusCode).toBe(400);
-            expect(message).toBe('Request body validation error.');
+            expect(message).toBe('Validation error.');
             expect(data).toBeNull();
             expect(errors).toMatchObject([
                 {
@@ -364,7 +364,7 @@ describe('Authentication Integration Test', () => {
 
             expect(success).toBe(false);
             expect(statusCode).toBe(400);
-            expect(message).toBe('Request body validation error.');
+            expect(message).toBe('Validation error.');
             expect(data).toBeNull();
             expect(errors).toMatchObject([
                 {
@@ -656,7 +656,7 @@ describe('Authentication Integration Test', () => {
                     success: false,
                     statusCode: 400,
                     data: null,
-                    message: 'Request body validation error.',
+                    message: 'Validation error.',
                     errors: [
                         {
                             message: '"email" must be a valid email',
@@ -773,9 +773,7 @@ describe('Authentication Integration Test', () => {
             expect(response.status).toBe(400);
             expect(response.body.success).toBe(false);
             expect(response.body.statusCode).toBe(400);
-            expect(response.body.message).toBe(
-                'Request body validation error.',
-            );
+            expect(response.body.message).toBe('Validation error.');
             expect(response.body.errors.length).toBe(4);
         });
 
@@ -797,7 +795,7 @@ describe('Authentication Integration Test', () => {
                 expect.objectContaining({
                     success: false,
                     statusCode: 400,
-                    message: 'Request body validation error.',
+                    message: 'Validation error.',
                     errors: [
                         {
                             message: '"token" is invalid or expired',

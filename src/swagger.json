@@ -1,5 +1,483 @@
 {
     "paths": {
+        "/api/v1/auth/register": {
+            "post": {
+                "summary": "Registers a new user account",
+                "tags": ["User Authentication"],
+                "produces": ["application/json"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/RegisterRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "User registered successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/RegisterSuccessResponse201"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body format",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Email already registered",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Conflict": {
+                                        "$ref": "#/components/examples/Conflict"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
+            "post": {
+                "summary": "Logs in a user account",
+                "tags": ["User Authentication"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/LoginRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "User logged in successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LoginSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body format",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/logout": {
+            "post": {
+                "summary": "Logs out a user account",
+                "tags": ["User Authentication"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "header",
+                        "name": "Authorization",
+                        "description": "Bearer JWT access token",
+                        "schema": {
+                            "type": "string",
+                            "format": "JWT"
+                        },
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User logged out successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LogoutSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid or expired token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/forgot-password": {
+            "post": {
+                "summary": "Sends an email with a URL to reset password",
+                "tags": ["User Authentication"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ForgotPasswordRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset link sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ForgotPasswordSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body format",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/reset-password": {
+            "post": {
+                "summary": "Resets a user's password",
+                "tags": ["User Authentication"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ResetPasswordRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password reset successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResetPasswordSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or expired/invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User with the given userId not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/users": {
             "get": {
                 "summary": "Retrieves a list of all users",
@@ -728,217 +1206,10 @@
                 }
             }
         },
-        "/api/v1/auth/register": {
-            "post": {
-                "summary": "Registers a new user account",
-                "tags": ["User Authentication"],
-                "produces": ["application/json"],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/RegisterRequestBody"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "User registered successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/RegisterSuccessResponse201"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body format",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "BadRequest": {
-                                        "$ref": "#/components/examples/BadRequest"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "409": {
-                        "description": "Email already registered",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "Conflict": {
-                                        "$ref": "#/components/examples/Conflict"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "415": {
-                        "description": "Unsupported media type",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "UnsupportedMediaType": {
-                                        "$ref": "#/components/examples/UnsupportedMediaType"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "429": {
-                        "description": "Too many requests",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "TooManyRequests": {
-                                        "$ref": "#/components/examples/TooManyRequests"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "InternalServerError": {
-                                        "$ref": "#/components/examples/InternalServerError"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/login": {
-            "post": {
-                "summary": "Logs in a user account",
-                "tags": ["User Authentication"],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/LoginRequestBody"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "User logged in successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/LoginSuccessResponse200"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body format",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "BadRequest": {
-                                        "$ref": "#/components/examples/BadRequest"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Invalid credentials",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "Unauthorized": {
-                                        "$ref": "#/components/examples/Unauthorized"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "415": {
-                        "description": "Unsupported media type",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "UnsupportedMediaType": {
-                                        "$ref": "#/components/examples/UnsupportedMediaType"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "429": {
-                        "description": "Too many requests",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "TooManyRequests": {
-                                        "$ref": "#/components/examples/TooManyRequests"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "InternalServerError": {
-                                        "$ref": "#/components/examples/InternalServerError"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/auth/logout": {
-            "post": {
-                "summary": "Logs out a user account",
-                "tags": ["User Authentication"],
+        "/api/v1/feedbacks": {
+            "get": {
+                "summary": "Retrieves a list of all feedbacks",
+                "tags": ["Feedback Management"],
                 "security": [
                     {
                         "bearerAuth": []
@@ -946,29 +1217,71 @@
                 ],
                 "parameters": [
                     {
-                        "in": "header",
-                        "name": "Authorization",
-                        "description": "Bearer JWT access token",
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "description": "The page number to retrieve."
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "description": "The number of feedbacks per page."
+                    },
+                    {
+                        "in": "query",
+                        "name": "sort",
                         "schema": {
                             "type": "string",
-                            "format": "JWT"
+                            "enum": ["id", "-id", "createdAt", "-createdAt"],
+                            "default": "id"
                         },
-                        "required": true
+                        "description": "The field to sort by. Use a '-' prefix for descending order (e.g., -createdAt)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "email",
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
+                        },
+                        "description": "Filter feedbacks by email."
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "User logged out successfully",
+                        "description": "Successfully retrieved the list of feedbacks.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/LogoutSuccessResponse200"
+                                    "$ref": "#/components/schemas/FeedbackListSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
                                 }
                             }
                         }
                     },
                     "401": {
-                        "description": "Invalid or expired token",
+                        "description": "Unauthorized access, token is missing or invalid.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -977,6 +1290,21 @@
                                 "examples": {
                                     "Unauthorized": {
                                         "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
                                     }
                                 }
                             }
@@ -998,7 +1326,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal server error.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1013,29 +1341,28 @@
                         }
                     }
                 }
-            }
-        },
-        "/api/v1/auth/forgot-password": {
+            },
             "post": {
-                "summary": "Sends an email with a URL to reset password",
-                "tags": ["User Authentication"],
+                "summary": "Sends a feedback",
+                "tags": ["Feedback Management"],
+                "produces": ["application/json"],
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/ForgotPasswordRequestBody"
+                                "$ref": "#/components/schemas/FeedbackRequestBody"
                             }
                         }
                     }
                 },
                 "responses": {
-                    "200": {
-                        "description": "Password reset link sent successfully",
+                    "201": {
+                        "description": "Feedback sent successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ForgotPasswordSuccessResponse200"
+                                    "$ref": "#/components/schemas/FeedbackSuccessResponse201"
                                 }
                             }
                         }
@@ -1103,33 +1430,39 @@
                 }
             }
         },
-        "/api/v1/auth/reset-password": {
-            "post": {
-                "summary": "Resets a user's password",
-                "tags": ["User Authentication"],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ResetPasswordRequestBody"
-                            }
-                        }
+        "/api/v1/feedbacks/{feedbackId}": {
+            "get": {
+                "summary": "Retrieves a specific feedback by their ID",
+                "tags": ["Feedback Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
-                },
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "feedbackId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the feedback to retrieve."
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "Password reset successfully",
+                        "description": "Successfully retrieved the feedback data.",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/ResetPasswordSuccessResponse200"
+                                    "$ref": "#/components/schemas/FeedbackSuccessResponse200"
                                 }
                             }
                         }
                     },
                     "400": {
-                        "description": "Invalid request body or expired/invalid token",
+                        "description": "Invalid feedback ID format.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1143,8 +1476,172 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin or the owner of the account.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "404": {
-                        "description": "User with the given userId not found",
+                        "description": "Feedback with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/feedbacks/{feedbackId}/responses": {
+            "post": {
+                "summary": "Creates a response to a specific feedback",
+                "tags": ["Feedback Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "feedbackId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the feedback to respond to."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FeedbackResponseRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully created a feedback response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FeedbackResponseSuccessResponse201"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid feedback ID format or request body.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Feedback with the given ID not found.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1189,7 +1686,7 @@
                         }
                     },
                     "500": {
-                        "description": "Internal server error",
+                        "description": "Internal server error.",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -1264,6 +1761,60 @@
                     "prevPage": {
                         "type": "integer",
                         "nullable": true
+                    }
+                }
+            },
+            "Feedback": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "responses": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/FeedbackResponse"
+                        }
+                    }
+                }
+            },
+            "FeedbackResponse": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "adminUserId": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
                     }
                 }
             },
@@ -1363,6 +1914,37 @@
                 "example": {
                     "fullName": "John Doe Updated",
                     "email": "johndoe.new@mail.com"
+                }
+            },
+            "FeedbackRequestBody": {
+                "type": "object",
+                "properties": {
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "fullName": "John Doe",
+                    "email": "johndoe@mail.com",
+                    "message": "It would be helpful if you guys can add quizzes :)"
+                }
+            },
+            "FeedbackResponseRequestBody": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "message": "Thank you for your feedback! We will take it into consideration."
                 }
             },
             "FailedResponse": {
@@ -1738,6 +2320,208 @@
                     },
                     "errors": null
                 }
+            },
+            "FeedbackListSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "feedbacks": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Feedback"
+                                }
+                            }
+                        }
+                    },
+                    "pagination": {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved all feedbacks.",
+                    "data": {
+                        "feedbacks": [
+                            {
+                                "id": 1,
+                                "email": "user@example.com",
+                                "fullName": "John Doe",
+                                "message": "This is a feedback message.",
+                                "createdAt": "2025-09-21T12:00:00.000Z",
+                                "updatedAt": "2025-09-21T12:00:00.000Z",
+                                "responses": [
+                                    {
+                                        "id": 1,
+                                        "adminUserId": 1,
+                                        "message": "This is a response from the admin.",
+                                        "createdAt": "2025-09-21T13:00:00.000Z",
+                                        "updatedAt": "2025-09-21T13:00:00.000Z"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    "pagination": {
+                        "currentRecords": 1,
+                        "totalRecords": 1,
+                        "currentPage": 1,
+                        "totalPages": 1,
+                        "nextPage": null,
+                        "prevPage": null
+                    },
+                    "errors": null
+                }
+            },
+            "FeedbackSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "feedback": {
+                                "$ref": "#/components/schemas/Feedback"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved a feedback details.",
+                    "data": {
+                        "feedback": {
+                            "id": 1,
+                            "email": "Salsabila.Nasyiah@yahoo.co.id",
+                            "fullName": "Zalindra Lestari",
+                            "message": "Contigo possimus dignissimos tamdiu.",
+                            "createdAt": "2025-03-12T03:13:10.990Z",
+                            "updatedAt": "2025-07-19T16:11:02.483Z",
+                            "responses": [
+                                {
+                                    "id": 1,
+                                    "adminUserId": 2,
+                                    "message": "Considero tenus acidus acquiro demitto illo corporis degero. Optio tumultus vulgaris valde creptio vilicus fuga tertius ubi.",
+                                    "createdAt": "2025-03-20T20:45:47.619Z",
+                                    "updatedAt": "2025-05-18T11:04:15.275Z"
+                                }
+                            ]
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "FeedbackSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "feedback": {
+                                "$ref": "#/components/schemas/Feedback"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 201,
+                    "message": "Successfully created a feedback.",
+                    "data": {
+                        "feedback": {
+                            "id": 101,
+                            "fullName": "John Doe",
+                            "email": "johndoe@mail.com",
+                            "message": "It would be helpful if you guys can add quizzes :)",
+                            "updatedAt": "2025-09-27T14:12:22.993Z",
+                            "createdAt": "2025-09-27T14:12:22.993Z"
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "FeedbackResponseSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "feedbackResponse": {
+                                "$ref": "#/components/schemas/FeedbackResponse"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 201,
+                    "message": "Successfully created a feedback response.",
+                    "data": {
+                        "feedbackResponse": {
+                            "id": 1,
+                            "feedbackId": 1,
+                            "adminUserId": 1,
+                            "message": "Thank you for your feedback! We will take it into consideration.",
+                            "createdAt": "2025-09-28T12:00:00.000Z",
+                            "updatedAt": "2025-09-28T12:00:00.000Z"
+                        }
+                    },
+                    "errors": null
+                }
             }
         },
         "examples": {
@@ -1747,7 +2531,7 @@
                     "success": false,
                     "statusCode": 400,
                     "data": null,
-                    "message": "Request body validation error.",
+                    "message": "Validation error.",
                     "errors": [
                         {
                             "message": "\"email\" must be a valid email",
@@ -1831,6 +2615,22 @@
                     ]
                 }
             },
+            "PayloadTooLarge": {
+                "summary": "Payload Too Large",
+                "value": {
+                    "success": false,
+                    "statusCode": 413,
+                    "data": null,
+                    "message": "Content Too Large.",
+                    "errors": {
+                        "message": "File too large",
+                        "context": {
+                            "key": "photo",
+                            "value": null
+                        }
+                    }
+                }
+            },
             "UnsupportedMediaType": {
                 "summary": "Unsupported Media Type",
                 "value": {
@@ -1867,22 +2667,6 @@
                     "data": null,
                     "message": "There is an issue with the server.",
                     "errors": null
-                }
-            },
-            "PayloadTooLarge": {
-                "summary": "Payload Too Large",
-                "value": {
-                    "success": false,
-                    "statusCode": 413,
-                    "data": null,
-                    "message": "Content Too Large.",
-                    "errors": {
-                        "message": "File too large",
-                        "context": {
-                            "key": "photo",
-                            "value": null
-                        }
-                    }
                 }
             }
         }

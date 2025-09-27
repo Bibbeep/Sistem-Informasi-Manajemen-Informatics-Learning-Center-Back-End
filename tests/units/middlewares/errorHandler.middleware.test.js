@@ -36,7 +36,7 @@ describe('Error Handling Middleware Unit Tests', () => {
                 success: false,
                 statusCode: 400,
                 data: null,
-                message: 'Request body validation error.',
+                message: 'Validation error.',
                 errors: expect.arrayContaining([
                     expect.objectContaining({
                         message: expect.any(String),
@@ -115,7 +115,7 @@ describe('Error Handling Middleware Unit Tests', () => {
             success: false,
             statusCode: 400,
             data: null,
-            message: 'Invalid request.',
+            message: 'Validation error.',
             errors: {
                 message: 'Field value too long',
                 context: {
