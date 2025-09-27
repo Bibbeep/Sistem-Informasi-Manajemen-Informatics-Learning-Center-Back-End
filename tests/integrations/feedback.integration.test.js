@@ -355,4 +355,77 @@ describe('Feedback Management Integration Tests', () => {
             );
         });
     });
+
+    describe('POST /api/v1/feedbacks', () => {
+        it('should return 201 and creates a new feedback', async () => {
+            const mockReqBody = {
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+                message: 'It would be helpful if you guys can add quizzes :)',
+            };
+            const response = await request(server)
+                .post('/api/v1/feedbacks')
+                .set('Content-Type', 'application/json')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(201);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message: 'Successfully created a feedback.',
+                    data: {
+                        feedback: {
+                            id: expect.any(Number),
+                            fullName: expect.any(String),
+                            email: expect.any(String),
+                            message: expect.any(String),
+                            updatedAt: expect.any(String),
+                            createdAt: expect.any(String),
+                        },
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should return 400 with invalid request body', async () => {
+            const mockReqBody = {
+                email: 'johndoemail.com',
+                message: 123,
+            };
+            const response = await request(server)
+                .post('/api/v1/feedbacks')
+                .set('Content-Type', 'application/json')
+                .send(mockReqBody);
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 400,
+                    data: null,
+                    message: 'Validation error.',
+                    errors: expect.any(Array),
+                }),
+            );
+        });
+
+        it('should return 415 with invalid Content-Type header', async () => {
+            const response = await request(server)
+                .post('/api/v1/feedbacks')
+                .set('Content-Type', 'multipart/form-data');
+
+            expect(response.status).toBe(415);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 415,
+                    data: null,
+                    message: 'Unsupported Media Type.',
+                    errors: expect.any(Array),
+                }),
+            );
+        });
+    });
 });
