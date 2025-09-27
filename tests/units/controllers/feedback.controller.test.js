@@ -4,10 +4,14 @@ jest.mock('../../../src/validations/validator');
 const {
     getAll,
     getById,
+    create,
 } = require('../../../src/controllers/feedback.controller');
 const FeedbackService = require('../../../src/services/feedback.service');
 const HTTPError = require('../../../src/utils/httpError');
-const { validateFeedbackQuery } = require('../../../src/validations/validator');
+const {
+    validateFeedbackQuery,
+    validateFeedback,
+} = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
 describe('Feedback Controller Unit Tests', () => {
@@ -200,6 +204,63 @@ describe('Feedback Controller Unit Tests', () => {
             expect(FeedbackService.getOne).toHaveBeenCalledWith(
                 parseInt(req.params.feedbackId, 10),
             );
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('create Tests', () => {
+        it('should sends 201 on success and does not call next', async () => {
+            req.body = {
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+                message: 'It would be helpful if you guys can add quizzes :)',
+            };
+
+            const mockFeedback = {
+                id: 1,
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+                message: 'It would be helpful if you guys can add quizzes :)',
+                updatedAt: '2025-09-27T14:12:22.993Z',
+                createdAt: '2025-09-27T14:12:22.993Z',
+            };
+
+            validateFeedback.mockReturnValue({ error: null, value: req.body });
+            FeedbackService.create.mockResolvedValue(mockFeedback);
+
+            await create(req, res, next);
+
+            expect(validateFeedback).toHaveBeenCalledWith(req.body);
+            expect(FeedbackService.create).toHaveBeenCalledWith(req.body);
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message: 'Successfully created a feedback.',
+                    data: {
+                        feedback: mockFeedback,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should calls next with Joi.ValidationError when validation fails', async () => {
+            req.body = {
+                email: 'johndoemail.com',
+                message: 123,
+            };
+            const mockError = new ValidationError();
+
+            validateFeedback.mockReturnValue({ error: mockError });
+
+            await create(req, res, next);
+
+            expect(validateFeedback).toHaveBeenCalledWith(req.body);
             expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
