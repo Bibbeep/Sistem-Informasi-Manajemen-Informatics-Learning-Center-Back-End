@@ -1341,6 +1341,93 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "summary": "Sends a feedback",
+                "tags": ["Feedback Management"],
+                "produces": ["application/json"],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FeedbackRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Feedback sent successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FeedbackSuccessResponse201"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body format",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/v1/feedbacks/{feedbackId}": {
@@ -1656,6 +1743,26 @@
                     "token": "c0ae8bc1c8ad1eea5d936c622a6850b984459d5bfd999552dc4cbecb54d02efe",
                     "newPassword": "NewStrongPassword123!",
                     "confirmNewPassword": "NewStrongPassword123!"
+                }
+            },
+            "FeedbackRequestBody": {
+                "type": "object",
+                "properties": {
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "fullName": "John Doe",
+                    "email": "johndoe@mail.com",
+                    "message": "It would be helpful if you guys can add quizzes :)"
                 }
             },
             "UserUpdateRequestBody": {
@@ -2167,6 +2274,48 @@
                                     "updatedAt": "2025-05-18T11:04:15.275Z"
                                 }
                             ]
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "FeedbackSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "feedback": {
+                                "$ref": "#/components/schemas/Feedback"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 201,
+                    "message": "Successfully created a feedback.",
+                    "data": {
+                        "feedback": {
+                            "id": 101,
+                            "fullName": "John Doe",
+                            "email": "johndoe@mail.com",
+                            "message": "It would be helpful if you guys can add quizzes :)",
+                            "updatedAt": "2025-09-27T14:12:22.993Z",
+                            "createdAt": "2025-09-27T14:12:22.993Z"
                         }
                     },
                     "errors": null
