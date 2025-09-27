@@ -83,6 +83,32 @@ class FeedbackService {
 
         return feedback;
     }
+
+    static async createResponse(data) {
+        const { feedbackId, message, adminUserId } = data;
+
+        const isFeedbackExist = await Feedback.findByPk(feedbackId);
+
+        if (!isFeedbackExist) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Feedback with "feedbackId" does not exist',
+                    context: {
+                        key: 'feedbackId',
+                        value: feedbackId,
+                    },
+                },
+            ]);
+        }
+
+        const feedbackResponse = await FeedbackResponse.create({
+            feedbackId,
+            message,
+            adminUserId,
+        });
+
+        return feedbackResponse;
+    }
 }
 
 module.exports = FeedbackService;

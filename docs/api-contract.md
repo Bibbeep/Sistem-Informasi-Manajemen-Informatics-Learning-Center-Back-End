@@ -2613,9 +2613,9 @@
 		"data": {
 			"feedbackResponse": {
 				"id": 1,
-				"feedbackParentId": 1,
+				"feedbackId": 1,
 				"adminUserId": 1,
-				"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!"
+				"message": "Thanks for your feedback John! We are definitely listening to your input and we are working on them!",
 				"createdAt": "2025-03-01T10:00:00.000Z",
 				"updatedAt": "2025-03-01T10:00:00.000Z"
 			}

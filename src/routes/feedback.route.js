@@ -21,5 +21,13 @@ router.get(
     FeedbackController.getById,
 );
 router.post('/', requireJsonContent, FeedbackController.create);
+router.post(
+    '/:feedbackId/responses',
+    authenticate,
+    requireJsonContent,
+    validatePathParameterId('feedbackId'),
+    authorize({ rules: ['admin'] }),
+    FeedbackController.createResponse,
+);
 
 module.exports = router;

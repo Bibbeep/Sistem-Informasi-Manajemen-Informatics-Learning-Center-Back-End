@@ -17,7 +17,13 @@ const feedback = Joi.object({
     message: Joi.string().required(),
 });
 
+// Request body of POST /api/v1/feedbacks/:feedbackId/responses
+const feedbackResponse = Joi.object({
+    message: Joi.string().required(),
+});
+
 module.exports = {
     feedbackQueryParam,
     feedback,
+    feedbackResponse,
 };

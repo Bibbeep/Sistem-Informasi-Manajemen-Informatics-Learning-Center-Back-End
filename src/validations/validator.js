@@ -7,7 +7,11 @@ const {
     resetPassword,
 } = require('./schemas/auth');
 const { userQueryParam, userUpdate } = require('./schemas/user');
-const { feedbackQueryParam, feedback } = require('./schemas/feedback');
+const {
+    feedbackQueryParam,
+    feedback,
+    feedbackResponse,
+} = require('./schemas/feedback');
 
 // Any auto-increment integer id
 const uniqueIdentifier = Joi.number().integer().positive().required();
@@ -29,4 +33,5 @@ module.exports = {
     validateUpdateUserData: validator(userUpdate),
     validateFeedbackQuery: validator(feedbackQueryParam),
     validateFeedback: validator(feedback),
+    validateFeedbackResponse: validator(feedbackResponse),
 };
