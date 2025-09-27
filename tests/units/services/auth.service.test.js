@@ -512,7 +512,7 @@ describe('Authentication Service Unit Tests', () => {
             redisClient.get.mockResolvedValue(null);
 
             await expect(AuthService.resetPassword(mockData)).rejects.toThrow(
-                new HTTPError(400, 'Request body validation error.', [
+                new HTTPError(400, 'Validation error.', [
                     {
                         message: '"token" is invalid or expired',
                         context: {
@@ -536,7 +536,7 @@ describe('Authentication Service Unit Tests', () => {
             redisClient.get.mockResolvedValue('mock-different-hashed-token');
 
             await expect(AuthService.resetPassword(mockData)).rejects.toThrow(
-                new HTTPError(400, 'Request body validation error.', [
+                new HTTPError(400, 'Validation error.', [
                     {
                         message: '"token" is invalid or expired',
                         context: {

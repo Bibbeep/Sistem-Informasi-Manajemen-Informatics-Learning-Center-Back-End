@@ -10,7 +10,7 @@ module.exports = (err, req, res, next) => {
             success: false,
             statusCode: 400,
             data: null,
-            message: 'Request body validation error.',
+            message: 'Validation error.',
             errors: err.details.length
                 ? err.details.map((e) => {
                       return {
@@ -34,7 +34,7 @@ module.exports = (err, req, res, next) => {
             message:
                 err.code === 'LIMIT_FILE_SIZE'
                     ? 'Content Too Large.'
-                    : 'Invalid request.',
+                    : 'Validation error.',
             errors: {
                 message: err.message,
                 context: {

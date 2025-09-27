@@ -180,7 +180,7 @@ describe('Feedback Management Integration Tests', () => {
                     success: false,
                     statusCode: 400,
                     data: null,
-                    message: 'Request body validation error.',
+                    message: 'Validation error.',
                     errors: expect.any(Array),
                 }),
             );

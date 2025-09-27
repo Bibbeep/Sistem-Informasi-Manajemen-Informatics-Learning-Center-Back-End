@@ -634,11 +634,11 @@ describe('User Service Unit Tests', () => {
             );
         });
 
-        it('should throw an error if no file is provided', async () => {
+        it('should throw a 400 error if no file is provided', async () => {
             const mockData = { file: null, userId: 1 };
 
             await expect(UserService.uploadPhoto(mockData)).rejects.toThrow(
-                new HTTPError(400, 'Invalid request.', [
+                new HTTPError(400, 'Validation error.', [
                     {
                         message: '"photo" is empty',
                         context: { key: 'photo', value: null },

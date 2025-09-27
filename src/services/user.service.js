@@ -147,7 +147,7 @@ class UserService {
 
     static async uploadPhoto(data) {
         if (!data.file) {
-            throw new HTTPError(400, 'Invalid request.', [
+            throw new HTTPError(400, 'Validation error.', [
                 {
                     message: '"photo" is empty',
                     context: {

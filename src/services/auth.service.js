@@ -176,7 +176,7 @@ class Auth {
             userHashedResetToken !==
                 createHash('sha256').update(token).digest('hex')
         ) {
-            throw new HTTPError(400, 'Request body validation error.', [
+            throw new HTTPError(400, 'Validation error.', [
                 {
                     message: '"token" is invalid or expired',
                     context: {

@@ -197,7 +197,7 @@ describe('User Management Integration Tests', () => {
                     success: false,
                     statusCode: 400,
                     data: null,
-                    message: 'Request body validation error.',
+                    message: 'Validation error.',
                     errors: [
                         {
                             message: '"page" must be a positive number',
@@ -358,7 +358,7 @@ describe('User Management Integration Tests', () => {
                 success: false,
                 statusCode: 400,
                 data: null,
-                message: 'Request body validation error.',
+                message: 'Validation error.',
                 errors: [
                     {
                         message: '"value" must be a number',
@@ -522,7 +522,7 @@ describe('User Management Integration Tests', () => {
                 success: false,
                 statusCode: 400,
                 data: null,
-                message: 'Request body validation error.',
+                message: 'Validation error.',
                 errors: expect.arrayContaining([
                     expect.objectContaining({
                         message: expect.any(String),
@@ -692,7 +692,7 @@ describe('User Management Integration Tests', () => {
                 success: false,
                 statusCode: 400,
                 data: null,
-                message: 'Request body validation error.',
+                message: 'Validation error.',
                 errors: [
                     {
                         message: '"value" must be a number',
