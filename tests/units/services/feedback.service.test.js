@@ -390,4 +390,60 @@ describe('Feedback Service Unit Tests', () => {
             expect(returnValue).toStrictEqual(mockReturnData);
         });
     });
+
+    describe('createResponse Tests', () => {
+        it('should create a new feedback response', async () => {
+            const mockData = {
+                feedbackId: 1,
+                message:
+                    'Thanks for your feedback John! We are definitely listening to your input and we are working on them!',
+                adminUserId: 1,
+            };
+
+            const mockReturnData = {
+                id: 1,
+                feedbackId: 1,
+                message:
+                    'Thanks for your feedback John! We are definitely listening to your input and we are working on them!',
+                adminUserId: 1,
+                updatedAt: '2025-09-27T15:33:51.297Z',
+                createdAt: '2025-09-27T15:33:51.297Z',
+            };
+
+            Feedback.findByPk.mockResolvedValue(true);
+            FeedbackResponse.create.mockResolvedValue(mockReturnData);
+
+            const returnValue = await FeedbackService.createResponse(mockData);
+
+            expect(Feedback.findByPk).toHaveBeenCalledWith(mockData.feedbackId);
+            expect(FeedbackResponse.create).toHaveBeenCalledWith(mockData);
+            expect(returnValue).toStrictEqual(mockReturnData);
+        });
+
+        it('should throw 404 error when feedback does not exist', async () => {
+            const mockData = {
+                feedbackId: 404,
+                message:
+                    'Thanks for your feedback John! We are definitely listening to your input and we are working on them!',
+                adminUserId: 1,
+            };
+
+            Feedback.findByPk.mockResolvedValue(null);
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Feedback with "feedbackId" does not exist',
+                    context: {
+                        key: 'feedbackId',
+                        value: mockData.feedbackId,
+                    },
+                },
+            ]);
+
+            await expect(
+                FeedbackService.createResponse(mockData),
+            ).rejects.toThrow(mockError);
+            expect(Feedback.findByPk).toHaveBeenCalledWith(mockData.feedbackId);
+            expect(FeedbackResponse.create).not.toHaveBeenCalled();
+        });
+    });
 });
