@@ -1553,6 +1553,155 @@
                     }
                 }
             }
+        },
+        "/api/v1/feedbacks/{feedbackId}/responses": {
+            "post": {
+                "summary": "Creates a response to a specific feedback",
+                "tags": ["Feedback Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "feedbackId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the feedback to respond to."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/FeedbackResponseRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully created a feedback response.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FeedbackResponseSuccessResponse201"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid feedback ID format or request body.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Feedback with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1745,26 +1894,6 @@
                     "confirmNewPassword": "NewStrongPassword123!"
                 }
             },
-            "FeedbackRequestBody": {
-                "type": "object",
-                "properties": {
-                    "fullName": {
-                        "type": "string"
-                    },
-                    "email": {
-                        "type": "string",
-                        "format": "email"
-                    },
-                    "message": {
-                        "type": "string"
-                    }
-                },
-                "example": {
-                    "fullName": "John Doe",
-                    "email": "johndoe@mail.com",
-                    "message": "It would be helpful if you guys can add quizzes :)"
-                }
-            },
             "UserUpdateRequestBody": {
                 "type": "object",
                 "properties": {
@@ -1785,6 +1914,37 @@
                 "example": {
                     "fullName": "John Doe Updated",
                     "email": "johndoe.new@mail.com"
+                }
+            },
+            "FeedbackRequestBody": {
+                "type": "object",
+                "properties": {
+                    "fullName": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "fullName": "John Doe",
+                    "email": "johndoe@mail.com",
+                    "message": "It would be helpful if you guys can add quizzes :)"
+                }
+            },
+            "FeedbackResponseRequestBody": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "example": {
+                    "message": "Thank you for your feedback! We will take it into consideration."
                 }
             },
             "FailedResponse": {
@@ -2316,6 +2476,48 @@
                             "message": "It would be helpful if you guys can add quizzes :)",
                             "updatedAt": "2025-09-27T14:12:22.993Z",
                             "createdAt": "2025-09-27T14:12:22.993Z"
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "FeedbackResponseSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "feedbackResponse": {
+                                "$ref": "#/components/schemas/FeedbackResponse"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 201,
+                    "message": "Successfully created a feedback response.",
+                    "data": {
+                        "feedbackResponse": {
+                            "id": 1,
+                            "feedbackId": 1,
+                            "adminUserId": 1,
+                            "message": "Thank you for your feedback! We will take it into consideration.",
+                            "createdAt": "2025-09-28T12:00:00.000Z",
+                            "updatedAt": "2025-09-28T12:00:00.000Z"
                         }
                     },
                     "errors": null
