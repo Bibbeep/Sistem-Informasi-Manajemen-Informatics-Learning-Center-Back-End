@@ -2005,7 +2005,7 @@
                     "success": false,
                     "statusCode": 400,
                     "data": null,
-                    "message": "Request body validation error.",
+                    "message": "Validation error.",
                     "errors": [
                         {
                             "message": "\"email\" must be a valid email",
