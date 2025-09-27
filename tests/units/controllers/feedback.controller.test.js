@@ -5,12 +5,14 @@ const {
     getAll,
     getById,
     create,
+    createResponse,
 } = require('../../../src/controllers/feedback.controller');
 const FeedbackService = require('../../../src/services/feedback.service');
 const HTTPError = require('../../../src/utils/httpError');
 const {
     validateFeedbackQuery,
     validateFeedback,
+    validateFeedbackResponse,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -261,6 +263,106 @@ describe('Feedback Controller Unit Tests', () => {
             await create(req, res, next);
 
             expect(validateFeedback).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('createResponse Tests', () => {
+        it('should sends 201 on success and does not call next', async () => {
+            req.body = {
+                message: 'It would be helpful if you guys can add quizzes :)',
+            };
+            req.tokenPayload = { sub: 1 };
+            req.params = { feedbackId: 1 };
+
+            const mockFeedbackResponse = {
+                id: 1,
+                feedbackId: 1,
+                message:
+                    'Thanks for your feedback John! We are definitely listening to your input and we are working on them!',
+                adminUserId: 1,
+                updatedAt: '2025-09-27T15:33:51.297Z',
+                createdAt: '2025-09-27T15:33:51.297Z',
+            };
+
+            validateFeedbackResponse.mockReturnValue({
+                error: null,
+                value: req.body,
+            });
+            FeedbackService.createResponse.mockResolvedValue(
+                mockFeedbackResponse,
+            );
+
+            await createResponse(req, res, next);
+
+            expect(validateFeedbackResponse).toHaveBeenCalledWith(req.body);
+            expect(FeedbackService.createResponse).toHaveBeenCalledWith({
+                feedbackId: req.params.feedbackId,
+                message: req.body.message,
+                adminUserId: req.tokenPayload.sub,
+            });
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message: 'Successfully created a feedback response.',
+                    data: {
+                        feedbackResponse: mockFeedbackResponse,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should calls next with Joi.ValidationError when validation fails', async () => {
+            req.body = {
+                message: 123,
+            };
+            const mockError = new ValidationError();
+
+            validateFeedbackResponse.mockReturnValue({ error: mockError });
+
+            await createResponse(req, res, next);
+
+            expect(validateFeedbackResponse).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should sends 404 error thrown from service and call next', async () => {
+            req.params = { feedbackId: '404' };
+            req.body = {
+                message: 'It would be helpful if you guys can add quizzes :)',
+            };
+            req.tokenPayload = { sub: 1 };
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Feedback with "feedbackId" does not exist',
+                    context: {
+                        key: 'feedbackId',
+                        value: parseInt(req.params.feedbackId, 10),
+                    },
+                },
+            ]);
+
+            validateFeedbackResponse.mockReturnValue({
+                error: null,
+                value: req.body,
+            });
+            FeedbackService.createResponse.mockRejectedValue(mockError);
+
+            await createResponse(req, res, next);
+
+            expect(FeedbackService.createResponse).toHaveBeenCalledWith({
+                feedbackId: parseInt(req.params.feedbackId, 10),
+                message: req.body.message,
+                adminUserId: parseInt(req.tokenPayload.sub),
+            });
             expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
