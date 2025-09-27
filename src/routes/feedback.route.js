@@ -5,6 +5,7 @@ const {
     authorize,
     validatePathParameterId,
 } = require('../middlewares/auth.middleware');
+const { requireJsonContent } = require('../middlewares/contentType.middleware');
 
 router.get(
     '/',
@@ -19,5 +20,6 @@ router.get(
     authorize({ rules: ['admin'] }),
     FeedbackController.getById,
 );
+router.post('/', requireJsonContent, FeedbackController.create);
 
 module.exports = router;

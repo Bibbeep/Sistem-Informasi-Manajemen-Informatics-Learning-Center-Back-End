@@ -71,6 +71,18 @@ class FeedbackService {
 
         return feedback;
     }
+
+    static async create(data) {
+        const { fullName, email, message } = data;
+
+        const feedback = await Feedback.create({
+            fullName,
+            email,
+            message,
+        });
+
+        return feedback;
+    }
 }
 
 module.exports = FeedbackService;

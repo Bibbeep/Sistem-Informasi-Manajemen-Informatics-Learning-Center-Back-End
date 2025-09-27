@@ -2582,7 +2582,6 @@
 				"fullName": "John Doe",
 				"email": "johndoe@mail.com",
 				"message": "It would be helpful if you guys can add quizzes :)",
-				"responses": [],
 				"createdAt": "2025-03-01T10:00:00.000Z",
 				"updatedAt": "2025-03-01T10:00:00.000Z"
 			}

@@ -10,6 +10,14 @@ const feedbackQueryParam = Joi.object({
     email: Joi.string().email().allow(null).default(null),
 });
 
+// Request body of POST /api/v1/feedbacks
+const feedback = Joi.object({
+    fullName: Joi.string().required(),
+    email: Joi.string().email().required(),
+    message: Joi.string().required(),
+});
+
 module.exports = {
     feedbackQueryParam,
+    feedback,
 };

@@ -1,4 +1,7 @@
-const { validateFeedbackQuery } = require('../validations/validator');
+const {
+    validateFeedbackQuery,
+    validateFeedback,
+} = require('../validations/validator');
 const FeedbackService = require('../services/feedback.service');
 
 module.exports = {
@@ -37,6 +40,29 @@ module.exports = {
                 success: true,
                 statusCode: 200,
                 message: 'Successfully retrieved a feedback details.',
+                data: {
+                    feedback,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    create: async (req, res, next) => {
+        try {
+            const { error, value } = validateFeedback(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const feedback = await FeedbackService.create(value);
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a feedback.',
                 data: {
                     feedback,
                 },
