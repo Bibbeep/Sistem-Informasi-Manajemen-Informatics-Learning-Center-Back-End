@@ -576,8 +576,7 @@
 					"type": "Course",
 					"priceIdr": 500000,
 					"details": {
-						"totalModules": 10,
-						"totalActiveModules": 5
+						"totalModules": 10
 					},
 					"createdAt": "2024-12-29T10:00:00.000Z",
 					"updatedAt": "2024-12-29T10:00:00.000Z"

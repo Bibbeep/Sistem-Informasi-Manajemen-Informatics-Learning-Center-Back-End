@@ -1,9 +1,17 @@
 const router = require('express').Router();
 const ProgramController = require('../controllers/program.controller');
+const {
+    authenticate,
+    validatePathParameterId,
+} = require('../middlewares/auth.middleware');
 
-// GET /api/v1/programs
 router.get('/', ProgramController.getAll);
-// GET /api/v1/programs/:programId
+router.get(
+    '/:programId',
+    authenticate,
+    validatePathParameterId('programId'),
+    ProgramController.getById,
+);
 // POST /api/v1/programs
 // PATCH /api/v1/programs/:programId
 // DELETE /api/v1/programs/:programId

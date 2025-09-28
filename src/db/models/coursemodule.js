@@ -39,11 +39,16 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.DATE,
                 field: 'updated_at',
             },
+            deletedAt: {
+                allowNull: true,
+                type: DataTypes.DATE,
+                field: 'deleted_at',
+            },
         },
         {
             tableName: 'course_modules',
             paranoid: true,
-            deletedAt: 'deleted_at',
+            deletedAt: 'deletedAt',
         },
     );
 

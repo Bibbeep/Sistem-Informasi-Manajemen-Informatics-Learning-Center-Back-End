@@ -1,5 +1,6 @@
-const { Program } = require('../db/models');
 const { Op } = require('sequelize');
+const { Program, CourseModule } = require('../db/models');
+const HTTPError = require('../utils/httpError');
 
 class ProgramService {
     static async getMany(data) {
@@ -42,6 +43,71 @@ class ProgramService {
             },
             programs: rows,
         };
+    }
+
+    static async getOne(programId) {
+        const program = await Program.findByPk(programId);
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        let details = {};
+
+        if (program.type === 'Course') {
+            const course = await program.getCourse({
+                include: [
+                    {
+                        model: CourseModule,
+                        as: 'modules',
+                    },
+                ],
+            });
+
+            details = { totalModules: course.modules?.length || 0 };
+        } else if (program.type === 'Workshop') {
+            const workshop = await program.getWorkshop();
+
+            details = {
+                isOnline: workshop.isOnline,
+                videoConferenceUrl: workshop.videoConferenceUrl,
+                locationAddress: workshop.locationAddress,
+                facilitatorNames: workshop.facilitatorNames,
+            };
+        } else if (program.type === 'Seminar') {
+            const seminar = await program.getSeminar();
+
+            details = {
+                isOnline: seminar.isOnline,
+                videoConferenceUrl: seminar.videoConferenceUrl,
+                locationAddress: seminar.locationAddress,
+                speakerNames: seminar.speakerNames,
+            };
+        } else if (program.type === 'Competition') {
+            const competition = await program.getCompetition();
+
+            details = {
+                isOnline: competition.isOnline,
+                videoConferenceUrl: competition.videoConferenceUrl,
+                contestRoomUrl: competition.contestRoomUrl,
+                locationAddress: competition.locationAddress,
+                hostName: competition.hostName,
+                totalPrize: competition.totalPrize,
+            };
+        }
+
+        const programData = program.toJSON();
+        programData.details = details;
+
+        return programData;
     }
 }
 
