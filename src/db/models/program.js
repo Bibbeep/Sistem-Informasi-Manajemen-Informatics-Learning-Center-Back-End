@@ -70,6 +70,11 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'programId',
             as: 'seminar',
         });
+
+        Program.hasOne(models.Workshop, {
+            foreignKey: 'programId',
+            as: 'workshop',
+        });
     };
 
     return Program;
