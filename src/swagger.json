@@ -1702,6 +1702,143 @@
                     }
                 }
             }
+        },
+        "/api/v1/programs": {
+            "get": {
+                "summary": "Retrieves a list of all programs",
+                "tags": ["Program Management"],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "description": "The page number to retrieve."
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "description": "The number of programs per page."
+                    },
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "-id",
+                                "createdAt",
+                                "-createdAt",
+                                "price",
+                                "-price",
+                                "availableDate",
+                                "-availableDate"
+                            ],
+                            "default": "id"
+                        },
+                        "description": "The field to sort by. Use a '-' prefix for descending order (e.g., -price)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "type",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "course",
+                                "seminar",
+                                "workshop",
+                                "competition",
+                                "all"
+                            ],
+                            "default": "all"
+                        },
+                        "description": "Filter programs by type."
+                    },
+                    {
+                        "in": "query",
+                        "name": "price.gte",
+                        "schema": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "default": 0
+                        },
+                        "description": "Filter programs with a price greater than or equal to the given value."
+                    },
+                    {
+                        "in": "query",
+                        "name": "price.lte",
+                        "schema": {
+                            "type": "integer",
+                            "positive": true
+                        },
+                        "description": "Filter programs with a price less than or equal to the given value."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the list of programs.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProgramListSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1807,6 +1944,44 @@
                     },
                     "message": {
                         "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "Program": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "thumbnailUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "availableDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["Course", "Seminar", "Workshop", "Competition"]
+                    },
+                    "priceIdr": {
+                        "type": "integer"
                     },
                     "createdAt": {
                         "type": "string",
@@ -2519,6 +2694,67 @@
                             "createdAt": "2025-09-28T12:00:00.000Z",
                             "updatedAt": "2025-09-28T12:00:00.000Z"
                         }
+                    },
+                    "errors": null
+                }
+            },
+            "ProgramListSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "programs": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Program"
+                                }
+                            }
+                        }
+                    },
+                    "pagination": {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved all programs.",
+                    "data": {
+                        "programs": [
+                            {
+                                "id": 1,
+                                "title": "Introduction to Backend Development",
+                                "description": "Learn the fundamentals of backend development.",
+                                "thumbnailUrl": "https://example.com/thumb.jpg",
+                                "availableDate": "2025-10-01T00:00:00.000Z",
+                                "type": "Course",
+                                "priceIdr": 500000,
+                                "createdAt": "2025-09-28T12:00:00.000Z",
+                                "updatedAt": "2025-09-28T12:00:00.000Z"
+                            }
+                        ]
+                    },
+                    "pagination": {
+                        "currentRecords": 1,
+                        "totalRecords": 1,
+                        "currentPage": 1,
+                        "totalPages": 1,
+                        "nextPage": null,
+                        "prevPage": null
                     },
                     "errors": null
                 }
