@@ -576,24 +576,8 @@
 					"type": "Course",
 					"priceIdr": 500000,
 					"details": {
-						"modules": [
-							{
-								"id": 101,
-								"numberCode": 1,
-								"materialUrl": "https://example.com/module1.pdf",
-								"youtubeUrl": "https://youtube.com/watch?v=xyz123",
-								"createdAt": "2024-12-29T10:00:00.000Z",
-								"updatedAt": "2024-12-29T10:00:00.000Z"
-							},
-							{
-								"id": 102,
-								"numberCode": 2,
-								"materialUrl": "https://example.com/module2.pdf",
-								"youtubeUrl": "https://youtube.com/watch?v=abc456",
-								"createdAt": "2024-12-29T10:00:00.000Z",
-								"updatedAt": "2024-12-29T10:00:00.000Z"
-							}
-						]
+						"totalModules": 10,
+						"totalActiveModules": 5
 					},
 					"createdAt": "2024-12-29T10:00:00.000Z",
 					"updatedAt": "2024-12-29T10:00:00.000Z"
@@ -739,7 +723,6 @@
     		"errors": null
     	}
     	```
-
 
 - `PATCH /api/v1/programs/{programId}` - Updates a program
 
