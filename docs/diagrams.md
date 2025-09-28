@@ -28,9 +28,9 @@ erDiagram
         timestamp available_date "Default: NOW()"
         program_type type "NN"
         numeric price_idr "Default: 0"
-        varchar created_at "Default: NOW()"
-        varchar updated_at "Default: NOW()"
-        boolean is_deleted "Default: false"
+        timestamp created_at "Default: NOW()"
+        timestamp updated_at "Default: NOW()"
+        timestamp deleted_at "Default: null"
     }
     user_program_enrollments {
         integer id PK "NN"
@@ -76,7 +76,7 @@ erDiagram
         integer program_id FK "NN"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
-        boolean is_deleted "Default: false"
+        timestamp deleted_at "Default: null"
     }
     modules {
         integer id PK "NN"
@@ -86,7 +86,7 @@ erDiagram
         text youtube_url "NN"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
-        boolean is_deleted "Default: false"
+        timestamp deleted_at "Default: null"
     }
     user_completed_modules {
         integer id PK "NN"
@@ -105,7 +105,7 @@ erDiagram
         varchar_array speaker_names "Nullable"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
-        boolean is_deleted "Default: false"
+        timestamp deleted_at "Default: null"
     }
     workshops {
         integer id PK "NN"
@@ -116,7 +116,7 @@ erDiagram
         varchar_array facilitator_names "Nullable"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
-        boolean is_deleted "Default: false"
+        timestamp deleted_at "Default: null"
     }
     competitions {
         integer id PK "NN"
@@ -129,7 +129,7 @@ erDiagram
         numeric total_prize "Default: 0"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
-        boolean is_deleted "Default: false"
+        timestamp deleted_at "Default: null"
     }
     feedbacks {
         integer id PK "NN"
