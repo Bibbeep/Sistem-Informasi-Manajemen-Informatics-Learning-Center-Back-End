@@ -1,7 +1,7 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-    const Course = sequelize.define(
-        'Course',
+    const CourseModule = sequelize.define(
+        'CourseModule',
         {
             id: {
                 allowNull: false,
@@ -9,10 +9,25 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 type: DataTypes.INTEGER,
             },
-            programId: {
+            courseId: {
                 allowNull: false,
                 type: DataTypes.INTEGER,
-                field: 'program_id',
+                field: 'course_id',
+            },
+            numberCode: {
+                allowNull: false,
+                type: DataTypes.INTEGER,
+                field: 'number_code',
+            },
+            materialUrl: {
+                allowNull: true,
+                type: DataTypes.TEXT,
+                field: 'material_url',
+            },
+            youtubeUrl: {
+                allowNull: false,
+                type: DataTypes.TEXT,
+                field: 'youtube_url',
             },
             createdAt: {
                 allowNull: false,
@@ -26,23 +41,18 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         {
-            tableName: 'courses',
+            tableName: 'course_modules',
             paranoid: true,
             deletedAt: 'deleted_at',
         },
     );
 
-    Course.associate = (models) => {
-        Course.belongsTo(models.Program, {
-            foreignKey: 'programId',
-            as: 'program',
-        });
-
-        Course.hasMany(models.CourseModule, {
+    CourseModule.associate = (models) => {
+        CourseModule.belongsTo(models.Course, {
             foreignKey: 'courseId',
-            as: 'modules',
+            as: 'course',
         });
     };
 
-    return Course;
+    return CourseModule;
 };

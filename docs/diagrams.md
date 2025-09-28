@@ -78,10 +78,10 @@ erDiagram
         timestamp updated_at "Default: NOW()"
         timestamp deleted_at "Default: null"
     }
-    modules {
+    course_modules {
         integer id PK "NN"
         integer course_id FK "NN"
-        integer number_code "NN, Unique"
+        integer number_code "NN"
         text material_url "Nullable"
         text youtube_url "NN"
         timestamp created_at "Default: NOW()"
@@ -90,7 +90,7 @@ erDiagram
     }
     user_completed_modules {
         integer id PK "NN"
-        integer module_id FK "NN"
+        integer course_module_id FK "NN"
         integer user_program_enrollment_id FK "NN"
         timestamp completed_at "Default: NOW()"
         timestamp created_at "Default: NOW()"
@@ -177,9 +177,9 @@ erDiagram
     user_program_enrollments ||--o| user_program_invoices : "generates"
     user_program_invoices ||--o| user_program_payments : "is paid by"
     user_program_enrollments ||--o{ user_completed_modules : "tracks"
-    modules ||--o{ user_completed_modules : "is completed in"
+    course_modules ||--o{ user_completed_modules : "is completed in"
     programs ||--o| courses : "can be a"
-    courses ||--o{ modules : "contains"
+    courses ||--o{ course_modules : "contains"
     programs ||--o| seminars : "can be a"
     programs ||--o| workshops : "can be a"
     programs ||--o| competitions : "can be a"
