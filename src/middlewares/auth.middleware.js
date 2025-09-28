@@ -2,6 +2,8 @@ const HTTPError = require('../utils/httpError');
 const { verify } = require('../utils/jwtHelper');
 const { redisClient } = require('../configs/redis');
 const { validateId } = require('../validations/validator');
+const { Enrollment } = require('../db/models');
+const { Op } = require('sequelize');
 
 module.exports = {
     authenticate: async (req, res, next) => {
@@ -34,7 +36,7 @@ module.exports = {
         }
     },
     authorize: (options) => {
-        const { rules } = options;
+        const { rules, model, param, ownerForeignKey } = options;
 
         return async (req, res, next) => {
             try {
@@ -53,6 +55,26 @@ module.exports = {
                         parseInt(targetUserId, 10) === loggedInUserId
                     ) {
                         return next();
+                    }
+
+                    if (model && param && ownerForeignKey) {
+                        const resource = await model.findByPk(
+                            parseInt(req.params[param], 10),
+                        );
+
+                        if (!resource) {
+                            throw new HTTPError(404, 'Resource not found.', {
+                                message: `${model.name} with "${param}" does not exist`,
+                                context: {
+                                    key: param,
+                                    value: req.params[param],
+                                },
+                            });
+                        }
+
+                        if (resource[ownerForeignKey] === loggedInUserId) {
+                            return next();
+                        }
                     }
                 }
 
@@ -85,5 +107,51 @@ module.exports = {
                 next(err);
             }
         };
+    },
+    authorizeProgramDetails: async (req, res, next) => {
+        try {
+            if (req.tokenPayload.admin) {
+                return next();
+            }
+
+            const programId = parseInt(req.params.programId, 10);
+            const userId = req.tokenPayload.sub;
+
+            const enrollment = await Enrollment.findOne({
+                where: {
+                    [Op.and]: [
+                        {
+                            programId,
+                        },
+                        {
+                            userId,
+                        },
+                        {
+                            status: {
+                                [Op.ne]: 'Unpaid',
+                            },
+                        },
+                    ],
+                },
+            });
+
+            if (enrollment) {
+                req.params.enrollmentId = enrollment.id;
+                return next();
+            }
+
+            throw new HTTPError(403, 'Forbidden.', [
+                {
+                    message:
+                        'You do not have the necessary permissions to access this resource.',
+                    context: {
+                        key: 'role',
+                        value: 'User',
+                    },
+                },
+            ]);
+        } catch (err) {
+            next(err);
+        }
     },
 };
