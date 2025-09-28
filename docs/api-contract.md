@@ -468,7 +468,7 @@
 	- Request:
 
     ```bash
-	curl -X GET http://localhost:3000/api/v1/programs?limit=5&page=1&type=All
+	curl -X GET http://localhost:3000/api/v1/programs?limit=5&page=1&type=all
 	```
 
 	- Response (200):

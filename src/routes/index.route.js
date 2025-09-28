@@ -4,10 +4,12 @@ const { swaggerSpec, swaggerOptions } = require('../configs/swagger');
 const AuthRoutes = require('./auth.route');
 const UserRoutes = require('./user.route');
 const FeedbackRoutes = require('./feedback.route');
+const ProgramRoutes = require('./program.route');
 
 router.use('/auth', AuthRoutes);
 router.use('/users', UserRoutes);
 router.use('/feedbacks', FeedbackRoutes);
+router.use('/programs', ProgramRoutes);
 router.use(
     '/docs',
     swaggerUI.serve,
