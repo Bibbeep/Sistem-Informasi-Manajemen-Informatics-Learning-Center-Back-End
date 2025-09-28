@@ -60,5 +60,12 @@ module.exports = (sequelize, DataTypes) => {
         },
     );
 
+    Program.associate = (models) => {
+        Program.hasOne(models.Course, {
+            foreignKey: 'programId',
+            as: 'courses',
+        });
+    };
+
     return Program;
 };
