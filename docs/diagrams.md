@@ -27,7 +27,7 @@ erDiagram
         text thumbnail_url "Nullable"
         timestamp available_date "Default: NOW()"
         program_type type "NN"
-        numeric price_idr "Default: 0"
+        numeric price_idr "NN"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
         timestamp deleted_at "Default: null"
