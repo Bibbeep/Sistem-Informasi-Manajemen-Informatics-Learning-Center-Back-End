@@ -7,6 +7,7 @@ const {
     authorizeProgramDetails,
     authorize,
 } = require('../middlewares/auth.middleware');
+const { requireJsonContent } = require('../middlewares/contentType.middleware');
 
 router.get('/', ProgramController.getAll);
 router.get(
@@ -22,7 +23,13 @@ router.get(
     }),
     ProgramController.getById,
 );
-// POST /api/v1/programs
+router.post(
+    '/',
+    authenticate,
+    requireJsonContent,
+    authorize({ rules: ['admin'] }),
+    ProgramController.create,
+);
 // PATCH /api/v1/programs/:programId
 // DELETE /api/v1/programs/:programId
 // PUT /api/v1/programs/:programId/thumbnails

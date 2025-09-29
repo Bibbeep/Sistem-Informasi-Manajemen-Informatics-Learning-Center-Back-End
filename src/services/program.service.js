@@ -1,5 +1,12 @@
 const { Op } = require('sequelize');
-const { Program, CourseModule } = require('../db/models');
+const {
+    Program,
+    Course,
+    CourseModule,
+    Seminar,
+    Workshop,
+    Competition,
+} = require('../db/models');
 const HTTPError = require('../utils/httpError');
 
 class ProgramService {
@@ -108,6 +115,77 @@ class ProgramService {
         programData.details = details;
 
         return programData;
+    }
+
+    static async create(data) {
+        const { title, description, availableDate, type, priceIdr } = data;
+
+        const program = await Program.create({
+            title,
+            description,
+            availableDate,
+            type,
+            priceIdr,
+        });
+
+        let details = {};
+
+        if (['Seminar', 'Workshop', 'Competition'].includes(type)) {
+            details = {
+                isOnline: data.isOnline,
+                videoConferenceUrl: data.videoConferenceUrl,
+                locationAddress: data.locationAddress,
+            };
+        }
+
+        if (type === 'Seminar') {
+            const seminarDetails = {
+                ...details,
+                speakerNames: data.speakerNames,
+            };
+
+            await Seminar.create({
+                programId: program.id,
+                ...seminarDetails,
+            });
+
+            details = seminarDetails;
+        } else if (type === 'Workshop') {
+            const workshopDetails = {
+                ...details,
+                facilitatorNames: data.facilitatorNames,
+            };
+
+            await Workshop.create({
+                programId: program.id,
+                ...workshopDetails,
+            });
+
+            details = workshopDetails;
+        } else if (type === 'Competition') {
+            const competitionDetails = {
+                ...details,
+                contestRoomUrl: data.contestRoomUrl,
+                hostName: data.hostName,
+                totalPrize: data.totalPrize,
+            };
+
+            await Competition.create({
+                programId: program.id,
+                ...competitionDetails,
+            });
+
+            details = competitionDetails;
+        } else {
+            await Course.create({
+                programId: program.id,
+            });
+        }
+
+        return {
+            ...program.toJSON(),
+            details,
+        };
     }
 }
 

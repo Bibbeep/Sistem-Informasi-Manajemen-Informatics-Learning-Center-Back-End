@@ -12,7 +12,7 @@ const {
     feedback,
     feedbackResponse,
 } = require('./schemas/feedback');
-const { programQueryParam } = require('./schemas/program');
+const { programQueryParam, program } = require('./schemas/program');
 
 // Any auto-increment integer id
 const uniqueIdentifier = Joi.number().integer().positive().required();
@@ -36,4 +36,5 @@ module.exports = {
     validateFeedback: validator(feedback),
     validateFeedbackResponse: validator(feedbackResponse),
     validateProgramQuery: validator(programQueryParam),
+    validateProgram: validator(program),
 };

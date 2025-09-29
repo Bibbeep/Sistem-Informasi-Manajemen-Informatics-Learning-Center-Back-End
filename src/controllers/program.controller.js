@@ -1,5 +1,8 @@
 const ProgramService = require('../services/program.service.js');
-const { validateProgramQuery } = require('../validations/validator');
+const {
+    validateProgramQuery,
+    validateProgram,
+} = require('../validations/validator');
 
 module.exports = {
     getAll: async (req, res, next) => {
@@ -37,6 +40,29 @@ module.exports = {
                 success: true,
                 statusCode: 200,
                 message: 'Successfully retrieved a program details.',
+                data: {
+                    program,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    create: async (req, res, next) => {
+        try {
+            const { error, value } = validateProgram(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const program = await ProgramService.create(value);
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a program.',
                 data: {
                     program,
                 },

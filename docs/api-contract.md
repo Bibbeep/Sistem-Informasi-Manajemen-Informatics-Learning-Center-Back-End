@@ -684,12 +684,9 @@
 				"availableDate": "2026-01-20T00:00:00.000Z",
 				"type": "Workshop",
 				"priceIdr": 750000,
-				"details": {
-					"isOnline": false,
-					"videoConferenceUrl": null,
-					"locationAddress": "123 Innovation Drive, Jakarta, Indonesia",
-					"facilitatorNames": ["Jane Doe", "John Smith"]
-				}
+				"isOnline": false,
+				"locationAddress": "123 Innovation Drive, Jakarta, Indonesia",
+				"facilitatorNames": ["Jane Doe", "John Smith"]
 			}'
     	```
 
