@@ -2,7 +2,13 @@
 jest.mock('../../../src/db/models');
 const { Op } = require('sequelize');
 const ProgramService = require('../../../src/services/program.service');
-const { Program } = require('../../../src/db/models');
+const {
+    Program,
+    Course,
+    Workshop,
+    Seminar,
+    Competition,
+} = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
 
 describe('Program Service Unit Tests', () => {
@@ -414,6 +420,173 @@ describe('Program Service Unit Tests', () => {
 
             expect(result.details).toEqual({
                 totalModules: 0,
+            });
+        });
+    });
+
+    describe('create Tests', () => {
+        it('should create a new Course program', async () => {
+            const mockData = {
+                title: 'New Course',
+                description: 'A new course',
+                availableDate: new Date(),
+                type: 'Course',
+                priceIdr: 100000,
+            };
+
+            const mockProgram = {
+                id: 1,
+                ...mockData,
+                toJSON: jest.fn().mockReturnValue({ id: 1, ...mockData }),
+            };
+
+            Program.create = jest.fn().mockResolvedValue(mockProgram);
+            Course.create.mockResolvedValue({ id: 1, programId: 1 });
+
+            const result = await ProgramService.create(mockData);
+
+            expect(Program.create).toHaveBeenCalledWith({
+                title: mockData.title,
+                description: mockData.description,
+                availableDate: mockData.availableDate,
+                type: mockData.type,
+                priceIdr: mockData.priceIdr,
+            });
+
+            expect(Course.create).toHaveBeenCalledWith({ programId: 1 });
+            expect(result).toEqual({ ...mockProgram.toJSON(), details: {} });
+        });
+
+        it('should create a new Workshop program', async () => {
+            const mockData = {
+                title: 'New Workshop',
+                description: 'A new workshop',
+                availableDate: new Date(),
+                type: 'Workshop',
+                priceIdr: 200000,
+                isOnline: true,
+                videoConferenceUrl: 'http://zoom.us/w',
+                locationAddress: null,
+                facilitatorNames: ['John Doe'],
+            };
+            const mockProgram = {
+                id: 1,
+                ...mockData,
+                toJSON: jest.fn().mockReturnValue({ id: 1, ...mockData }),
+            };
+            Program.create = jest.fn().mockResolvedValue(mockProgram);
+            Workshop.create.mockResolvedValue({
+                id: 1,
+                programId: 1,
+                ...mockData,
+            });
+
+            const result = await ProgramService.create(mockData);
+
+            expect(Program.create).toHaveBeenCalled();
+            expect(Workshop.create).toHaveBeenCalledWith({
+                programId: 1,
+                isOnline: mockData.isOnline,
+                videoConferenceUrl: mockData.videoConferenceUrl,
+                locationAddress: mockData.locationAddress,
+                facilitatorNames: mockData.facilitatorNames,
+            });
+            expect(result.details).toEqual({
+                isOnline: mockData.isOnline,
+                videoConferenceUrl: mockData.videoConferenceUrl,
+                locationAddress: mockData.locationAddress,
+                facilitatorNames: mockData.facilitatorNames,
+            });
+        });
+
+        it('should create a new Seminar program', async () => {
+            const mockData = {
+                title: 'New Seminar',
+                description: 'A new seminar',
+                availableDate: new Date(),
+                type: 'Seminar',
+                priceIdr: 50000,
+                isOnline: false,
+                videoConferenceUrl: null,
+                locationAddress: '123 Fake St',
+                speakerNames: ['Jane Smith'],
+            };
+
+            const mockProgram = {
+                id: 1,
+                ...mockData,
+                toJSON: jest.fn().mockReturnValue({ id: 1, ...mockData }),
+            };
+            Program.create = jest.fn().mockResolvedValue(mockProgram);
+            Seminar.create.mockResolvedValue({
+                id: 1,
+                programId: 1,
+                ...mockData,
+            });
+            const result = await ProgramService.create(mockData);
+            expect(Program.create).toHaveBeenCalled();
+            expect(Seminar.create).toHaveBeenCalledWith({
+                programId: 1,
+                isOnline: mockData.isOnline,
+                videoConferenceUrl: mockData.videoConferenceUrl,
+                locationAddress: mockData.locationAddress,
+                speakerNames: mockData.speakerNames,
+            });
+            expect(result.details).toEqual({
+                isOnline: mockData.isOnline,
+                videoConferenceUrl: mockData.videoConferenceUrl,
+                locationAddress: mockData.locationAddress,
+                speakerNames: mockData.speakerNames,
+            });
+        });
+
+        it('should create a new Competition program', async () => {
+            const mockData = {
+                title: 'New Competition',
+                description: 'A new competition',
+                availableDate: new Date(),
+                type: 'Competition',
+                priceIdr: 0,
+                isOnline: true,
+                videoConferenceUrl: 'http://meet.google.com/c',
+                locationAddress: null,
+                contestRoomUrl: 'http://hackerrank.com/c',
+                hostName: 'Big Corp',
+                totalPrize: 10000000,
+            };
+
+            const mockProgram = {
+                id: 1,
+                ...mockData,
+                toJSON: jest.fn().mockReturnValue({ id: 1, ...mockData }),
+            };
+            Program.create = jest.fn().mockResolvedValue(mockProgram);
+            Competition.create.mockResolvedValue({
+                id: 1,
+                programId: 1,
+                ...mockData,
+            });
+
+            const result = await ProgramService.create(mockData);
+
+            expect(Program.create).toHaveBeenCalled();
+            expect(Competition.create).toHaveBeenCalledWith({
+                programId: 1,
+                isOnline: mockData.isOnline,
+                videoConferenceUrl: mockData.videoConferenceUrl,
+                locationAddress: mockData.locationAddress,
+                contestRoomUrl: mockData.contestRoomUrl,
+                hostName: mockData.hostName,
+                totalPrize: mockData.totalPrize,
+            });
+
+            expect(result.details).toEqual({
+                isOnline: mockData.isOnline,
+                videoConferenceUrl: mockData.videoConferenceUrl,
+                locationAddress: mockData.locationAddress,
+                contestRoomUrl: mockData.contestRoomUrl,
+                hostName: mockData.hostName,
+                totalPrize: mockData.totalPrize,
             });
         });
     });
