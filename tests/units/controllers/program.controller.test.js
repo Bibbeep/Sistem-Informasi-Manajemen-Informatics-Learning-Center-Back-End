@@ -4,8 +4,12 @@ jest.mock('../../../src/services/program.service');
 const {
     getAll,
     getById,
+    create,
 } = require('../../../src/controllers/program.controller');
-const { validateProgramQuery } = require('../../../src/validations/validator');
+const {
+    validateProgramQuery,
+    validateProgram,
+} = require('../../../src/validations/validator');
 const ProgramService = require('../../../src/services/program.service');
 const HTTPError = require('../../../src/utils/httpError');
 const { ValidationError } = require('joi');
@@ -19,6 +23,7 @@ describe('Program Controller Unit Tests', () => {
             tokenPayload: {},
             params: {},
             query: {},
+            body: {},
         };
 
         res = {
@@ -177,6 +182,86 @@ describe('Program Controller Unit Tests', () => {
             await getById(req, res, next);
 
             expect(ProgramService.getOne).toHaveBeenCalledWith(999);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('create Tests', () => {
+        it('should create a new program and return 201', async () => {
+            const mockProgramData = {
+                title: 'New Program',
+                description: 'A new program',
+                availableDate: new Date().toISOString(),
+                type: 'Course',
+                priceIdr: 100000,
+            };
+            req.body = mockProgramData;
+            const mockCreatedProgram = {
+                id: 1,
+                ...mockProgramData,
+            };
+
+            validateProgram.mockReturnValue({
+                error: null,
+                value: mockProgramData,
+            });
+            ProgramService.create.mockResolvedValue(mockCreatedProgram);
+
+            await create(req, res, next);
+
+            expect(validateProgram).toHaveBeenCalledWith(mockProgramData);
+            expect(ProgramService.create).toHaveBeenCalledWith(mockProgramData);
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a program.',
+                data: {
+                    program: mockCreatedProgram,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error', async () => {
+            const mockInvalidData = {
+                title: 'New Program',
+            };
+            req.body = mockInvalidData;
+            const validationError = new ValidationError();
+            validateProgram.mockReturnValue({ error: validationError });
+
+            await create(req, res, next);
+
+            expect(validateProgram).toHaveBeenCalledWith(mockInvalidData);
+            expect(next).toHaveBeenCalledWith(validationError);
+            expect(ProgramService.create).not.toHaveBeenCalled();
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            const mockProgramData = {
+                title: 'New Program',
+                description: 'A new program',
+                availableDate: new Date().toISOString(),
+                type: 'Course',
+                priceIdr: 100000,
+            };
+            req.body = mockProgramData;
+            const serviceError = new Error('Service Error');
+            validateProgram.mockReturnValue({
+                error: null,
+                value: mockProgramData,
+            });
+            ProgramService.create.mockRejectedValue(serviceError);
+
+            await create(req, res, next);
+
+            expect(ProgramService.create).toHaveBeenCalledWith(mockProgramData);
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
