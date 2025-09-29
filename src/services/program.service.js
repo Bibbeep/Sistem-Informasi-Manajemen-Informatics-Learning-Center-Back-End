@@ -72,7 +72,7 @@ class ProgramService {
                 ],
             });
 
-            details = { totalModules: course.modules?.length || 0 };
+            details = { totalModules: course?.modules?.length || 0 };
         } else if (program.type === 'Workshop') {
             const workshop = await program.getWorkshop();
 
@@ -91,7 +91,7 @@ class ProgramService {
                 locationAddress: seminar.locationAddress,
                 speakerNames: seminar.speakerNames,
             };
-        } else if (program.type === 'Competition') {
+        } else {
             const competition = await program.getCompetition();
 
             details = {
