@@ -1839,6 +1839,130 @@
                     }
                 }
             }
+        },
+        "/api/v1/programs/{programId}": {
+            "get": {
+                "summary": "Retrieves the details of a specific program",
+                "tags": ["Program Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "programId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the program to retrieve."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the program details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProgramDetailsSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid program ID format.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin or an enrolled member.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Program with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1991,6 +2115,89 @@
                         "type": "string",
                         "format": "date-time"
                     }
+                }
+            },
+            "ProgramDetails": {
+                "allOf": [
+                    { "$ref": "#/components/schemas/Program" },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "details": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/components/schemas/CourseDetails"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/WorkshopDetails"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/SeminarDetails"
+                                    },
+                                    {
+                                        "$ref": "#/components/schemas/CompetitionDetails"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                ]
+            },
+            "CourseDetails": {
+                "type": "object",
+                "properties": {
+                    "totalModules": { "type": "integer" }
+                }
+            },
+            "WorkshopDetails": {
+                "type": "object",
+                "properties": {
+                    "isOnline": { "type": "boolean" },
+                    "videoConferenceUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "locationAddress": { "type": "string", "nullable": true },
+                    "facilitatorNames": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    }
+                }
+            },
+            "SeminarDetails": {
+                "type": "object",
+                "properties": {
+                    "isOnline": { "type": "boolean" },
+                    "videoConferenceUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "locationAddress": { "type": "string", "nullable": true },
+                    "speakerNames": {
+                        "type": "array",
+                        "items": { "type": "string" }
+                    }
+                }
+            },
+            "CompetitionDetails": {
+                "type": "object",
+                "properties": {
+                    "isOnline": { "type": "boolean" },
+                    "videoConferenceUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "contestRoomUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "locationAddress": { "type": "string", "nullable": true },
+                    "hostName": { "type": "string" },
+                    "totalPrize": { "type": "integer" }
                 }
             },
             "RegisterRequestBody": {
@@ -2755,6 +2962,45 @@
                         "totalPages": 1,
                         "nextPage": null,
                         "prevPage": null
+                    },
+                    "errors": null
+                }
+            },
+            "ProgramDetailsSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "program": {
+                                "$ref": "#/components/schemas/ProgramDetails"
+                            }
+                        }
+                    },
+                    "errors": { "type": "array", "nullable": true }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved a program details.",
+                    "data": {
+                        "program": {
+                            "id": 1,
+                            "title": "Introduction to Web Development",
+                            "description": "Learn the fundamentals of modern web development.",
+                            "thumbnailUrl": "https://example.com/thumb1.jpg",
+                            "availableDate": "2025-10-01T00:00:00.000Z",
+                            "type": "Course",
+                            "priceIdr": 500000,
+                            "createdAt": "2025-09-29T12:00:00.000Z",
+                            "updatedAt": "2025-09-29T12:00:00.000Z",
+                            "details": {
+                                "totalModules": 2
+                            }
+                        }
                     },
                     "errors": null
                 }
