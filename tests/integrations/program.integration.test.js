@@ -295,4 +295,152 @@ describe('Program Management Integration Tests', () => {
             expect(response.body.message).toBe('Resource not found.');
         });
     });
+
+    describe('POST /api/v1/programs', () => {
+        it('should return 201 and create a new Course program', async () => {
+            const newProgram = {
+                title: 'New Course Program',
+                description: 'This is a new course program.',
+                availableDate: '2025-10-10T00:00:00.000Z',
+                type: 'Course',
+                priceIdr: 150000,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/programs')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(newProgram);
+
+            expect(response.status).toBe(201);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message: 'Successfully created a program.',
+                    data: {
+                        program: expect.objectContaining({
+                            title: newProgram.title,
+                            type: newProgram.type,
+                            details: {},
+                        }),
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should return 201 and create a new Workshop program', async () => {
+            const newProgram = {
+                title: 'New Workshop Program',
+                description: 'This is a new workshop program.',
+                availableDate: '2025-11-11T00:00:00.000Z',
+                type: 'Workshop',
+                priceIdr: 250000,
+                isOnline: true,
+                videoConferenceUrl: 'http://zoom.us/new',
+                facilitatorNames: ['Dr. Smith'],
+            };
+
+            const response = await request(server)
+                .post('/api/v1/programs')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(newProgram);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.program.details).toEqual({
+                isOnline: newProgram.isOnline,
+                videoConferenceUrl: newProgram.videoConferenceUrl,
+                locationAddress: undefined,
+                facilitatorNames: newProgram.facilitatorNames,
+            });
+        });
+
+        it('should return 201 and create a new Seminar program', async () => {
+            const newProgram = {
+                title: 'New Seminar Program',
+                description: 'This is a new seminar program.',
+                availableDate: '2025-11-11T00:00:00.000Z',
+                type: 'Seminar',
+                priceIdr: 250000,
+                isOnline: true,
+                videoConferenceUrl: 'http://zoom.us/new',
+                speakerNames: ['Dr. Smith'],
+            };
+
+            const response = await request(server)
+                .post('/api/v1/programs')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(newProgram);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.program.details).toEqual({
+                isOnline: newProgram.isOnline,
+                videoConferenceUrl: newProgram.videoConferenceUrl,
+                locationAddress: undefined,
+                speakerNames: newProgram.speakerNames,
+            });
+        });
+
+        it('should return 201 and create a new Competition program', async () => {
+            const newProgram = {
+                type: 'Competition',
+                title: 'UNTAN Programming Contest V',
+                description:
+                    'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc.',
+                availableDate: '2025-10-11',
+                priceIdr: 50000,
+                isOnline: false,
+                locationAddress:
+                    'W8RW+PHQ, Bansir Laut, Pontianak Tenggara, Pontianak, West Kalimantan 78115',
+                contestRoomUrl: 'https://codeforces.com/contests/2152',
+                hostName: 'Program Studi Informatika, Universitas Tanjungpura',
+                totalPrize: 15000000,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/programs')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(newProgram);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.program.details).toEqual({
+                isOnline: false,
+                locationAddress:
+                    'W8RW+PHQ, Bansir Laut, Pontianak Tenggara, Pontianak, West Kalimantan 78115',
+                contestRoomUrl: 'https://codeforces.com/contests/2152',
+                hostName: 'Program Studi Informatika, Universitas Tanjungpura',
+                totalPrize: 15000000,
+            });
+        });
+
+        it('should return 400 for invalid program data', async () => {
+            const invalidProgram = {
+                title: 'Invalid Program',
+            };
+
+            const response = await request(server)
+                .post('/api/v1/programs')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(invalidProgram);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 403 for a regular user trying to create a program', async () => {
+            const newProgram = {
+                title: 'Forbidden Program',
+                description: 'This should not be created.',
+                availableDate: '2025-12-12T00:00:00.000Z',
+                type: 'Course',
+                priceIdr: 50000,
+            };
+
+            const response = await request(server)
+                .post('/api/v1/programs')
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(newProgram);
+
+            expect(response.status).toBe(403);
+        });
+    });
 });
