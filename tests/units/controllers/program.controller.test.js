@@ -1,9 +1,13 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/validations/validator');
 jest.mock('../../../src/services/program.service');
-const { getAll } = require('../../../src/controllers/program.controller');
+const {
+    getAll,
+    getById,
+} = require('../../../src/controllers/program.controller');
 const { validateProgramQuery } = require('../../../src/validations/validator');
 const ProgramService = require('../../../src/services/program.service');
+const HTTPError = require('../../../src/utils/httpError');
 const { ValidationError } = require('joi');
 
 describe('Program Controller Unit Tests', () => {
@@ -130,6 +134,50 @@ describe('Program Controller Unit Tests', () => {
 
             expect(validateProgramQuery).toHaveBeenCalledWith(req.query);
             expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getById Tests', () => {
+        it('should send 200 on success and return program details', async () => {
+            req.params = { programId: '1' };
+            const mockProgramData = {
+                id: 1,
+                title: 'Test Program',
+                type: 'Course',
+                details: {
+                    totalModules: 5,
+                },
+            };
+
+            ProgramService.getOne.mockResolvedValue(mockProgramData);
+
+            await getById(req, res, next);
+
+            expect(ProgramService.getOne).toHaveBeenCalledWith(1);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved a program details.',
+                data: {
+                    program: mockProgramData,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            req.params = { programId: '999' };
+            const serviceError = new HTTPError(404, 'Not Found');
+            ProgramService.getOne.mockRejectedValue(serviceError);
+
+            await getById(req, res, next);
+
+            expect(ProgramService.getOne).toHaveBeenCalledWith(999);
+            expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
         });
