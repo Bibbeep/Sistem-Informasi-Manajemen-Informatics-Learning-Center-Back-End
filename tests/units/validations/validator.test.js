@@ -5,6 +5,7 @@ const {
     validateTokenPayload,
     validateForgotPassword,
     validateResetPassword,
+    validateProgramQuery,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -432,6 +433,56 @@ describe('Authentication Validation Unit Tests', () => {
             expect(error).toBeInstanceOf(ValidationError);
             expect(error.details[0].context.valids[0].path[0]).toStrictEqual(
                 'newPassword',
+            );
+        });
+    });
+
+    describe('validateProgramQuery Tests', () => {
+        it('should pass validation with default valid data', async () => {
+            const mockData = {
+                page: '1',
+                limit: '10',
+                sort: 'id',
+                type: 'all',
+                'price.gte': '0',
+            };
+
+            const { error, value } = validateProgramQuery(mockData);
+
+            expect(error).toBeUndefined();
+            expect(value).toEqual(
+                expect.objectContaining({
+                    page: 1,
+                    limit: 10,
+                    sort: 'id',
+                    type: 'all',
+                    'price.gte': 0,
+                }),
+            );
+        });
+
+        it('should pass validation with valid data', async () => {
+            const mockData = {
+                page: '2',
+                limit: '5',
+                sort: '-price',
+                type: 'competition',
+                'price.gte': '1000000',
+                'price.lte': '2000000',
+            };
+
+            const { error, value } = validateProgramQuery(mockData);
+
+            expect(error).toBeUndefined();
+            expect(value).toEqual(
+                expect.objectContaining({
+                    page: 2,
+                    limit: 5,
+                    sort: '-priceIdr',
+                    type: 'competition',
+                    'price.gte': 1000000,
+                    'price.lte': 2000000,
+                }),
             );
         });
     });

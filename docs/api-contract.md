@@ -34,11 +34,11 @@
 | `DELETE` | `/api/v1/invoices/{invoiceId}`                                  | Deletes an invoice                           | Required       | Admin         |
 | `POST`   | `/api/v1/invoices/{invoiceId}/payments`                         | Creates a payment                            | Required       | Self          |
 | `GET`    | `/api/v1/programs`                                              | Retrieves all programs                       | Not required   | Any           |
-| `GET`    | `/api/v1/programs/{programId}`                                  | Retrieves a program details                  | Not required   | Any           |
+| `GET`    | `/api/v1/programs/{programId}`                                  | Retrieves a program details                  | Required       | Any           |
 | `POST`   | `/api/v1/programs`                                              | Creates a new program                        | Required       | Admin         |
 | `PATCH`  | `/api/v1/programs/{programId}`                                  | Updates a program                            | Required       | Admin         |
 | `DELETE` | `/api/v1/programs/{programId}`                                  | Deletes a program                            | Required       | Admin         |
-| `POST`   | `/api/v1/programs/{programId}/thumbnails`                       | Uploads a program thumbnail                  | Required       | Admin         |
+| `PUT`    | `/api/v1/programs/{programId}/thumbnails`                       | Uploads a program thumbnail                  | Required       | Admin         |
 | `GET`    | `/api/v1/programs/{programId}/modules`                          | Retrieves all modules                        | Required       | Any           |
 | `GET`    | `/api/v1/programs/{programId}/modules/{moduleId}`               | Retrieves a module details                   | Required       | Any           |
 | `POST`   | `/api/v1/programs/{programId}/modules`                          | Creates a new module                         | Required       | Admin         |
@@ -468,7 +468,7 @@
 	- Request:
 
     ```bash
-	curl -X GET http://localhost:3000/api/v1/programs?limit=5&page=1&type=All
+	curl -X GET http://localhost:3000/api/v1/programs?limit=5&page=1&type=all
 	```
 
 	- Response (200):
@@ -510,12 +510,6 @@
 					"thumbnailUrl": "https://static.image.com/thumb_competition.png",
 					"availableDate": "2025-03-10T00:00:00.000Z",
 					"priceIdr": 0,
-					"isOnline": false,
-					"locationAddress": "Gedung Informatics Center, Jl. Teknologi No. 10, Jakarta",
-					"hostName": "Informatics Learning Center",
-					"totalPrize": 15000000,
-					"contestRoomUrl": null,
-					"videoConferenceUrl": null,
 					"createdAt": "2024-12-27T10:00:00.000Z",
 					"updatedAt": "2024-12-27T10:00:00.000Z"
 				},
@@ -527,13 +521,6 @@
 					"thumbnailUrl": "https://static.image.com/thumb_seminar.png",
 					"availableDate": "2025-04-15T00:00:00.000Z",
 					"priceIdr": 100000,
-					"isOnline": true,
-					"videoConferenceUrl": "https://zoom.us/j/123456789",
-					"locationAddress": null,
-					"speakerNames": [
-						"Dr. Andi Pratama",
-						"Prof. Siti Rahmawati"
-					],
 					"createdAt": "2024-12-28T10:00:00.000Z",
 					"updatedAt": "2024-12-28T10:00:00.000Z"
 				},
@@ -545,13 +532,6 @@
 					"thumbnailUrl": "https://static.image.com/thumb_workshop.png",
 					"availableDate": "2025-05-20T00:00:00.000Z",
 					"priceIdr": 250000,
-					"isOnline": false,
-					"videoConferenceUrl": null,
-					"locationAddress": "Ruang Workshop, Gedung Informatics Center, Jakarta",
-					"facilitatorNames": [
-						"Budi Santoso",
-						"Rina Kusuma"
-					],
 					"createdAt": "2024-12-29T10:00:00.000Z",
 					"updatedAt": "2024-12-29T10:00:00.000Z"
 				}
@@ -571,76 +551,174 @@
 
 - `GET /api/v1/programs/{programId}` - Retrieves a program details
 
-	- Request:
+	- Course program example:
 
-	```bash
-	curl -X GET http://localhost:3000/api/v1/programs/1
-	```
+    	- Request:
 
-	- Response (200):
+    	```bash
+    	curl -X GET http://localhost:3000/api/v1/programs/1
+    	```
 
-	```json
-	{
-		"success": true,
-		"statusCode": 200,
-		"message": "Successfully retrieved a program details.",
-		"data": {
-			"program": {
-				"id": 1,
-				"title": "VueJS untuk Pemula",
-				"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
-				"type": "Course",
-				"thumbnailUrl": "https://static.image.com/thumb_p3.png",
-				"availableDate": "2025-01-01T00:00:00.000Z",
-				"priceIdr": 300000,
-				"createdAt": "2024-12-25T10:00:00.000Z",
-				"updatedAt": "2024-12-25T10:00:00.000Z",
+    	- Response (200):
+
+    	```json
+    	{
+    		"success": true,
+    		"statusCode": 200,
+    		"message": "Successfully retrieved a program details.",
+    		"data": {
+    			"program": {
+					"id": 1,
+					"title": "Introduction to Web Development",
+					"description": "Learn the fundamentals of modern web development.",
+					"thumbnailUrl": "https://example.com/thumb1.jpg",
+					"availableDate": "2025-10-01T00:00:00.000Z",
+					"type": "Course",
+					"priceIdr": 500000,
+					"details": {
+						"totalModules": 10
+					},
+					"createdAt": "2024-12-29T10:00:00.000Z",
+					"updatedAt": "2024-12-29T10:00:00.000Z"
+    			}
 			},
-		},
-		"errors": null
-	}
-	```
+    		"errors": null
+    	}
+    	```
+
+	- Competition program example:
+
+    	- Request:
+
+    	```bash
+    	curl -X GET http://localhost:3000/api/v1/programs/3
+    	```
+
+    	- Response (200):
+
+    	```json
+    	{
+    		"success": true,
+    		"statusCode": 200,
+    		"message": "Successfully retrieved a program details.",
+    		"data": {
+    			"program": {
+    				"id": 3,
+    				"title": "Annual Hackathon Challenge",
+    				"description": "Compete to build the most innovative application.",
+    				"thumbnailUrl": "https://example.com/thumb3.jpg",
+    				"availableDate": "2025-12-01T00:00:00.000Z",
+    				"type": "Competition",
+    				"priceIdr": 0,
+    				"details": {
+    					"isOnline": true,
+    					"videoConferenceUrl": "https://meet.example.com/hackathon",
+    					"contestRoomUrl": "https://judge.example.com/hackathon2025",
+    					"locationAddress": null,
+    					"hostName": "Tech Events Inc.",
+    					"totalPrize": 50000000
+    				},
+    				"createdAt": "2024-12-29T10:00:00.000Z",
+    				"updatedAt": "2024-12-29T10:00:00.000Z"
+    			}
+    		},
+    		"errors": null
+    	}
+    	```
 
 - `POST /api/v1/programs` - Creates a new program
 
-	- Request:
+	- Course program example:
 
-	```bash
-	curl -X POST http://localhost:3000/api/v1/programs \
-		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
-		-H "Content-Type: application/json" \
-		-d '{
-			"title": "VueJS untuk Pemula",
-			"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
-			"type": "Course",
-			"availableDate": "2025-01-01",
-			"priceIdr": 300000
-		}
-	```
+    	- Request:
 
-	- Response (201):
+    	```bash
+    	curl -X POST http://localhost:3000/api/v1/programs \
+    		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+    		-H "Content-Type: application/json" \
+    		-d '{
+    			"title": "VueJS untuk Pemula",
+    			"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
+    			"type": "Course",
+    			"availableDate": "2025-01-01",
+    			"priceIdr": 300000
+    		}'
+    	```
 
-	```json
-	{
-		"success": true,
-		"statusCode": 201,
-		"message": "Successfully created a program.",
-		"data": {
-			"program": {
-				"id": 1,
-				"title": "VueJS untuk Pemula",
-				"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
-				"type": "Course",
-				"thumbnailUrl": "https://static.image.com/thumb_p3.png",
-				"availableDate": "2025-01-01T00:00:00.000Z",
-				"priceIdr": 300000,
-				"createdAt": "2024-12-25T10:00:00.000Z",
-				"updatedAt": "2024-12-25T10:00:00.000Z",
-			},
-		},
-		"errors": null
-	}
-	```
+    	- Response (201):
+
+    	```json
+    	{
+    		"success": true,
+    		"statusCode": 201,
+    		"message": "Successfully created a program.",
+    		"data": {
+    			"program": {
+    				"id": 1,
+    				"title": "VueJS untuk Pemula",
+    				"description": "Program ini dirancang untuk pemula yang ingin mempelajari dasar-dasar pengembangan aplikasi web menggunakan VueJS. Peserta akan memahami konsep inti VueJS, mulai dari instalasi, pembuatan komponen, hingga pengelolaan state dan routing. Materi disusun secara bertahap agar mudah diikuti, dilengkapi dengan studi kasus dan latihan praktik untuk memperkuat pemahaman.",
+    				"type": "Course",
+    				"thumbnailUrl": "https://static.image.com/thumb_p3.png",
+    				"availableDate": "2025-01-01T00:00:00.000Z",
+    				"priceIdr": 300000,
+    				"createdAt": "2024-12-25T10:00:00.000Z",
+    				"updatedAt": "2024-12-25T10:00:00.000Z"
+    			}
+    		},
+    		"errors": null
+    	}
+    	```
+
+	- Workshop program example:
+
+    	- Request:
+
+    	```bash
+    	curl -X POST http://localhost:3000/api/v1/programs \
+    		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
+    		-H "Content-Type: application/json" \
+    		-d '{
+				"title": "Digital Marketing Workshop",
+				"description": "Master the art of online marketing.",
+				"thumbnailUrl": "https://example.com/thumb4.jpg",
+				"availableDate": "2026-01-20T00:00:00.000Z",
+				"type": "Workshop",
+				"priceIdr": 750000,
+				"isOnline": false,
+				"locationAddress": "123 Innovation Drive, Jakarta, Indonesia",
+				"facilitatorNames": ["Jane Doe", "John Smith"]
+			}'
+    	```
+
+    	- Response (201):
+
+    	```json
+    	{
+    		"success": true,
+    		"statusCode": 201,
+    		"message": "Successfully created a program.",
+    		"data": {
+    			"program": {
+					"id": 4,
+					"title": "Digital Marketing Workshop",
+					"description": "Master the art of online marketing.",
+					"thumbnailUrl": "https://example.com/thumb4.jpg",
+					"availableDate": "2026-01-20T00:00:00.000Z",
+					"type": "Workshop",
+					"priceIdr": 750000,
+					"details": {
+						"isOnline": false,
+						"videoConferenceUrl": null,
+						"locationAddress": "123 Innovation Drive, Jakarta, Indonesia",
+						"facilitatorNames": ["Jane Doe", "John Smith"]
+					},
+					"createdAt": "2024-12-25T10:00:00.000Z",
+    				"updatedAt": "2024-12-25T10:00:00.000Z"
+				}
+    		},
+    		"errors": null
+    	}
+    	```
 
 - `PATCH /api/v1/programs/{programId}` - Updates a program
 
@@ -670,7 +748,7 @@
 				"type": "Course",
 				"thumbnailUrl": "https://static.image.com/thumb_p3.png",
 				"availableDate": "2025-01-01T00:00:00.000Z",
-				"priceIdr": 200000,
+				"priceIdr": 150000,
 				"createdAt": "2024-12-25T10:00:00.000Z",
 				"updatedAt": "2025-01-01T12:00:00.000Z"
 			},
@@ -700,12 +778,12 @@
 	}
 	```
 
-- `POST /api/v1/programs/{programId}/thumbnails` - Uploads a program thumbnail
+- `PUT /api/v1/programs/{programId}/thumbnails` - Uploads a program thumbnail
 
 	- Request:
 
 	```bash
-	curl -X POST http://localhost:3000/api/v1/programs/1/thumbnails \
+	curl -X PUT http://localhost:3000/api/v1/programs/1/thumbnails \
 		-H "Authorization: Bearer $YOUR_ACCESS_TOKEN" \
 		-F "picture=@/path/to/thumbnail.jpg"
 	```

@@ -1,0 +1,91 @@
+'use strict';
+module.exports = (sequelize, DataTypes) => {
+    const Program = sequelize.define(
+        'Program',
+        {
+            id: {
+                allowNull: false,
+                autoIncrement: true,
+                primaryKey: true,
+                type: DataTypes.INTEGER,
+            },
+            title: {
+                allowNull: false,
+                type: DataTypes.STRING,
+            },
+            description: {
+                allowNull: false,
+                type: DataTypes.TEXT,
+            },
+            thumbnailUrl: {
+                allowNull: true,
+                type: DataTypes.TEXT,
+                field: 'thumbnail_url',
+            },
+            availableDate: {
+                allowNull: false,
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW,
+                field: 'available_date',
+            },
+            type: {
+                allowNull: false,
+                type: DataTypes.ENUM(
+                    'Course',
+                    'Seminar',
+                    'Workshop',
+                    'Competition',
+                ),
+            },
+            priceIdr: {
+                allowNull: false,
+                type: DataTypes.INTEGER,
+                field: 'price_idr',
+            },
+            createdAt: {
+                allowNull: false,
+                type: DataTypes.DATE,
+                field: 'created_at',
+            },
+            updatedAt: {
+                allowNull: false,
+                type: DataTypes.DATE,
+                field: 'updated_at',
+            },
+            deletedAt: {
+                allowNull: true,
+                type: DataTypes.DATE,
+                field: 'deleted_at',
+            },
+        },
+        {
+            tableName: 'programs',
+            paranoid: true,
+            deletedAt: 'deletedAt',
+        },
+    );
+
+    Program.associate = (models) => {
+        Program.hasOne(models.Course, {
+            foreignKey: 'programId',
+            as: 'course',
+        });
+
+        Program.hasOne(models.Seminar, {
+            foreignKey: 'programId',
+            as: 'seminar',
+        });
+
+        Program.hasOne(models.Workshop, {
+            foreignKey: 'programId',
+            as: 'workshop',
+        });
+
+        Program.hasOne(models.Competition, {
+            foreignKey: 'programId',
+            as: 'competition',
+        });
+    };
+
+    return Program;
+};
