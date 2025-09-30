@@ -2,6 +2,7 @@ const ProgramService = require('../services/program.service.js');
 const {
     validateProgramQuery,
     validateProgram,
+    validateUpdateProgramData,
 } = require('../validations/validator');
 
 module.exports = {
@@ -63,6 +64,32 @@ module.exports = {
                 success: true,
                 statusCode: 201,
                 message: 'Successfully created a program.',
+                data: {
+                    program,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    updateById: async (req, res, next) => {
+        try {
+            const { error, value } = validateUpdateProgramData(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const program = await ProgramService.updateOne({
+                programId: parseInt(req.params.programId, 10),
+                updateData: value,
+            });
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully updated a program.',
                 data: {
                     program,
                 },

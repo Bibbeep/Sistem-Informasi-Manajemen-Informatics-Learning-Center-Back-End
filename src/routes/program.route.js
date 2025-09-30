@@ -30,7 +30,14 @@ router.post(
     authorize({ rules: ['admin'] }),
     ProgramController.create,
 );
-// PATCH /api/v1/programs/:programId
+router.patch(
+    '/:programId',
+    authenticate,
+    validatePathParameterId('programId'),
+    requireJsonContent,
+    authorize({ rules: ['admin'] }),
+    ProgramController.updateById,
+);
 // DELETE /api/v1/programs/:programId
 // PUT /api/v1/programs/:programId/thumbnails
 

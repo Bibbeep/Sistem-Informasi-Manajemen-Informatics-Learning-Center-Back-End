@@ -6,6 +6,7 @@ const {
     Seminar,
     Workshop,
     Competition,
+    sequelize,
 } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 
@@ -186,6 +187,138 @@ class ProgramService {
             ...program.toJSON(),
             details,
         };
+    }
+
+    static async updateOne(data) {
+        const { programId, updateData } = data;
+        const { type } = updateData;
+
+        const program = await Program.findByPk(programId);
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        if (program.type !== type) {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: 'Program "type" cannot be changed',
+                    context: {
+                        key: 'type',
+                        value: type,
+                    },
+                },
+            ]);
+        }
+
+        const updatedProgram = await sequelize.transaction(async (t) => {
+            // eslint-disable-next-line no-unused-vars
+            const [programCount, programRows] = await Program.update(
+                updateData,
+                {
+                    where: {
+                        id: programId,
+                    },
+                    returning: true,
+                    transaction: t,
+                },
+            );
+
+            let details = {};
+
+            if (program.type === 'Seminar') {
+                details = (
+                    await Seminar.update(updateData, {
+                        where: {
+                            programId,
+                        },
+                        returning: true,
+                        attributes: {
+                            exclude: [
+                                'id',
+                                'programId',
+                                'createdAt',
+                                'updatedAt',
+                                'deletedAt',
+                            ],
+                        },
+                        transaction: t,
+                    })
+                )[1][0].toJSON();
+            } else if (program.type === 'Workshop') {
+                details = (
+                    await Workshop.update(updateData, {
+                        where: {
+                            programId,
+                        },
+                        returning: true,
+                        tributes: {
+                            exclude: [
+                                'id',
+                                'programId',
+                                'createdAt',
+                                'updatedAt',
+                                'deletedAt',
+                            ],
+                        },
+                        transaction: t,
+                    })
+                )[1][0].toJSON();
+            } else if (program.type === 'Competition') {
+                details = (
+                    await Competition.update(updateData, {
+                        where: {
+                            programId,
+                        },
+                        returning: true,
+                        attributes: {
+                            exclude: [
+                                'id',
+                                'programId',
+                                'createdAt',
+                                'updatedAt',
+                                'deletedAt',
+                            ],
+                        },
+                        transaction: t,
+                    })
+                )[1][0].toJSON();
+            } else {
+                details.totalModules = await CourseModule.count({
+                    include: [
+                        {
+                            model: Course,
+                            as: 'course',
+                            where: {
+                                programId,
+                            },
+                        },
+                    ],
+                    transaction: t,
+                });
+            }
+
+            delete details.id;
+            delete details.programId;
+            delete details.createdAt;
+            delete details.updatedAt;
+            delete details.deletedAt;
+
+            return {
+                ...programRows[0].toJSON(),
+                details,
+            };
+        });
+
+        return updatedProgram;
     }
 }
 
