@@ -794,4 +794,38 @@ describe('Program Service Unit Tests', () => {
             ).rejects.toHaveProperty('statusCode', 400);
         });
     });
+
+    describe('deleteOne Tests', () => {
+        it('should delete a program', async () => {
+            const mockProgramId = 1;
+            Program.findByPk.mockResolvedValue({ id: 1 });
+            Program.destroy.mockResolvedValue();
+
+            await ProgramService.deleteOne(mockProgramId);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(mockProgramId);
+            expect(Program.destroy).toHaveBeenCalledWith({
+                where: { id: mockProgramId },
+            });
+        });
+
+        it('should throw 404 error if program does not exist', async () => {
+            const mockProgramId = 404;
+            Program.findByPk.mockResolvedValue(null);
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: mockProgramId,
+                    },
+                },
+            ]);
+
+            await expect(
+                ProgramService.deleteOne(mockProgramId),
+            ).rejects.toThrow(mockError);
+            expect(Program.findByPk).toHaveBeenCalledWith(mockProgramId);
+        });
+    });
 });
