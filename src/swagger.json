@@ -2083,6 +2083,153 @@
                         }
                     }
                 }
+            },
+            "patch": {
+                "summary": "Updates a specific program",
+                "tags": ["Program Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "programId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the program to update."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProgramUpdateRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated a program.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProgramUpdateSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or program ID.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Program with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -2493,6 +2640,45 @@
                     "isOnline": true,
                     "videoConferenceUrl": "http://zoom.us/new",
                     "facilitatorNames": ["Dr. Smith"]
+                }
+            },
+            "ProgramUpdateRequestBody": {
+                "type": "object",
+                "properties": {
+                    "title": { "type": "string" },
+                    "description": { "type": "string" },
+                    "availableDate": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "type": {
+                        "type": "string",
+                        "enum": ["Course", "Seminar", "Workshop", "Competition"]
+                    },
+                    "priceIdr": { "type": "integer", "minimum": 0 },
+                    "isOnline": { "type": "boolean" },
+                    "videoConferenceUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "locationAddress": { "type": "string" },
+                    "contestRoomUrl": { "type": "string", "format": "uri" },
+                    "speakerNames": {
+                        "type": "array",
+                        "items": { "type": "string", "maxLength": 60 },
+                        "maxItems": 10
+                    },
+                    "facilitatorNames": {
+                        "type": "array",
+                        "items": { "type": "string", "maxLength": 60 },
+                        "maxItems": 10
+                    },
+                    "hostName": { "type": "string" },
+                    "totalPrize": { "type": "integer", "minimum": 0 }
+                },
+                "example": {
+                    "type": "Seminar",
+                    "speakerNames": ["Dr. Strange", "Wong"]
                 }
             },
             "FailedResponse": {
@@ -3200,6 +3386,42 @@
                             "type": "Course",
                             "priceIdr": 150000,
                             "details": {}
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "ProgramUpdateSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "program": {
+                                "$ref": "#/components/schemas/ProgramDetails"
+                            }
+                        }
+                    },
+                    "errors": { "type": "array", "nullable": true }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully updated a program.",
+                    "data": {
+                        "program": {
+                            "id": 1,
+                            "title": "Updated Course Title",
+                            "description": "This is an updated course.",
+                            "availableDate": "2025-12-01T00:00:00.000Z",
+                            "type": "Course",
+                            "priceIdr": 200000,
+                            "details": {
+                                "totalModules": 5
+                            }
                         }
                     },
                     "errors": null
