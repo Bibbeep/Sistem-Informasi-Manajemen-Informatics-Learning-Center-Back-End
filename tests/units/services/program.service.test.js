@@ -8,6 +8,8 @@ const {
     Workshop,
     Seminar,
     Competition,
+    CourseModule,
+    sequelize,
 } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
 
@@ -588,6 +590,208 @@ describe('Program Service Unit Tests', () => {
                 hostName: mockData.hostName,
                 totalPrize: mockData.totalPrize,
             });
+        });
+    });
+
+    describe('updateOne Tests', () => {
+        it('should update a Course program', async () => {
+            const mockProgramId = 1;
+            const mockUpdateData = {
+                title: 'Updated Course',
+                type: 'Course',
+            };
+
+            const mockProgram = {
+                id: mockProgramId,
+                type: 'Course',
+                toJSON: () => {
+                    return {
+                        id: mockProgramId,
+                        type: 'Course',
+                        title: 'Updated Course',
+                    };
+                },
+            };
+
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Program.update.mockResolvedValue([1, [mockProgram]]);
+            CourseModule.count.mockResolvedValue(5);
+            sequelize.transaction.mockImplementation(async (callback) => {
+                return callback();
+            });
+
+            const result = await ProgramService.updateOne({
+                programId: mockProgramId,
+                updateData: mockUpdateData,
+            });
+
+            expect(result.details).toEqual({ totalModules: 5 });
+        });
+
+        it('should update a Seminar program', async () => {
+            const mockProgramId = 2;
+            const mockUpdateData = {
+                title: 'Updated Seminar',
+                type: 'Seminar',
+                speakerNames: ['Dr. Strange'],
+            };
+            const mockProgram = {
+                id: mockProgramId,
+                type: 'Seminar',
+                toJSON: () => {
+                    return {
+                        id: mockProgramId,
+                        type: 'Seminar',
+                        title: 'Updated Seminar',
+                    };
+                },
+            };
+            const mockSeminar = {
+                toJSON: () => {
+                    return {
+                        id: 1,
+                        programId: mockProgramId,
+                        speakerNames: ['Dr. Strange'],
+                    };
+                },
+            };
+
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Program.update.mockResolvedValue([1, [mockProgram]]);
+            Seminar.update.mockResolvedValue([1, [mockSeminar]]);
+            sequelize.transaction.mockImplementation(async (callback) => {
+                return callback();
+            });
+
+            const result = await ProgramService.updateOne({
+                programId: mockProgramId,
+                updateData: mockUpdateData,
+            });
+
+            expect(result.details.speakerNames).toEqual(['Dr. Strange']);
+        });
+
+        it('should update a Workshop program', async () => {
+            const mockProgramId = 3;
+            const mockUpdateData = {
+                title: 'Updated Workshop',
+                type: 'Workshop',
+                facilitatorNames: ['Tony Stark'],
+            };
+            const mockProgram = {
+                id: mockProgramId,
+                type: 'Workshop',
+                toJSON: () => {
+                    return {
+                        id: mockProgramId,
+                        type: 'Workshop',
+                        title: 'Updated Workshop',
+                    };
+                },
+            };
+            const mockWorkshop = {
+                toJSON: () => {
+                    return {
+                        id: 1,
+                        programId: mockProgramId,
+                        facilitatorNames: ['Tony Stark'],
+                    };
+                },
+            };
+
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Program.update.mockResolvedValue([1, [mockProgram]]);
+            Workshop.update.mockResolvedValue([1, [mockWorkshop]]);
+            sequelize.transaction.mockImplementation(async (callback) => {
+                return callback();
+            });
+
+            const result = await ProgramService.updateOne({
+                programId: mockProgramId,
+                updateData: mockUpdateData,
+            });
+
+            expect(result.details.facilitatorNames).toEqual(['Tony Stark']);
+        });
+
+        it('should update a Competition program', async () => {
+            const mockProgramId = 4;
+            const mockUpdateData = {
+                title: 'Updated Competition',
+                type: 'Competition',
+                totalPrize: 50000,
+            };
+            const mockProgram = {
+                id: mockProgramId,
+                type: 'Competition',
+                toJSON: () => {
+                    return {
+                        id: mockProgramId,
+                        type: 'Competition',
+                        title: 'Updated Competition',
+                    };
+                },
+            };
+            const mockCompetition = {
+                toJSON: () => {
+                    return {
+                        id: 1,
+                        programId: mockProgramId,
+                        totalPrize: 50000,
+                    };
+                },
+            };
+
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Program.update.mockResolvedValue([1, [mockProgram]]);
+            Competition.update.mockResolvedValue([1, [mockCompetition]]);
+            sequelize.transaction.mockImplementation(async (callback) => {
+                return callback();
+            });
+
+            const result = await ProgramService.updateOne({
+                programId: mockProgramId,
+                updateData: mockUpdateData,
+            });
+
+            expect(result.details.totalPrize).toEqual(50000);
+        });
+
+        it('should throw 404 error if program does not exist', async () => {
+            Program.findByPk.mockResolvedValue(null);
+
+            await expect(
+                ProgramService.updateOne({
+                    programId: 999,
+                    updateData: { type: 'Course' },
+                }),
+            ).rejects.toThrow(HTTPError);
+
+            await expect(
+                ProgramService.updateOne({
+                    programId: 999,
+                    updateData: { type: 'Course' },
+                }),
+            ).rejects.toHaveProperty('statusCode', 404);
+        });
+
+        it('should throw 400 error if user try to change type', async () => {
+            const mockProgram = { id: 1, type: 'Course' };
+            Program.findByPk.mockResolvedValue(mockProgram);
+
+            await expect(
+                ProgramService.updateOne({
+                    programId: 1,
+                    updateData: { type: 'Seminar' },
+                }),
+            ).rejects.toThrow(HTTPError);
+
+            await expect(
+                ProgramService.updateOne({
+                    programId: 1,
+                    updateData: { type: 'Seminar' },
+                }),
+            ).rejects.toHaveProperty('statusCode', 400);
         });
     });
 });
