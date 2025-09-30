@@ -1,5 +1,41 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models');
+jest.mock('file-type', () => {
+    return {
+        fromBuffer: jest.fn(),
+    };
+});
+jest.mock('@aws-sdk/lib-storage', () => {
+    return {
+        Upload: jest.fn().mockImplementation(() => {
+            return {
+                done: jest.fn().mockResolvedValue({
+                    Location: 'https://mock-s3-location.com/new-thumbnail.webp',
+                }),
+            };
+        }),
+    };
+});
+jest.mock('@aws-sdk/client-s3', () => {
+    return {
+        DeleteObjectCommand: jest.fn(),
+    };
+});
+jest.mock('../../../src/configs/s3', () => {
+    return {
+        s3: {
+            send: jest.fn(),
+        },
+    };
+});
+jest.mock('sharp', () => {
+    return jest.fn(() => {
+        return {
+            webp: jest.fn().mockReturnThis(),
+            toBuffer: jest.fn().mockResolvedValue('compressed-buffer'),
+        };
+    });
+});
 const { Op } = require('sequelize');
 const ProgramService = require('../../../src/services/program.service');
 const {
@@ -12,6 +48,11 @@ const {
     sequelize,
 } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
+const { fromBuffer } = require('file-type');
+const sharp = require('sharp');
+const { Upload } = require('@aws-sdk/lib-storage');
+const { s3 } = require('../../../src/configs/s3');
+const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
 
 describe('Program Service Unit Tests', () => {
     afterEach(() => {
@@ -826,6 +867,165 @@ describe('Program Service Unit Tests', () => {
                 ProgramService.deleteOne(mockProgramId),
             ).rejects.toThrow(mockError);
             expect(Program.findByPk).toHaveBeenCalledWith(mockProgramId);
+        });
+    });
+
+    describe('uploadThumbnail tests', () => {
+        it('should upload a new thumbnail and update the program record', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                programId: 1,
+            };
+            const mockProgram = {
+                id: 1,
+                thumbnailUrl: null,
+            };
+            Program.findByPk.mockResolvedValue(mockProgram);
+            fromBuffer.mockResolvedValue({ mime: 'image/png' });
+
+            const result = await ProgramService.uploadThumbnail(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(mockData.programId);
+            expect(sharp).toHaveBeenCalledWith(mockData.file.buffer);
+            expect(Upload).toHaveBeenCalledTimes(1);
+            expect(Program.update).toHaveBeenCalledWith(
+                {
+                    thumbnailUrl:
+                        'https://mock-s3-location.com/new-thumbnail.webp',
+                },
+                { where: { id: mockData.programId } },
+            );
+            expect(s3.send).not.toHaveBeenCalled();
+            expect(result).toEqual({
+                thumbnailUrl: 'https://mock-s3-location.com/new-thumbnail.webp',
+            });
+        });
+
+        it('should upload a new thumbnail and not throw error even if failed to update to database', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                programId: 1,
+            };
+            const mockProgram = {
+                id: 1,
+                thumbnailUrl: null,
+            };
+            Program.findByPk.mockResolvedValue(mockProgram);
+            fromBuffer.mockResolvedValue({ mime: 'image/png' });
+            Upload.mockImplementationOnce(() => {
+                return {
+                    done: jest.fn().mockResolvedValue({
+                        Location: undefined,
+                    }),
+                };
+            });
+
+            await ProgramService.uploadThumbnail(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(mockData.programId);
+            expect(sharp).toHaveBeenCalledWith(mockData.file.buffer);
+            expect(Upload).toHaveBeenCalledTimes(1);
+            expect(Program.update).not.toHaveBeenCalled();
+            expect(s3.send).not.toHaveBeenCalled();
+        });
+
+        it('should upload a new thumbnail and delete the old one if it exists', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                programId: 1,
+            };
+            const mockProgram = {
+                id: 1,
+                thumbnailUrl: 'https://my-bucket.com/images/old-photo.webp',
+            };
+            Program.findByPk.mockResolvedValue(mockProgram);
+            fromBuffer.mockResolvedValue({ mime: 'image/jpeg' });
+
+            await ProgramService.uploadThumbnail(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(mockData.programId);
+            expect(s3.send).toHaveBeenCalledTimes(1);
+            expect(DeleteObjectCommand).toHaveBeenCalledTimes(1);
+            expect(Program.update).toHaveBeenCalledWith(
+                {
+                    thumbnailUrl:
+                        'https://mock-s3-location.com/new-thumbnail.webp',
+                },
+                { where: { id: mockData.programId } },
+            );
+        });
+
+        it('should throw a 400 error if no file is provided', async () => {
+            const mockData = { file: null, programId: 1 };
+
+            await expect(
+                ProgramService.uploadThumbnail(mockData),
+            ).rejects.toThrow(
+                new HTTPError(400, 'Validation error.', [
+                    {
+                        message: '"thumbnail" is empty',
+                        context: { key: 'thumbnail', value: null },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 404 error if the program is not found', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                programId: 999,
+            };
+            Program.findByPk.mockResolvedValue(null);
+
+            await expect(
+                ProgramService.uploadThumbnail(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Program with "programId" does not exist',
+                        context: { key: 'programId', value: 999 },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 415 error for an unsupported file type', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                programId: 1,
+            };
+            const mockProgram = { id: 1, thumbnailUrl: null };
+            Program.findByPk.mockResolvedValue(mockProgram);
+            fromBuffer.mockResolvedValue({ mime: 'application/pdf' });
+
+            await expect(
+                ProgramService.uploadThumbnail(mockData),
+            ).rejects.toThrow(
+                new HTTPError(415, 'Unsupported Media Type.', [
+                    {
+                        message:
+                            'File MIME type must be "image/jpeg", "image/png", or "image/webp"',
+                        context: {
+                            key: 'File MIME Type',
+                            value: 'application/pdf',
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 415 error if file type cannot be determined', async () => {
+            const mockData = {
+                file: { buffer: 'mock-buffer' },
+                programId: 1,
+            };
+            const mockProgram = { id: 1, thumbnailUrl: null };
+            Program.findByPk.mockResolvedValue(mockProgram);
+            fromBuffer.mockResolvedValue(undefined);
+
+            await expect(
+                ProgramService.uploadThumbnail(mockData),
+            ).rejects.toThrow(new HTTPError(415, 'Unsupported Media Type.'));
         });
     });
 });
