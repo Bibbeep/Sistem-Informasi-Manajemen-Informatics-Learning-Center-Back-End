@@ -241,15 +241,6 @@ class ProgramService {
                             programId,
                         },
                         returning: true,
-                        attributes: {
-                            exclude: [
-                                'id',
-                                'programId',
-                                'createdAt',
-                                'updatedAt',
-                                'deletedAt',
-                            ],
-                        },
                         transaction: t,
                     })
                 )[1][0].toJSON();
@@ -260,15 +251,6 @@ class ProgramService {
                             programId,
                         },
                         returning: true,
-                        tributes: {
-                            exclude: [
-                                'id',
-                                'programId',
-                                'createdAt',
-                                'updatedAt',
-                                'deletedAt',
-                            ],
-                        },
                         transaction: t,
                     })
                 )[1][0].toJSON();
@@ -279,15 +261,6 @@ class ProgramService {
                             programId,
                         },
                         returning: true,
-                        attributes: {
-                            exclude: [
-                                'id',
-                                'programId',
-                                'createdAt',
-                                'updatedAt',
-                                'deletedAt',
-                            ],
-                        },
                         transaction: t,
                     })
                 )[1][0].toJSON();
