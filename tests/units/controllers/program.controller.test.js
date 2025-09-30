@@ -6,6 +6,7 @@ const {
     getById,
     create,
     updateById,
+    deleteById,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
@@ -352,6 +353,41 @@ describe('Program Controller Unit Tests', () => {
                 updateData: mockUpdateData,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
+        });
+    });
+
+    describe('deleteById Tests', () => {
+        it('should delete a program and return 200', async () => {
+            req.params = { programId: '1' };
+            ProgramService.deleteOne.mockResolvedValue();
+
+            await deleteById(req, res, next);
+
+            expect(ProgramService.deleteOne).toHaveBeenCalledWith(1);
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully deleted a program.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            req.params = { programId: '404' };
+            const mockError = new Error('BOOM');
+            ProgramService.deleteOne.mockRejectedValue(mockError);
+
+            await deleteById(req, res, next);
+
+            expect(ProgramService.deleteOne).toHaveBeenCalledWith(404);
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
         });
     });
 });
