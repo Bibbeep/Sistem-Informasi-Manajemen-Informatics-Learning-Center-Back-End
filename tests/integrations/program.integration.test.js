@@ -583,4 +583,121 @@ describe('Program Management Integration Tests', () => {
             expect(response.status).toBe(415);
         });
     });
+
+    describe('DELETE /api/v1/programs/:programId', () => {
+        it('should return 200 and delete a program', async () => {
+            const response = await request(server)
+                .delete('/api/v1/programs/1')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully deleted a program.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should return 400 when invalid programId', async () => {
+            const response = await request(server)
+                .delete('/api/v1/programs/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 400,
+                    data: null,
+                    message: 'Validation error.',
+                    errors: [
+                        {
+                            message: '"value" must be a number',
+                            context: {
+                                value: 'abc',
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 401 when invalid token', async () => {
+            const response = await request(server).delete('/api/v1/programs/1');
+
+            expect(response.status).toBe(401);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 401,
+                    data: null,
+                    message: 'Unauthorized.',
+                    errors: [
+                        {
+                            message: 'Invalid or expired token.',
+                            context: {
+                                key: 'request.headers.authorization',
+                                value: null,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 403 when accessing with user token', async () => {
+            const response = await request(server)
+                .delete('/api/v1/programs/1')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(403);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 403,
+                    data: null,
+                    message: 'Forbidden.',
+                    errors: [
+                        {
+                            message:
+                                'You do not have the necessary permissions to access this resource.',
+                            context: {
+                                key: 'role',
+                                value: 'User',
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .delete('/api/v1/programs/404')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: false,
+                    statusCode: 404,
+                    data: null,
+                    message: 'Resource not found.',
+                    errors: [
+                        {
+                            message: 'Program with "programId" does not exist',
+                            context: {
+                                key: 'programId',
+                                value: 404,
+                            },
+                        },
+                    ],
+                }),
+            );
+        });
+    });
 });
