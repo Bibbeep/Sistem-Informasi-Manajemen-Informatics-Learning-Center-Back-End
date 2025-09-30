@@ -7,6 +7,7 @@ const {
     create,
     updateById,
     deleteById,
+    uploadThumbnail,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
@@ -27,6 +28,7 @@ describe('Program Controller Unit Tests', () => {
             params: {},
             query: {},
             body: {},
+            file: {},
         };
 
         res = {
@@ -386,6 +388,53 @@ describe('Program Controller Unit Tests', () => {
 
             expect(ProgramService.deleteOne).toHaveBeenCalledWith(404);
             expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('uploadThumbnail Tests', () => {
+        it('should upload a thumbnail and return 201', async () => {
+            req.params.programId = '1';
+            req.file = { buffer: 'mock-thumbnail-buffer' };
+            const mockServiceResponse = {
+                thumbnailUrl: 'https://example.com/new-thumbnail.webp',
+            };
+
+            ProgramService.uploadThumbnail.mockResolvedValue(
+                mockServiceResponse,
+            );
+
+            await uploadThumbnail(req, res, next);
+
+            expect(ProgramService.uploadThumbnail).toHaveBeenCalledWith({
+                file: req.file,
+                programId: 1,
+            });
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully uploaded a program thumbnail.',
+                data: mockServiceResponse,
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to next', async () => {
+            req.params.programId = '1';
+            req.file = { buffer: 'mock-thumbnail-buffer' };
+            const serviceError = new Error('Upload failed');
+            ProgramService.uploadThumbnail.mockRejectedValue(serviceError);
+
+            await uploadThumbnail(req, res, next);
+
+            expect(ProgramService.uploadThumbnail).toHaveBeenCalledWith({
+                file: req.file,
+                programId: 1,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
         });
