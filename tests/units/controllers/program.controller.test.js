@@ -5,10 +5,12 @@ const {
     getAll,
     getById,
     create,
+    updateById,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
     validateProgram,
+    validateUpdateProgramData,
 } = require('../../../src/validations/validator');
 const ProgramService = require('../../../src/services/program.service');
 const HTTPError = require('../../../src/utils/httpError');
@@ -265,6 +267,91 @@ describe('Program Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('updateById Tests', () => {
+        it('should update a program and return 200', async () => {
+            const mockUpdateData = {
+                title: 'Updated Program',
+                type: 'Course',
+            };
+            req.body = mockUpdateData;
+            req.params = { programId: '1' };
+            const mockUpdatedProgram = {
+                id: 1,
+                ...mockUpdateData,
+            };
+
+            validateUpdateProgramData.mockReturnValue({
+                error: null,
+                value: mockUpdateData,
+            });
+            ProgramService.updateOne.mockResolvedValue(mockUpdatedProgram);
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateProgramData).toHaveBeenCalledWith(
+                mockUpdateData,
+            );
+            expect(ProgramService.updateOne).toHaveBeenCalledWith({
+                programId: 1,
+                updateData: mockUpdateData,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully updated a program.',
+                data: {
+                    program: mockUpdatedProgram,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error', async () => {
+            const mockInvalidData = {
+                title: 123,
+            };
+            req.body = mockInvalidData;
+            const validationError = new ValidationError();
+            validateUpdateProgramData.mockReturnValue({
+                error: validationError,
+            });
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateProgramData).toHaveBeenCalledWith(
+                mockInvalidData,
+            );
+            expect(next).toHaveBeenCalledWith(validationError);
+            expect(ProgramService.updateOne).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            const mockUpdateData = {
+                title: 'Updated Program',
+                type: 'Course',
+            };
+            req.body = mockUpdateData;
+            req.params = { programId: '1' };
+            const serviceError = new Error('Service Error');
+
+            validateUpdateProgramData.mockReturnValue({
+                error: null,
+                value: mockUpdateData,
+            });
+            ProgramService.updateOne.mockRejectedValue(serviceError);
+
+            await updateById(req, res, next);
+
+            expect(ProgramService.updateOne).toHaveBeenCalledWith({
+                programId: 1,
+                updateData: mockUpdateData,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
 });
