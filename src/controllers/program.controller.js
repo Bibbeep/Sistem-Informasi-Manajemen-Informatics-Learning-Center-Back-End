@@ -99,4 +99,19 @@ module.exports = {
             next(err);
         }
     },
+    deleteById: async (req, res, next) => {
+        try {
+            await ProgramService.deleteOne(parseInt(req.params.programId, 10));
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a program.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

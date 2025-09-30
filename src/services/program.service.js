@@ -293,6 +293,24 @@ class ProgramService {
 
         return updatedProgram;
     }
+
+    static async deleteOne(programId) {
+        const isProgramExist = await Program.findByPk(programId);
+
+        if (!isProgramExist) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        await Program.destroy({ where: { id: programId } });
+    }
 }
 
 module.exports = ProgramService;

@@ -38,7 +38,13 @@ router.patch(
     authorize({ rules: ['admin'] }),
     ProgramController.updateById,
 );
-// DELETE /api/v1/programs/:programId
+router.delete(
+    '/:programId',
+    authenticate,
+    validatePathParameterId('programId'),
+    authorize({ rules: ['admin'] }),
+    ProgramController.deleteById,
+);
 // PUT /api/v1/programs/:programId/thumbnails
 
 module.exports = router;
