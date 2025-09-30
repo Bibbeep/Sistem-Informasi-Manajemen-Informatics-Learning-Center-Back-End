@@ -1,5 +1,6 @@
 /* eslint-disable no-undef */
 const request = require('supertest');
+const path = require('path');
 const { server } = require('../../src/server');
 const truncate = require('../../scripts/db/truncate');
 const AuthService = require('../../src/services/auth.service');
@@ -12,18 +13,26 @@ const seminarFactory = require('../../src/db/seeders/factories/seminar');
 const competitionFactory = require('../../src/db/seeders/factories/competition');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
+const { createPublicTestBucket } = require('../../src/configs/s3TestSetup');
 
 describe('Program Management Integration Tests', () => {
     const mockUserPassword = 'password123';
     let tokens, users, programs;
+    const originalBucketName = process.env.S3_BUCKET_NAME;
+
+    beforeAll(async () => {
+        await createPublicTestBucket();
+    });
 
     afterAll(async () => {
         server.close();
         await sequelize.close();
         await redisClient.close();
+        process.env.S3_BUCKET_NAME = originalBucketName;
     });
 
     beforeEach(async () => {
+        process.env.S3_BUCKET_NAME = process.env.S3_TEST_BUCKET_NAME;
         const adminUser = await userFactory(
             { role: 'Admin' },
             mockUserPassword,
@@ -698,6 +707,127 @@ describe('Program Management Integration Tests', () => {
                     ],
                 }),
             );
+        });
+    });
+
+    describe('PUT /api/v1/programs/:programId/thumbnails', () => {
+        const testImagePath = path.join(
+            __dirname,
+            'fixtures',
+            'test-image.png',
+        );
+
+        it('should return 201 and upload a thumbnail', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('thumbnail', testImagePath);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.thumbnailUrl).toBeDefined();
+        });
+
+        it('should return 400 when thumbnail is empty', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when there is extra file field', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('thumbnail', testImagePath)
+                .attach('extra', testImagePath);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when invalid token', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
+                .attach('thumbnail', testImagePath);
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when accessing with user token', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .put('/api/v1/programs/9999/thumbnails')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('thumbnail', testImagePath);
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 413 when the file is too large', async () => {
+            const largeImagePath = path.join(
+                __dirname,
+                'fixtures',
+                'large-test-image.jpg',
+            );
+
+            const response = await request(server)
+                .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('thumbnail', largeImagePath);
+
+            expect(response.status).toBe(413);
+        });
+
+        it('should return 415 for unsupported media type', async () => {
+            const textFilePath = path.join(
+                __dirname,
+                'fixtures',
+                'test-file.txt',
+            );
+
+            const response = await request(server)
+                .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('thumbnail', textFilePath);
+
+            expect(response.status).toBe(415);
+        });
+
+        it('should return 415 when file type cannot be determined', async () => {
+            const emptyFilePath = path.join(
+                __dirname,
+                'fixtures',
+                'empty-file',
+            );
+
+            const response = await request(server)
+                .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('thumbnail', emptyFilePath);
+
+            expect(response.status).toBe(415);
+        });
+
+        it('should return 415 for a fake image file', async () => {
+            const fakeImagePath = path.join(
+                __dirname,
+                'fixtures',
+                'fake-image.png',
+            );
+
+            const response = await request(server)
+                .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('thumbnail', fakeImagePath);
+
+            expect(response.status).toBe(415);
         });
     });
 });
