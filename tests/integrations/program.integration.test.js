@@ -443,4 +443,144 @@ describe('Program Management Integration Tests', () => {
             expect(response.status).toBe(403);
         });
     });
+
+    describe('PATCH /api/v1/programs/:programId', () => {
+        it('should return 200 and update a Course program', async () => {
+            const updateData = {
+                title: 'Updated Course Title',
+                type: 'Course',
+            };
+
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.course.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.program.title).toBe(updateData.title);
+        });
+
+        it('should return 200 and update a Seminar program', async () => {
+            const updateData = {
+                type: 'Seminar',
+                speakerNames: ['Dr. Strange', 'Wong'],
+            };
+
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.seminar.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.program.details.speakerNames).toEqual(
+                updateData.speakerNames,
+            );
+        });
+
+        it('should return 200 and update a Workshop program', async () => {
+            const updateData = {
+                type: 'Workshop',
+                facilitatorNames: ['Dr. Strange', 'Wong'],
+            };
+
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.workshop.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.program.details.facilitatorNames).toEqual(
+                updateData.facilitatorNames,
+            );
+        });
+
+        it('should return 200 and update a Competition program', async () => {
+            const updateData = {
+                type: 'Competition',
+                totalPrize: 1000000,
+                hostName: 'The Avengers',
+            };
+
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.competition.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.program.details.totalPrize).toEqual(
+                updateData.totalPrize,
+            );
+            expect(response.body.data.program.details.hostName).toEqual(
+                updateData.hostName,
+            );
+        });
+
+        it('should return 400 when trying to change program type', async () => {
+            const updateData = {
+                type: 'Workshop',
+                title: 'Not a Workshop, actually',
+            };
+
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.course.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when programId is not a valid integer', async () => {
+            const response = await request(server)
+                .patch('/api/v1/programs/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ type: 'Course' });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for invalid request body', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.course.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ title: 123, type: 'Course' });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when no token is provided', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.course.id}`)
+                .send({ title: 'Updated', type: 'Course' });
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 for non-admin user', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.course.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ title: 'Updated', type: 'Course' });
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .patch('/api/v1/programs/99999')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ title: 'Updated', type: 'Course' });
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 415 for unsupported media type', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.course.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .set('Content-Type', 'text/plain')
+                .send('title=Updated&type=Course');
+
+            expect(response.status).toBe(415);
+        });
+    });
 });
