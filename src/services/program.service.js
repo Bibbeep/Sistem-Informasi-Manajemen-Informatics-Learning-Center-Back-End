@@ -1,4 +1,8 @@
 const { Op } = require('sequelize');
+const { fromBuffer } = require('file-type');
+const sharp = require('sharp');
+const { Upload } = require('@aws-sdk/lib-storage');
+const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const {
     Program,
     Course,
@@ -9,6 +13,7 @@ const {
     sequelize,
 } = require('../db/models');
 const HTTPError = require('../utils/httpError');
+const { s3 } = require('../configs/s3');
 
 class ProgramService {
     static async getMany(data) {
@@ -310,6 +315,98 @@ class ProgramService {
         }
 
         await Program.destroy({ where: { id: programId } });
+    }
+
+    static async uploadThumbnail(data) {
+        if (!data.file) {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: '"thumbnail" is empty',
+                    context: {
+                        key: 'thumbnail',
+                        value: null,
+                    },
+                },
+            ]);
+        }
+
+        const programData = await Program.findByPk(data.programId);
+
+        if (!programData) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: data.programId,
+                    },
+                },
+            ]);
+        }
+
+        const { file } = data;
+        const fileType = await fromBuffer(file.buffer);
+
+        if (
+            !fileType ||
+            !['image/jpeg', 'image/png', 'image/webp'].includes(fileType.mime)
+        ) {
+            throw new HTTPError(415, 'Unsupported Media Type.', [
+                {
+                    message:
+                        'File MIME type must be "image/jpeg", "image/png", or "image/webp"',
+                    context: {
+                        key: 'File MIME Type',
+                        value: fileType ? fileType.mime : null,
+                    },
+                },
+            ]);
+        }
+
+        const compressedImageBuffer = await sharp(file.buffer)
+            .webp({ quality: 40 })
+            .toBuffer();
+
+        const fileName = `images/programs/${data.programId}-thumbnail-${Date.now().toString()}.webp`;
+
+        const client = new Upload({
+            client: s3,
+            params: {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: compressedImageBuffer,
+                ContentType: 'image/webp',
+                ACL: 'public-read',
+            },
+        });
+
+        const { Location } = await client.done();
+
+        if (programData.thumbnailUrl) {
+            const oldKey = programData.thumbnailUrl.split('/').pop();
+
+            await s3.send(
+                new DeleteObjectCommand({
+                    Bucket: process.env.S3_BUCKET_NAME,
+                    Key: `images/programs/${oldKey}`,
+                }),
+            );
+        }
+
+        if (Location) {
+            await Program.update(
+                { thumbnailUrl: Location },
+                {
+                    where: {
+                        id: data.programId,
+                    },
+                },
+            );
+        }
+
+        return {
+            thumbnailUrl: Location,
+        };
     }
 }
 

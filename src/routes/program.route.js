@@ -8,6 +8,8 @@ const {
     authorize,
 } = require('../middlewares/auth.middleware');
 const { requireJsonContent } = require('../middlewares/contentType.middleware');
+const { upload } = require('../middlewares/multer.middleware.js');
+const { image } = require('../utils/fileType.js');
 
 router.get('/', ProgramController.getAll);
 router.get(
@@ -45,6 +47,13 @@ router.delete(
     authorize({ rules: ['admin'] }),
     ProgramController.deleteById,
 );
-// PUT /api/v1/programs/:programId/thumbnails
+router.put(
+    '/:programId/thumbnails',
+    authenticate,
+    validatePathParameterId('programId'),
+    authorize({ rules: ['admin'] }),
+    upload(image).single('thumbnail'),
+    ProgramController.uploadThumbnail,
+);
 
 module.exports = router;
