@@ -870,7 +870,7 @@ describe('Program Service Unit Tests', () => {
         });
     });
 
-    describe('uploadThumbnail tests', () => {
+    describe('uploadThumbnail Tests', () => {
         it('should upload a new thumbnail and update the program record', async () => {
             const mockData = {
                 file: { buffer: 'mock-buffer' },
@@ -1026,6 +1026,183 @@ describe('Program Service Unit Tests', () => {
             await expect(
                 ProgramService.uploadThumbnail(mockData),
             ).rejects.toThrow(new HTTPError(415, 'Unsupported Media Type.'));
+        });
+    });
+
+    describe('getManyModules Tests', () => {
+        it('should return modules and pagination data with all default query parameter value', async () => {
+            const mockData = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                programId: 1,
+            };
+            const mockProgram = {
+                course: {
+                    id: 1,
+                    modules: [
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                    ],
+                },
+            };
+            const mockCountModule = 20;
+            Program.findByPk.mockResolvedValue(mockProgram);
+            CourseModule.count.mockResolvedValue(mockCountModule);
+            const mockResult = {
+                pagination: {
+                    currentRecords: 10,
+                    totalRecords: 20,
+                    currentPage: 1,
+                    totalPages: 2,
+                    nextPage: 2,
+                    prevPage: null,
+                },
+                modules: mockProgram.course.modules,
+            };
+
+            const result = await ProgramService.getManyModules(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(CourseModule.count).toHaveBeenCalledWith({
+                where: {
+                    courseId: 1,
+                },
+            });
+            expect(result).toEqual(mockResult);
+        });
+
+        it('should return modules and pagination data with sort by createdAt descending order', async () => {
+            const mockData = {
+                page: 2,
+                limit: 10,
+                sort: '-createdAt',
+                programId: 1,
+            };
+            const mockProgram = {
+                course: {
+                    id: 1,
+                    modules: [
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                        { dummy: 'object' },
+                    ],
+                },
+            };
+            const mockCountModule = 20;
+            Program.findByPk.mockResolvedValue(mockProgram);
+            CourseModule.count.mockResolvedValue(mockCountModule);
+            const mockResult = {
+                pagination: {
+                    currentRecords: 10,
+                    totalRecords: 20,
+                    currentPage: 2,
+                    totalPages: 2,
+                    nextPage: null,
+                    prevPage: 1,
+                },
+                modules: mockProgram.course.modules,
+            };
+
+            const result = await ProgramService.getManyModules(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(CourseModule.count).toHaveBeenCalledWith({
+                where: {
+                    courseId: 1,
+                },
+            });
+            expect(result).toEqual(mockResult);
+        });
+
+        it('should return empty modules and pagination data with page out of bound', async () => {
+            const mockData = {
+                page: 100,
+                limit: 10,
+                sort: '-createdAt',
+                programId: 1,
+            };
+            const mockProgram = {
+                course: {
+                    id: 1,
+                    modules: [],
+                },
+            };
+            const mockCountModule = 20;
+            Program.findByPk.mockResolvedValue(mockProgram);
+            CourseModule.count.mockResolvedValue(mockCountModule);
+            const mockResult = {
+                pagination: {
+                    currentRecords: 0,
+                    totalRecords: 20,
+                    currentPage: 100,
+                    totalPages: 2,
+                    nextPage: null,
+                    prevPage: null,
+                },
+                modules: mockProgram.course.modules,
+            };
+
+            const result = await ProgramService.getManyModules(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(CourseModule.count).toHaveBeenCalledWith({
+                where: {
+                    courseId: 1,
+                },
+            });
+            expect(result).toEqual(mockResult);
+        });
+
+        it('should return 404 error if the program is not found', async () => {
+            const mockData = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                programId: 404,
+            };
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: mockData.programId,
+                    },
+                },
+            ]);
+            Program.findByPk.mockResolvedValue(null);
+
+            expect(ProgramService.getManyModules(mockData)).rejects.toThrow(
+                mockError,
+            );
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
         });
     });
 });
