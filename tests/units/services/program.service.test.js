@@ -1205,4 +1205,82 @@ describe('Program Service Unit Tests', () => {
             );
         });
     });
+
+    describe('getOneModule Tests', () => {
+        it('should return module data', async () => {
+            const mockData = {
+                programId: 1,
+                moduleId: 1,
+            };
+            const mockProgram = {
+                id: 1,
+                course: {
+                    id: 1,
+                    modules: [{ dummy: 'module' }],
+                },
+            };
+            Program.findByPk.mockResolvedValue(mockProgram);
+
+            const result = await ProgramService.getOneModule(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(result).toEqual(mockProgram.course.modules[0]);
+        });
+
+        it('should throw 404 if program is not found', async () => {
+            const mockData = {
+                programId: 404,
+                moduleId: 1,
+            };
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: mockData.programId,
+                    },
+                },
+            ]);
+            Program.findByPk.mockResolvedValue(null);
+
+            await expect(ProgramService.getOneModule(mockData)).rejects.toThrow(
+                mockError,
+            );
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+        });
+
+        it('should throw 404 if module is not found', async () => {
+            const mockData = {
+                programId: 1,
+                moduleId: 404,
+            };
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: mockData.moduleId,
+                    },
+                },
+            ]);
+            const mockProgram = {
+                id: 1,
+            };
+            Program.findByPk.mockResolvedValue(mockProgram);
+
+            await expect(ProgramService.getOneModule(mockData)).rejects.toThrow(
+                mockError,
+            );
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+        });
+    });
 });
