@@ -1838,6 +1838,127 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "summary": "Creates a new program",
+                "tags": ["Program Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ProgramCreateRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully created a program.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProgramCreateSuccessResponse201"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/v1/programs/{programId}": {
@@ -1926,127 +2047,6 @@
                                 "examples": {
                                     "NotFound": {
                                         "$ref": "#/components/examples/NotFound"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "429": {
-                        "description": "Too many requests.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "TooManyRequests": {
-                                        "$ref": "#/components/examples/TooManyRequests"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "InternalServerError": {
-                                        "$ref": "#/components/examples/InternalServerError"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "summary": "Creates a new program",
-                "tags": ["Program Management"],
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ],
-                "requestBody": {
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/ProgramCreateRequestBody"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "201": {
-                        "description": "Successfully created a program.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ProgramCreateSuccessResponse201"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "BadRequest": {
-                                        "$ref": "#/components/examples/BadRequest"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized access, token is missing or invalid.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "Unauthorized": {
-                                        "$ref": "#/components/examples/Unauthorized"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden access, user is not an admin.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "Forbidden": {
-                                        "$ref": "#/components/examples/Forbidden"
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    "415": {
-                        "description": "Unsupported media type",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "UnsupportedMediaType": {
-                                        "$ref": "#/components/examples/UnsupportedMediaType"
                                     }
                                 }
                             }
@@ -2625,6 +2625,153 @@
                                 "examples": {
                                     "NotFound": {
                                         "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Creates a new module for a course program",
+                "tags": ["Program Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "programId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the course program."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ModuleCreateRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully created a module.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ModuleCreateSuccessResponse201"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid program ID or request body.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Program with the given ID not found or is not a Course type.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
                                     }
                                 }
                             }
@@ -3258,6 +3405,24 @@
                 "example": {
                     "type": "Seminar",
                     "speakerNames": ["Dr. Strange", "Wong"]
+                }
+            },
+            "ModuleCreateRequestBody": {
+                "type": "object",
+                "properties": {
+                    "numberCode": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "youtubeUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    }
+                },
+                "required": ["numberCode", "youtubeUrl"],
+                "example": {
+                    "numberCode": 21,
+                    "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                 }
             },
             "FailedResponse": {
@@ -4139,6 +4304,40 @@
                             "youtubeUrl": "https://youtube.com/watch?v=12345",
                             "createdAt": "2025-10-01T10:00:00.000Z",
                             "updatedAt": "2025-10-01T10:00:00.000Z"
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "ModuleCreateSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "module": {
+                                "$ref": "#/components/schemas/Module"
+                            }
+                        }
+                    },
+                    "errors": { "type": "array", "nullable": true }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 201,
+                    "message": "Successfully created a module.",
+                    "data": {
+                        "module": {
+                            "id": 21,
+                            "numberCode": 21,
+                            "materialUrl": null,
+                            "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                            "updatedAt": "2025-10-02T02:30:00.000Z",
+                            "createdAt": "2025-10-02T02:30:00.000Z",
+                            "deletedAt": null
                         }
                     },
                     "errors": null
