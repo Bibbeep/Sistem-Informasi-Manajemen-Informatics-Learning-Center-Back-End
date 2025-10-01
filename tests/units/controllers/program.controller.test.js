@@ -10,12 +10,14 @@ const {
     uploadThumbnail,
     getAllModules,
     getModuleById,
+    createModule,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
     validateProgram,
     validateUpdateProgramData,
     validateModuleQuery,
+    validateModule,
 } = require('../../../src/validations/validator');
 const ProgramService = require('../../../src/services/program.service');
 const HTTPError = require('../../../src/utils/httpError');
@@ -585,6 +587,88 @@ describe('Program Controller Unit Tests', () => {
             expect(ProgramService.getOneModule).toHaveBeenCalledWith({
                 programId: req.params.programId,
                 moduleId: req.params.moduleId,
+            });
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('createModule Tests', () => {
+        it('should send 201 on success', async () => {
+            req.body = {
+                numberCode: 1,
+                youtubeUrl: 'https://youtube.com/test',
+            };
+            req.params = { programId: '1' };
+            const mockModule = {
+                id: 1,
+                numberCode: 1,
+                youtubeUrl: 'https://youtube.com/test',
+            };
+            validateModule.mockReturnValue({
+                error: null,
+                value: req.body,
+            });
+            ProgramService.createModule.mockResolvedValue(mockModule);
+
+            await createModule(req, res, next);
+
+            expect(validateModule).toHaveBeenCalledWith(req.body);
+            expect(ProgramService.createModule).toHaveBeenCalledWith({
+                ...req.body,
+                programId: 1,
+            });
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message: 'Successfully created a module.',
+                    data: {
+                        module: mockModule,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should call next with a validation error', async () => {
+            req.body = {
+                numberCode: 0.999,
+                youtubeUrl: 'isaoijasjdsa',
+            };
+            const mockError = new ValidationError();
+            validateModule.mockReturnValue({ error: mockError });
+
+            await createModule(req, res, next);
+
+            expect(validateModule).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to next', async () => {
+            req.body = {
+                numberCode: 1,
+                youtubeUrl: 'https://youtube.com/test',
+            };
+            req.params = { programId: '1' };
+            const mockError = new Error('Boom!');
+            validateModule.mockReturnValue({
+                error: null,
+                value: req.body,
+            });
+            ProgramService.createModule.mockRejectedValue(mockError);
+
+            await createModule(req, res, next);
+
+            expect(validateModule).toHaveBeenCalledWith(req.body);
+            expect(ProgramService.createModule).toHaveBeenCalledWith({
+                ...req.body,
+                programId: 1,
             });
             expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
