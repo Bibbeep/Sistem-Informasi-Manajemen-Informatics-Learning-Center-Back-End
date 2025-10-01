@@ -532,7 +532,7 @@ class ProgramService {
             ],
         });
 
-        if (!program || !program.course) {
+        if (!program) {
             throw new HTTPError(404, 'Resource not found.', [
                 {
                     message: 'Program with "programId" does not exist',

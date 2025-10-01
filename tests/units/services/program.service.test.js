@@ -1283,4 +1283,69 @@ describe('Program Service Unit Tests', () => {
             );
         });
     });
+
+    describe('createModule Tests', () => {
+        it('should create a new module', async () => {
+            const mockData = {
+                numberCode: 1,
+                youtubeUrl: 'https://youtube.com/url',
+                programId: 1,
+            };
+            const mockProgram = {
+                course: {
+                    id: 1,
+                },
+            };
+            const mockModule = {
+                id: 1,
+                numberCode: 1,
+                materialUrl: null,
+                youtubeUrl: 'https://youtube.com/url',
+                updatedAt: 'NOW',
+                createdAt: 'NOW',
+                deletedAt: null,
+            };
+            Program.findByPk.mockResolvedValue(mockProgram);
+            CourseModule.create.mockResolvedValue(mockModule);
+
+            const result = await ProgramService.createModule(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(CourseModule.create).toHaveBeenCalledWith(
+                expect.any(Object),
+            );
+            expect(result).toEqual(mockModule);
+        });
+
+        it('should throw 404 error if program does not exist', async () => {
+            const mockData = {
+                numberCode: 1,
+                youtubeUrl: 'https://youtube.com/url',
+                programId: 404,
+            };
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: mockData.programId,
+                    },
+                },
+            ]);
+
+            Program.findByPk.mockResolvedValue(null);
+
+            await expect(ProgramService.createModule(mockData)).rejects.toThrow(
+                mockError,
+            );
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(CourseModule.create).not.toHaveBeenCalled();
+        });
+    });
 });
