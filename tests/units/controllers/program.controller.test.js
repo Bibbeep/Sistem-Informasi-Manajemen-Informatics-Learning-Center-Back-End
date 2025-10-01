@@ -9,6 +9,7 @@ const {
     deleteById,
     uploadThumbnail,
     getAllModules,
+    getModuleById,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
@@ -533,6 +534,58 @@ describe('Program Controller Unit Tests', () => {
 
             await getAllModules(req, res, next);
 
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getModuleById Tests', () => {
+        it('should send 200 on success and return a module data', async () => {
+            req.params = {
+                programId: 1,
+                moduleId: 1,
+            };
+            const mockModule = {
+                id: 1,
+            };
+            ProgramService.getOneModule.mockResolvedValue(mockModule);
+
+            await getModuleById(req, res, next);
+
+            expect(ProgramService.getOneModule).toHaveBeenCalledWith({
+                programId: req.params.programId,
+                moduleId: req.params.moduleId,
+            });
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully retrieved module details.',
+                    data: {
+                        module: mockModule,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should forward service errors to next', async () => {
+            req.params = {
+                programId: 1,
+                moduleId: 1,
+            };
+            const mockError = new Error('BOOM!');
+            ProgramService.getOneModule.mockRejectedValue(mockError);
+
+            await getModuleById(req, res, next);
+
+            expect(ProgramService.getOneModule).toHaveBeenCalledWith({
+                programId: req.params.programId,
+                moduleId: req.params.moduleId,
+            });
             expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
