@@ -8,11 +8,13 @@ const {
     updateById,
     deleteById,
     uploadThumbnail,
+    getAllModules,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
     validateProgram,
     validateUpdateProgramData,
+    validateModuleQuery,
 } = require('../../../src/validations/validator');
 const ProgramService = require('../../../src/services/program.service');
 const HTTPError = require('../../../src/utils/httpError');
@@ -435,6 +437,103 @@ describe('Program Controller Unit Tests', () => {
                 programId: 1,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getAllModules Tests', () => {
+        it('should send 200 on success and return module data', async () => {
+            const mockValue = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+            };
+            req.params = { programId: '1' };
+            const mockPagination = {
+                currentRecords: 10,
+                totalRecords: 20,
+                currentPage: 1,
+                totalPages: 2,
+                nextPage: 2,
+                prevPage: null,
+            };
+            const mockModules = [
+                { dummy: 'module' },
+                { dummy: 'module' },
+                { dummy: 'module' },
+                { dummy: 'module' },
+                { dummy: 'module' },
+                { dummy: 'module' },
+                { dummy: 'module' },
+                { dummy: 'module' },
+                { dummy: 'module' },
+                { dummy: 'module' },
+            ];
+            validateModuleQuery.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            ProgramService.getManyModules.mockResolvedValue({
+                pagination: mockPagination,
+                modules: mockModules,
+            });
+
+            await getAllModules(req, res, next);
+
+            expect(validateModuleQuery).toHaveBeenLastCalledWith(req.query);
+            expect(ProgramService.getManyModules).toHaveBeenCalledWith({
+                ...mockValue,
+                programId: 1,
+            });
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully retrieved all modules.',
+                    data: {
+                        modules: mockModules,
+                    },
+                    pagination: mockPagination,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should call next with a validation error', async () => {
+            req.query = {
+                page: 'invalid',
+                limit: -1,
+                sort: '-numberCode',
+            };
+            const mockError = new ValidationError();
+            validateModuleQuery.mockReturnValue({ error: mockError });
+
+            await getAllModules(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to next', async () => {
+            req.query = {
+                page: 1,
+                limit: 10,
+                sort: '-id',
+            };
+            const mockError = new Error('Boom!');
+            validateModuleQuery.mockReturnValue({
+                error: null,
+                value: req.query,
+            });
+            ProgramService.getManyModules.mockRejectedValue(mockError);
+
+            await getAllModules(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
         });
