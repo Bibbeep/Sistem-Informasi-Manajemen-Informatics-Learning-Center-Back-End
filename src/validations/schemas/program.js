@@ -163,10 +163,19 @@ const modulePayload = Joi.object({
     youtubeUrl: Joi.string().uri().required(),
 }).unknown(false);
 
+// Request body for PATCH /api/v1/programs/:programId/modules/:moduleId
+const moduleUpdate = Joi.object({
+    numberCode: Joi.number().integer().positive().optional(),
+    youtubeUrl: Joi.string().uri().optional(),
+})
+    .unknown(false)
+    .min(1);
+
 module.exports = {
     programQueryParam,
     program,
     programUpdate,
     moduleQueryParam,
     modulePayload,
+    moduleUpdate,
 };

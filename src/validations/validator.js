@@ -18,6 +18,7 @@ const {
     programUpdate,
     moduleQueryParam,
     modulePayload,
+    moduleUpdate,
 } = require('./schemas/program');
 
 // Any auto-increment integer id
@@ -46,4 +47,5 @@ module.exports = {
     validateUpdateProgramData: validator(programUpdate),
     validateModuleQuery: validator(moduleQueryParam),
     validateModule: validator(modulePayload),
+    validateUpdateModuleData: validator(moduleUpdate),
 };

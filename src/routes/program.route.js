@@ -90,7 +90,15 @@ router.post(
     authorize({ rules: ['admin'] }),
     ProgramController.createModule,
 );
-// PATCH /api/v1/programs/:programId/modules/:moduleId
+router.patch(
+    '/:programId/modules/:moduleId',
+    authenticate,
+    validatePathParameterId('programId'),
+    validatePathParameterId('moduleId'),
+    requireJsonContent,
+    authorize({ rules: ['admin'] }),
+    ProgramController.updateModuleById,
+);
 // DELETE /api/v1/programs/:programId/modules/:moduleId
 // PUT /api/v1/programs/:programId/modules/:moduleId/materials
 

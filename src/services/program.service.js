@@ -560,6 +560,73 @@ class ProgramService {
             deletedAt: module.deletedAt,
         };
     }
+
+    static async updateOneModule(data) {
+        const { programId, moduleId, updateData } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            where: {
+                                id: moduleId,
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        if (!program.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: moduleId,
+                    },
+                },
+            ]);
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const [moduleCount, moduleRows] = await CourseModule.update(
+            updateData,
+            {
+                where: {
+                    id: moduleId,
+                },
+                returning: true,
+            },
+        );
+
+        return {
+            id: moduleRows[0].id,
+            numberCode: moduleRows[0].numberCode,
+            materialUrl: moduleRows[0].materialUrl,
+            youtubeUrl: moduleRows[0].youtubeUrl,
+            updatedAt: moduleRows[0].updatedAt,
+            createdAt: moduleRows[0].createdAt,
+            deletedAt: moduleRows[0].deletedAt,
+        };
+    }
 }
 
 module.exports = ProgramService;
