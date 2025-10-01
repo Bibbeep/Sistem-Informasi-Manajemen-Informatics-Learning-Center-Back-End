@@ -68,7 +68,20 @@ router.get(
     }),
     ProgramController.getAllModules,
 );
-// GET /api/v1/programs/:programId/modules/:moduleId
+router.get(
+    '/:programId/modules/:moduleId',
+    authenticate,
+    validatePathParameterId('programId'),
+    validatePathParameterId('moduleId'),
+    authorizeProgramDetails,
+    authorize({
+        rules: ['self', 'admin'],
+        model: Enrollment,
+        param: 'enrollmentId',
+        ownerForeignKey: 'userId',
+    }),
+    ProgramController.getModuleById,
+);
 // POST /api/v1/programs/:programId/modules
 // PATCH /api/v1/programs/:programId/modules/:moduleId
 // DELETE /api/v1/programs/:programId/modules/:moduleId

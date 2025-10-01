@@ -468,6 +468,57 @@ class ProgramService {
             modules: rows,
         };
     }
+
+    static async getOneModule(data) {
+        const { programId, moduleId } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            where: {
+                                id: moduleId,
+                            },
+                            attributes: {
+                                exclude: ['courseId'],
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        if (!program.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: moduleId,
+                    },
+                },
+            ]);
+        }
+
+        return program.course.modules[0];
+    }
 }
 
 module.exports = ProgramService;

@@ -159,4 +159,24 @@ module.exports = {
             next(err);
         }
     },
+    getModuleById: async (req, res, next) => {
+        try {
+            const module = await ProgramService.getOneModule({
+                programId: parseInt(req.params.programId, 10),
+                moduleId: parseInt(req.params.moduleId, 10),
+            });
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved module details.',
+                data: {
+                    module,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
