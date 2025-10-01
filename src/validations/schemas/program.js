@@ -148,8 +148,18 @@ const programUpdate = Joi.object({
     .unknown(false)
     .min(2);
 
+// Query param for GET /api/v1/programs/:programId/modules
+const moduleQueryParam = Joi.object({
+    page: Joi.number().integer().positive().default(1),
+    limit: Joi.number().integer().positive().default(10),
+    sort: Joi.string()
+        .regex(/^-?(id|createdAt)$/)
+        .default('id'),
+});
+
 module.exports = {
     programQueryParam,
     program,
     programUpdate,
+    moduleQueryParam,
 };

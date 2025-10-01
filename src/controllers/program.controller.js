@@ -3,6 +3,7 @@ const {
     validateProgramQuery,
     validateProgram,
     validateUpdateProgramData,
+    validateModuleQuery,
 } = require('../validations/validator');
 
 module.exports = {
@@ -126,6 +127,32 @@ module.exports = {
                 statusCode: 201,
                 message: 'Successfully uploaded a program thumbnail.',
                 data,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    getAllModules: async (req, res, next) => {
+        try {
+            const { error, value } = validateModuleQuery(req.query);
+
+            if (error) {
+                throw error;
+            }
+
+            const { pagination, modules } = await ProgramService.getManyModules(
+                { ...value, programId: parseInt(req.params.programId, 10) },
+            );
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved all modules.',
+                data: {
+                    modules,
+                },
+                pagination,
                 errors: null,
             });
         } catch (err) {

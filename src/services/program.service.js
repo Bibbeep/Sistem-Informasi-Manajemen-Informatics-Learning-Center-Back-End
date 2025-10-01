@@ -408,6 +408,66 @@ class ProgramService {
             thumbnailUrl: Location,
         };
     }
+
+    static async getManyModules(data) {
+        const { page, limit, sort, programId } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            limit,
+                            offset: (page - 1) * limit,
+                            order: sort.startsWith('-')
+                                ? [[sort.replace('-', ''), 'DESC']]
+                                : [[sort, 'ASC']],
+                            attributes: {
+                                exclude: ['courseId'],
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        const rows = program.course.modules;
+        const count = await CourseModule.count({
+            where: {
+                courseId: program.course.id,
+            },
+        });
+        const totalPages = Math.ceil(count / limit);
+
+        return {
+            pagination: {
+                currentRecords: rows.length,
+                totalRecords: count,
+                currentPage: page,
+                totalPages,
+                nextPage: page < totalPages ? page + 1 : null,
+                prevPage:
+                    page > totalPages + 1 ? null : page > 1 ? page - 1 : null,
+            },
+            modules: rows,
+        };
+    }
 }
 
 module.exports = ProgramService;

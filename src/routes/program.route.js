@@ -55,5 +55,23 @@ router.put(
     upload(image).single('thumbnail'),
     ProgramController.uploadThumbnail,
 );
+router.get(
+    '/:programId/modules',
+    authenticate,
+    validatePathParameterId('programId'),
+    authorizeProgramDetails,
+    authorize({
+        rules: ['self', 'admin'],
+        model: Enrollment,
+        param: 'enrollmentId',
+        ownerForeignKey: 'userId',
+    }),
+    ProgramController.getAllModules,
+);
+// GET /api/v1/programs/:programId/modules/:moduleId
+// POST /api/v1/programs/:programId/modules
+// PATCH /api/v1/programs/:programId/modules/:moduleId
+// DELETE /api/v1/programs/:programId/modules/:moduleId
+// PUT /api/v1/programs/:programId/modules/:moduleId/materials
 
 module.exports = router;
