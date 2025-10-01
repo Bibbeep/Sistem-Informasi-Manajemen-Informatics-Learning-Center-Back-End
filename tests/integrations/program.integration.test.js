@@ -830,4 +830,71 @@ describe('Program Management Integration Tests', () => {
             expect(response.status).toBe(415);
         });
     });
+
+    describe('GET /api/v1/programs/:programId/modules', () => {
+        it('should return 200 and fetches all module data with default query parameter', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/${programs.course.id}/modules`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.modules).toBeInstanceOf(Array);
+            expect(response.body.pagination).toBeDefined();
+        });
+
+        it('should return 200 and fetches all module data with last page and sort by createdAt in descending order', async () => {
+            const response = await request(server)
+                .get(
+                    `/api/v1/programs/${programs.course.id}/modules?page=2&limit=10&sort=-createdAt`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(200);
+            expect(response.body.data.modules).toBeInstanceOf(Array);
+        });
+
+        it('should return 200 and fetches empty module data with out of bound page number', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/${programs.course.id}/modules?page=100`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(200);
+            expect(response.body.data.modules).toBeInstanceOf(Array);
+        });
+
+        it('should return 400 when invalid path parameter programId', async () => {
+            const response = await request(server)
+                .get('/api/v1/programs/abc/modules')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when invalid query paramater format', async () => {
+            const response = await request(server)
+                .get(
+                    `/api/v1/programs/${programs.course.id}/modules?page=abc&sort=xyz`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server).get(
+                `/api/v1/programs/${programs.course.id}/modules`,
+            );
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when forbidden user access', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/${programs.course.id}/modules`)
+                .set('Authorization', `Bearer ${tokens.another}`);
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .get('/api/v1/programs/9999/modules')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(404);
+        });
+    });
 });

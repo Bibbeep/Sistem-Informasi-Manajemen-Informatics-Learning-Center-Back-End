@@ -10,7 +10,7 @@ const data = async (props = {}) => {
 
 module.exports = async (props = {}) => {
     const course = await models.Course.create(await data(props));
-    const moduleCount = faker.number.int({ min: 3, max: 7 });
+    const moduleCount = 20;
 
     for (let i = 1; i <= moduleCount; i++) {
         await models.CourseModule.create({
