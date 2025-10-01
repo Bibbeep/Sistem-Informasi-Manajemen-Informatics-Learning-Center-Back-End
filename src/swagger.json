@@ -2662,6 +2662,139 @@
                     }
                 }
             }
+        },
+        "/api/v1/programs/{programId}/modules/{moduleId}": {
+            "get": {
+                "summary": "Retrieves a specific module for a course program",
+                "tags": ["Program Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "programId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the course program."
+                    },
+                    {
+                        "in": "path",
+                        "name": "moduleId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the module to retrieve."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the module details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ModuleSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid program ID or module ID format.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin or an enrolled member of the course.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Program or Module with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -3974,6 +4107,39 @@
                         "totalPages": 1,
                         "nextPage": null,
                         "prevPage": null
+                    },
+                    "errors": null
+                }
+            },
+            "ModuleSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "module": {
+                                "$ref": "#/components/schemas/Module"
+                            }
+                        }
+                    },
+                    "errors": { "type": "array", "nullable": true }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved module details.",
+                    "data": {
+                        "module": {
+                            "id": 1,
+                            "numberCode": 1,
+                            "materialUrl": "https://example.com/module1.pdf",
+                            "youtubeUrl": "https://youtube.com/watch?v=12345",
+                            "createdAt": "2025-10-01T10:00:00.000Z",
+                            "updatedAt": "2025-10-01T10:00:00.000Z"
+                        }
                     },
                     "errors": null
                 }
