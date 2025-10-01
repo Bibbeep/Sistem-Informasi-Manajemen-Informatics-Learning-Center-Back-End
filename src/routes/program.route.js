@@ -82,7 +82,14 @@ router.get(
     }),
     ProgramController.getModuleById,
 );
-// POST /api/v1/programs/:programId/modules
+router.post(
+    '/:programId/modules',
+    authenticate,
+    validatePathParameterId('programId'),
+    requireJsonContent,
+    authorize({ rules: ['admin'] }),
+    ProgramController.createModule,
+);
 // PATCH /api/v1/programs/:programId/modules/:moduleId
 // DELETE /api/v1/programs/:programId/modules/:moduleId
 // PUT /api/v1/programs/:programId/modules/:moduleId/materials

@@ -157,9 +157,16 @@ const moduleQueryParam = Joi.object({
         .default('id'),
 });
 
+// Request body for POST /api/v1/programs/:programId/modules/:moduleId
+const modulePayload = Joi.object({
+    numberCode: Joi.number().integer().positive().required(),
+    youtubeUrl: Joi.string().uri().required(),
+}).unknown(false);
+
 module.exports = {
     programQueryParam,
     program,
     programUpdate,
     moduleQueryParam,
+    modulePayload,
 };

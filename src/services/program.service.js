@@ -519,6 +519,47 @@ class ProgramService {
 
         return program.course.modules[0];
     }
+
+    static async createModule(data) {
+        const { numberCode, youtubeUrl, programId } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                },
+            ],
+        });
+
+        if (!program || !program.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        const module = await CourseModule.create({
+            courseId: program.course.id,
+            numberCode,
+            youtubeUrl,
+        });
+
+        return {
+            id: module.id,
+            numberCode: module.numberCode,
+            materialUrl: module.materialUrl,
+            youtubeUrl: module.youtubeUrl,
+            updatedAt: module.updatedAt,
+            createdAt: module.createdAt,
+            deletedAt: module.deletedAt,
+        };
+    }
 }
 
 module.exports = ProgramService;

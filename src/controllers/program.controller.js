@@ -4,6 +4,7 @@ const {
     validateProgram,
     validateUpdateProgramData,
     validateModuleQuery,
+    validateModule,
 } = require('../validations/validator');
 
 module.exports = {
@@ -170,6 +171,32 @@ module.exports = {
                 success: true,
                 statusCode: 200,
                 message: 'Successfully retrieved module details.',
+                data: {
+                    module,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    createModule: async (req, res, next) => {
+        try {
+            const { error, value } = validateModule(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const module = await ProgramService.createModule({
+                ...value,
+                programId: parseInt(req.params.programId, 10),
+            });
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a module.',
                 data: {
                     module,
                 },
