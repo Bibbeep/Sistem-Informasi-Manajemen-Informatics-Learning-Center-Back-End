@@ -148,8 +148,34 @@ const programUpdate = Joi.object({
     .unknown(false)
     .min(2);
 
+// Query param for GET /api/v1/programs/:programId/modules
+const moduleQueryParam = Joi.object({
+    page: Joi.number().integer().positive().default(1),
+    limit: Joi.number().integer().positive().default(10),
+    sort: Joi.string()
+        .regex(/^-?(id|createdAt)$/)
+        .default('id'),
+});
+
+// Request body for POST /api/v1/programs/:programId/modules/:moduleId
+const modulePayload = Joi.object({
+    numberCode: Joi.number().integer().positive().required(),
+    youtubeUrl: Joi.string().uri().required(),
+}).unknown(false);
+
+// Request body for PATCH /api/v1/programs/:programId/modules/:moduleId
+const moduleUpdate = Joi.object({
+    numberCode: Joi.number().integer().positive().optional(),
+    youtubeUrl: Joi.string().uri().optional(),
+})
+    .unknown(false)
+    .min(1);
+
 module.exports = {
     programQueryParam,
     program,
     programUpdate,
+    moduleQueryParam,
+    modulePayload,
+    moduleUpdate,
 };

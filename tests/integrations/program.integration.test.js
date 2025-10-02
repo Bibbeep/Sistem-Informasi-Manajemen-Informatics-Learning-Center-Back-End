@@ -4,7 +4,7 @@ const path = require('path');
 const { server } = require('../../src/server');
 const truncate = require('../../scripts/db/truncate');
 const AuthService = require('../../src/services/auth.service');
-const { Enrollment } = require('../../src/db/models');
+const { Enrollment, Course, CourseModule } = require('../../src/db/models');
 const programFactory = require('../../src/db/seeders/factories/program');
 const userFactory = require('../../src/db/seeders/factories/user');
 const courseFactory = require('../../src/db/seeders/factories/course');
@@ -826,6 +826,556 @@ describe('Program Management Integration Tests', () => {
                 .put(`/api/v1/programs/${programs.course.id}/thumbnails`)
                 .set('Authorization', `Bearer ${tokens.admin}`)
                 .attach('thumbnail', fakeImagePath);
+
+            expect(response.status).toBe(415);
+        });
+    });
+
+    describe('GET /api/v1/programs/:programId/modules', () => {
+        it('should return 200 and fetches all module data with default query parameter', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/${programs.course.id}/modules`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.modules).toBeInstanceOf(Array);
+            expect(response.body.pagination).toBeDefined();
+        });
+
+        it('should return 200 and fetches all module data with last page and sort by createdAt in descending order', async () => {
+            const response = await request(server)
+                .get(
+                    `/api/v1/programs/${programs.course.id}/modules?page=2&limit=10&sort=-createdAt`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(200);
+            expect(response.body.data.modules).toBeInstanceOf(Array);
+        });
+
+        it('should return 200 and fetches empty module data with out of bound page number', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/${programs.course.id}/modules?page=100`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(200);
+            expect(response.body.data.modules).toBeInstanceOf(Array);
+        });
+
+        it('should return 400 when invalid path parameter programId', async () => {
+            const response = await request(server)
+                .get('/api/v1/programs/abc/modules')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when invalid query paramater format', async () => {
+            const response = await request(server)
+                .get(
+                    `/api/v1/programs/${programs.course.id}/modules?page=abc&sort=xyz`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server).get(
+                `/api/v1/programs/${programs.course.id}/modules`,
+            );
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when forbidden user access', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/${programs.course.id}/modules`)
+                .set('Authorization', `Bearer ${tokens.another}`);
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .get('/api/v1/programs/9999/modules')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(404);
+        });
+    });
+
+    describe('GET /api/v1/programs/:programId/modules/:moduleId', () => {
+        let module;
+
+        beforeEach(async () => {
+            const course = await Course.findOne({
+                where: { programId: programs.course.id },
+            });
+            module = await CourseModule.findOne({
+                where: { courseId: course.id },
+            });
+        });
+
+        it('should return 200 and fetches module data', async () => {
+            const response = await request(server)
+                .get(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.module.id).toBe(module.id);
+        });
+
+        it('should return 400 when invalid path parameter programId', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/abc/modules/${module.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when invalid path parameter moduleId', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/${programs.course.id}/modules/abc`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server).get(
+                `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+            );
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when forbidden user access', async () => {
+            const response = await request(server)
+                .get(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.another}`);
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/9999/modules/${module.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 when module does not exist', async () => {
+            const response = await request(server)
+                .get(`/api/v1/programs/${programs.course.id}/modules/9999`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(404);
+        });
+    });
+
+    describe('POST /api/v1/programs/:programId/modules', () => {
+        it('should return 201 and creates a module', async () => {
+            const mockModuleData = {
+                numberCode: 21,
+                youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            };
+            const response = await request(server)
+                .post(`/api/v1/programs/${programs.course.id}/modules`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(mockModuleData);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.module).toBeDefined();
+        });
+
+        it('should return 400 when invalid path parameter programId', async () => {
+            const response = await request(server)
+                .post('/api/v1/programs/abc/modules')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({
+                    numberCode: 1,
+                    youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                });
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when invalid request body format', async () => {
+            const response = await request(server)
+                .post(`/api/v1/programs/${programs.course.id}/modules`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ numberCode: 'satu' });
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server)
+                .post(`/api/v1/programs/${programs.course.id}/modules`)
+                .send({
+                    numberCode: 1,
+                    youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                });
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when forbidden user access', async () => {
+            const response = await request(server)
+                .post(`/api/v1/programs/${programs.course.id}/modules`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({
+                    numberCode: 1,
+                    youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                });
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .post('/api/v1/programs/9999/modules')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({
+                    numberCode: 1,
+                    youtubeUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+                });
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 415 when invalid content type', async () => {
+            const response = await request(server)
+                .post(`/api/v1/programs/${programs.course.id}/modules`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .set('Content-Type', 'text/plain')
+                .send('numberCode=1&youtubeUrl=https://example.com');
+            expect(response.status).toBe(415);
+        });
+    });
+
+    describe('PATCH /api/v1/programs/:programId/modules/:moduleId', () => {
+        let module;
+
+        beforeEach(async () => {
+            const course = await Course.findOne({
+                where: { programId: programs.course.id },
+            });
+            module = await CourseModule.findOne({
+                where: { courseId: course.id },
+            });
+        });
+
+        it('should return 200 and update a module', async () => {
+            const mockUpdateData = {
+                numberCode: 100,
+                youtubeUrl: 'https://youtube.com/new-video',
+            };
+            const response = await request(server)
+                .patch(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(mockUpdateData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.module.numberCode).toBe(
+                mockUpdateData.numberCode,
+            );
+        });
+
+        it('should return 400 when invalid path parameter programId', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/programs/abc/modules/${module.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ numberCode: 1 });
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when invalid path parameter moduleId', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.course.id}/modules/abc`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ numberCode: 1 });
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when invalid request body format', async () => {
+            const response = await request(server)
+                .patch(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ youtubeUrl: 'not-a-url' });
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server)
+                .patch(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .send({ numberCode: 1 });
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when forbidden user access', async () => {
+            const response = await request(server)
+                .patch(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ numberCode: 1 });
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/programs/9999/modules/${module.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ numberCode: 1 });
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 when module does not exist', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/programs/${programs.course.id}/modules/9999`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ numberCode: 1 });
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 415 when invalid content type', async () => {
+            const response = await request(server)
+                .patch(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .set('Content-Type', 'text/plain')
+                .send('numberCode=1');
+            expect(response.status).toBe(415);
+        });
+    });
+
+    describe('DELETE /api/v1/programs/:programId/modules/:moduleId', () => {
+        let module;
+
+        beforeEach(async () => {
+            const course = await Course.findOne({
+                where: { programId: programs.course.id },
+            });
+            module = await CourseModule.findOne({
+                where: { courseId: course.id },
+            });
+        });
+
+        it('should return 200 and delete a module', async () => {
+            const response = await request(server)
+                .delete(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe(
+                'Successfully deleted a module.',
+            );
+        });
+
+        it('should return 400 when invalid path parameter programId', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/programs/abc/modules/${module.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when invalid path parameter moduleId', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/programs/${programs.course.id}/modules/abc`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server).delete(
+                `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+            );
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when forbidden user access', async () => {
+            const response = await request(server)
+                .delete(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/programs/9999/modules/${module.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 when module does not exist', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/programs/${programs.course.id}/modules/9999`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(404);
+        });
+    });
+
+    describe('PUT /api/v1/programs/:programId/modules/:moduleId/materials', () => {
+        let module;
+        const testFilePath = path.join(
+            __dirname,
+            'fixtures',
+            'test-document.pdf',
+        );
+        const testImagePath = path.join(
+            __dirname,
+            'fixtures',
+            'test-image.png',
+        );
+
+        beforeEach(async () => {
+            const course = await Course.findOne({
+                where: { programId: programs.course.id },
+            });
+            module = await CourseModule.findOne({
+                where: { courseId: course.id },
+            });
+        });
+
+        it('should return 201 and upload a material for a module', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testFilePath);
+
+            expect(response.status).toBe(201);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message: 'Successfully uploaded a module material.',
+                    data: {
+                        materialUrl: expect.stringContaining('.pdf'),
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should return 201 and replace an existing material', async () => {
+            await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testFilePath);
+
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testImagePath);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.materialUrl).toContain('.png');
+        });
+
+        it('should return 400 when programId is invalid', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/abc/modules/${module.id}/materials`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when moduleId is invalid', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/abc/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when no file is attached', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when no token is provided', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .attach('material', testFilePath);
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when a non-admin user tries to upload', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/9999/modules/${module.id}/materials`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testFilePath);
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 when module does not exist', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/9999/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testFilePath);
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 413 when the file is too large (25MB limit)', async () => {
+            const largeDocumentPath = path.join(
+                __dirname,
+                'fixtures',
+                'large-test-document.pdf',
+            );
+
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', largeDocumentPath);
+
+            expect(response.status).toBe(413);
+        });
+
+        it('should return 415 for an unsupported file type', async () => {
+            const unsupportedFilePath = path.join(
+                __dirname,
+                'fixtures',
+                'test-unsupported-file.cpp',
+            );
+
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', unsupportedFilePath);
 
             expect(response.status).toBe(415);
         });

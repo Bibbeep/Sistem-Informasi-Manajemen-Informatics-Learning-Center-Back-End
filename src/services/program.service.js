@@ -408,6 +408,421 @@ class ProgramService {
             thumbnailUrl: Location,
         };
     }
+
+    static async getManyModules(data) {
+        const { page, limit, sort, programId } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            limit,
+                            offset: (page - 1) * limit,
+                            order: sort.startsWith('-')
+                                ? [[sort.replace('-', ''), 'DESC']]
+                                : [[sort, 'ASC']],
+                            attributes: {
+                                exclude: ['courseId'],
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        const rows = program.course.modules;
+        const count = await CourseModule.count({
+            where: {
+                courseId: program.course.id,
+            },
+        });
+        const totalPages = Math.ceil(count / limit);
+
+        return {
+            pagination: {
+                currentRecords: rows.length,
+                totalRecords: count,
+                currentPage: page,
+                totalPages,
+                nextPage: page < totalPages ? page + 1 : null,
+                prevPage:
+                    page > totalPages + 1 ? null : page > 1 ? page - 1 : null,
+            },
+            modules: rows,
+        };
+    }
+
+    static async getOneModule(data) {
+        const { programId, moduleId } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            where: {
+                                id: moduleId,
+                            },
+                            attributes: {
+                                exclude: ['courseId'],
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        if (!program.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: moduleId,
+                    },
+                },
+            ]);
+        }
+
+        return program.course.modules[0];
+    }
+
+    static async createModule(data) {
+        const { numberCode, youtubeUrl, programId } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                },
+            ],
+        });
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        const module = await CourseModule.create({
+            courseId: program.course.id,
+            numberCode,
+            youtubeUrl,
+        });
+
+        return {
+            id: module.id,
+            numberCode: module.numberCode,
+            materialUrl: module.materialUrl,
+            youtubeUrl: module.youtubeUrl,
+            updatedAt: module.updatedAt,
+            createdAt: module.createdAt,
+            deletedAt: module.deletedAt,
+        };
+    }
+
+    static async updateOneModule(data) {
+        const { programId, moduleId, updateData } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            where: {
+                                id: moduleId,
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        if (!program.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: moduleId,
+                    },
+                },
+            ]);
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const [moduleCount, moduleRows] = await CourseModule.update(
+            updateData,
+            {
+                where: {
+                    id: moduleId,
+                },
+                returning: true,
+            },
+        );
+
+        return {
+            id: moduleRows[0].id,
+            numberCode: moduleRows[0].numberCode,
+            materialUrl: moduleRows[0].materialUrl,
+            youtubeUrl: moduleRows[0].youtubeUrl,
+            updatedAt: moduleRows[0].updatedAt,
+            createdAt: moduleRows[0].createdAt,
+            deletedAt: moduleRows[0].deletedAt,
+        };
+    }
+
+    static async deleteOneModule(data) {
+        const { programId, moduleId } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            where: {
+                                id: moduleId,
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        if (!program.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: moduleId,
+                    },
+                },
+            ]);
+        }
+
+        await CourseModule.destroy({ where: { id: moduleId } });
+    }
+
+    static async uploadMaterial(data) {
+        if (!data.file) {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: '"material" is empty',
+                    context: {
+                        key: 'material',
+                        value: null,
+                    },
+                },
+            ]);
+        }
+
+        const programData = await Program.findByPk(data.programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            where: {
+                                id: data.moduleId,
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!programData) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: data.programId,
+                    },
+                },
+            ]);
+        }
+
+        if (!programData.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: data.moduleId,
+                    },
+                },
+            ]);
+        }
+
+        const { file } = data;
+        const fileType = await fromBuffer(file.buffer);
+        const allowedMimeTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/svg+xml',
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+            'application/vnd.oasis.opendocument.text',
+            'application/vnd.oasis.opendocument.spreadsheet',
+            'text/plain',
+            'text/csv',
+            'application/rtf',
+            'application/zip',
+            'application/vnd.rar',
+            'application/x-tar',
+            'application/x-7z-compressed',
+            'application/gzip',
+            'application/x-bzip2',
+            'application/x-xz',
+            'application/epub+zip',
+        ];
+
+        if (!fileType || !allowedMimeTypes.includes(fileType.mime)) {
+            throw new HTTPError(415, 'Unsupported Media Type.', [
+                {
+                    message: `File MIME type must be${allowedMimeTypes.map(
+                        (str, idx) => {
+                            if (idx !== allowedMimeTypes.length - 1) {
+                                return ` "${str}"`;
+                            }
+                            return ` or "${str}"`;
+                        },
+                    )}.`,
+                    context: {
+                        key: 'File MIME Type',
+                        value: fileType ? fileType.mime : null,
+                    },
+                },
+            ]);
+        }
+
+        const fileName = `documents/programs/${data.programId}-${data.moduleId}-material-${Date.now().toString()}.${fileType.ext}`;
+
+        const client = new Upload({
+            client: s3,
+            params: {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: file.buffer,
+                ContentType: fileType.mime,
+                ACL: 'public-read',
+            },
+        });
+
+        const { Location } = await client.done();
+
+        if (programData.course.modules[0].materialUrl) {
+            const oldKey = programData.course.modules[0].materialUrl
+                .split('/')
+                .pop();
+
+            await s3.send(
+                new DeleteObjectCommand({
+                    Bucket: process.env.S3_BUCKET_NAME,
+                    Key: `documents/programs/${oldKey}`,
+                }),
+            );
+        }
+
+        if (Location) {
+            await CourseModule.update(
+                { materialUrl: Location },
+                {
+                    where: {
+                        id: data.moduleId,
+                    },
+                },
+            );
+        }
+
+        return {
+            materialUrl: Location,
+        };
+    }
 }
 
 module.exports = ProgramService;
