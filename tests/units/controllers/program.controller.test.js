@@ -13,6 +13,7 @@ const {
     createModule,
     updateModuleById,
     deleteModuleById,
+    uploadMaterial,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
@@ -822,6 +823,55 @@ describe('Program Controller Unit Tests', () => {
                 moduleId: 404,
             });
             expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('uploadMaterial Tests', () => {
+        it('should upload a material and return 201', async () => {
+            req.params = { programId: '1', moduleId: '1' };
+            req.file = { buffer: 'mock-material-buffer' };
+            const mockServiceResponse = {
+                materialUrl: 'https://example.com/new-material.pdf',
+            };
+
+            ProgramService.uploadMaterial.mockResolvedValue(
+                mockServiceResponse,
+            );
+
+            await uploadMaterial(req, res, next);
+
+            expect(ProgramService.uploadMaterial).toHaveBeenCalledWith({
+                file: req.file,
+                programId: 1,
+                moduleId: 1,
+            });
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully uploaded a module material.',
+                data: mockServiceResponse,
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to next', async () => {
+            req.params = { programId: '1', moduleId: '1' };
+            req.file = { buffer: 'mock-material-buffer' };
+            const serviceError = new Error('Upload failed');
+            ProgramService.uploadMaterial.mockRejectedValue(serviceError);
+
+            await uploadMaterial(req, res, next);
+
+            expect(ProgramService.uploadMaterial).toHaveBeenCalledWith({
+                file: req.file,
+                programId: 1,
+                moduleId: 1,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
         });
