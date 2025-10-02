@@ -12,6 +12,7 @@ const {
     getModuleById,
     createModule,
     updateModuleById,
+    deleteModuleById,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
@@ -772,6 +773,53 @@ describe('Program Controller Unit Tests', () => {
                 programId: 1,
                 moduleId: 1,
                 updateData: mockValue,
+            });
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('deleteModuleById Tests', () => {
+        it('should send 200 on success', async () => {
+            req.params = {
+                programId: '1',
+                moduleId: '1',
+            };
+            ProgramService.deleteOneModule.mockResolvedValue();
+
+            await deleteModuleById(req, res, next);
+
+            expect(ProgramService.deleteOneModule).toHaveBeenCalledWith({
+                programId: 1,
+                moduleId: 1,
+            });
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully deleted a module.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should forward service errors to next', async () => {
+            req.params = {
+                programId: '404',
+                moduleId: '404',
+            };
+            const mockError = new Error('BOOM!');
+            ProgramService.deleteOneModule.mockRejectedValue(mockError);
+
+            await deleteModuleById(req, res, next);
+
+            expect(ProgramService.deleteOneModule).toHaveBeenCalledWith({
+                programId: 404,
+                moduleId: 404,
             });
             expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
