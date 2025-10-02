@@ -1348,4 +1348,115 @@ describe('Program Service Unit Tests', () => {
             expect(CourseModule.create).not.toHaveBeenCalled();
         });
     });
+
+    describe('updateOneModule Tests', () => {
+        it('should update a module', async () => {
+            const mockData = {
+                programId: 1,
+                moduleId: 1,
+                updateData: {
+                    numberCode: 2,
+                    youtubeUrl: 'http://youtube.com/url',
+                },
+            };
+            const mockProgram = {
+                id: 1,
+                course: {
+                    id: 1,
+                },
+            };
+            const mockModuleRows = [
+                {
+                    id: 1,
+                    numberCode: 2,
+                    materialUrl: null,
+                    youtubeUrl: 'http://youtube.com/url',
+                    updatedAt: 'NOW',
+                    createdAt: 'NOW',
+                    deletedAt: null,
+                },
+            ];
+            Program.findByPk.mockResolvedValue(mockProgram);
+            CourseModule.update.mockResolvedValue([1, mockModuleRows]);
+
+            const result = await ProgramService.updateOneModule(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(CourseModule.update).toHaveBeenCalledWith(
+                mockData.updateData,
+                expect.any(Object),
+            );
+            expect(result).toEqual(expect.objectContaining(mockModuleRows[0]));
+        });
+
+        it('should throw 404 error when program does not exist', async () => {
+            const mockData = {
+                programId: 404,
+                moduleId: 1,
+                updateData: {
+                    numberCode: 2,
+                    youtubeUrl: 'http://youtube.com/url',
+                },
+            };
+            Program.findByPk.mockResolvedValue(null);
+
+            await expect(
+                ProgramService.updateOneModule(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Program with "programId" does not exist',
+                        context: {
+                            key: 'programId',
+                            value: mockData.programId,
+                        },
+                    },
+                ]),
+            );
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(CourseModule.update).not.toHaveBeenCalled();
+        });
+
+        it('should throw 404 error when module does not exist', async () => {
+            const mockData = {
+                programId: 1,
+                moduleId: 404,
+                updateData: {
+                    numberCode: 2,
+                    youtubeUrl: 'http://youtube.com/url',
+                },
+            };
+            const mockProgram = {
+                id: 1,
+            };
+            Program.findByPk.mockResolvedValue(mockProgram);
+
+            await expect(
+                ProgramService.updateOneModule(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Module with "moduleId" does not exist',
+                        context: {
+                            key: 'moduleId',
+                            value: mockData.moduleId,
+                        },
+                    },
+                ]),
+            );
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(CourseModule.update).not.toHaveBeenCalled();
+        });
+    });
 });
