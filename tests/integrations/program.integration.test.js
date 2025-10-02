@@ -1144,4 +1144,74 @@ describe('Program Management Integration Tests', () => {
             expect(response.status).toBe(415);
         });
     });
+
+    describe('DELETE /api/v1/programs/:programId/modules/:moduleId', () => {
+        let module;
+
+        beforeEach(async () => {
+            const course = await Course.findOne({
+                where: { programId: programs.course.id },
+            });
+            module = await CourseModule.findOne({
+                where: { courseId: course.id },
+            });
+        });
+
+        it('should return 200 and delete a module', async () => {
+            const response = await request(server)
+                .delete(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe(
+                'Successfully deleted a module.',
+            );
+        });
+
+        it('should return 400 when invalid path parameter programId', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/programs/abc/modules/${module.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when invalid path parameter moduleId', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/programs/${programs.course.id}/modules/abc`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server).delete(
+                `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+            );
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when forbidden user access', async () => {
+            const response = await request(server)
+                .delete(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/programs/9999/modules/${module.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 when module does not exist', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/programs/${programs.course.id}/modules/9999`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(404);
+        });
+    });
 });
