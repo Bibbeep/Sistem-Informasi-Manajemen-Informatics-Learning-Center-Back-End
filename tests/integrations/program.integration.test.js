@@ -1214,4 +1214,170 @@ describe('Program Management Integration Tests', () => {
             expect(response.status).toBe(404);
         });
     });
+
+    describe('PUT /api/v1/programs/:programId/modules/:moduleId/materials', () => {
+        let module;
+        const testFilePath = path.join(
+            __dirname,
+            'fixtures',
+            'test-document.pdf',
+        );
+        const testImagePath = path.join(
+            __dirname,
+            'fixtures',
+            'test-image.png',
+        );
+
+        beforeEach(async () => {
+            const course = await Course.findOne({
+                where: { programId: programs.course.id },
+            });
+            module = await CourseModule.findOne({
+                where: { courseId: course.id },
+            });
+        });
+
+        it('should return 201 and upload a material for a module', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testFilePath);
+
+            expect(response.status).toBe(201);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message: 'Successfully uploaded a module material.',
+                    data: {
+                        materialUrl: expect.stringContaining('.pdf'),
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should return 201 and replace an existing material', async () => {
+            await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testFilePath);
+
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testImagePath);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.materialUrl).toContain('.png');
+        });
+
+        it('should return 400 when programId is invalid', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/abc/modules/${module.id}/materials`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when moduleId is invalid', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/abc/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when no file is attached', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when no token is provided', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .attach('material', testFilePath);
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when a non-admin user tries to upload', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/9999/modules/${module.id}/materials`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testFilePath);
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 when module does not exist', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/9999/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', testFilePath);
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 413 when the file is too large (25MB limit)', async () => {
+            const largeDocumentPath = path.join(
+                __dirname,
+                'fixtures',
+                'large-test-document.pdf',
+            );
+
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', largeDocumentPath);
+
+            expect(response.status).toBe(413);
+        });
+
+        it('should return 415 for an unsupported file type', async () => {
+            const unsupportedFilePath = path.join(
+                __dirname,
+                'fixtures',
+                'test-unsupported-file.cpp',
+            );
+
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/materials`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('material', unsupportedFilePath);
+
+            expect(response.status).toBe(415);
+        });
+    });
 });
