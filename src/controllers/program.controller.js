@@ -252,4 +252,23 @@ module.exports = {
             next(err);
         }
     },
+    uploadMaterial: async (req, res, next) => {
+        try {
+            const data = await ProgramService.uploadMaterial({
+                file: req.file,
+                programId: parseInt(req.params.programId, 10),
+                moduleId: parseInt(req.params.moduleId, 10),
+            });
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully uploaded a module material.',
+                data,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

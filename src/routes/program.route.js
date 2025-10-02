@@ -9,7 +9,7 @@ const {
 } = require('../middlewares/auth.middleware');
 const { requireJsonContent } = require('../middlewares/contentType.middleware');
 const { upload } = require('../middlewares/multer.middleware.js');
-const { image } = require('../utils/fileType.js');
+const { image, document } = require('../utils/fileType.js');
 
 router.get('/', ProgramController.getAll);
 router.get(
@@ -107,6 +107,14 @@ router.delete(
     authorize({ rules: ['admin'] }),
     ProgramController.deleteModuleById,
 );
-// PUT /api/v1/programs/:programId/modules/:moduleId/materials
+router.put(
+    '/:programId/modules/:moduleId/materials',
+    authenticate,
+    validatePathParameterId('programId'),
+    validatePathParameterId('moduleId'),
+    authorize({ rules: ['admin'] }),
+    upload(document, 25).single('material'),
+    ProgramController.uploadMaterial,
+);
 
 module.exports = router;
