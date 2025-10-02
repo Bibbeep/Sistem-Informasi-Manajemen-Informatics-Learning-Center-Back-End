@@ -1545,4 +1545,174 @@ describe('Program Service Unit Tests', () => {
             expect(CourseModule.destroy).not.toHaveBeenCalled();
         });
     });
+
+    describe('uploadMaterial Tests', () => {
+        const mockData = {
+            file: { buffer: 'mock-buffer' },
+            programId: 1,
+            moduleId: 1,
+        };
+
+        const mockProgram = {
+            id: 1,
+            course: {
+                id: 1,
+                modules: [
+                    {
+                        id: 1,
+                        materialUrl: null,
+                    },
+                ],
+            },
+        };
+
+        it('should upload a new material and update the module record', async () => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+            fromBuffer.mockResolvedValue({
+                ext: 'pdf',
+                mime: 'application/pdf',
+            });
+            Upload.mockImplementation(() => {
+                return {
+                    done: jest.fn().mockResolvedValue({
+                        Location:
+                            'https://mock-s3-location.com/new-material.pdf',
+                    }),
+                };
+            });
+
+            const result = await ProgramService.uploadMaterial(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(Upload).toHaveBeenCalledTimes(1);
+            expect(CourseModule.update).toHaveBeenCalledWith(
+                {
+                    materialUrl:
+                        'https://mock-s3-location.com/new-material.pdf',
+                },
+                { where: { id: mockData.moduleId } },
+            );
+            expect(s3.send).not.toHaveBeenCalled();
+            expect(result).toEqual({
+                materialUrl: 'https://mock-s3-location.com/new-material.pdf',
+            });
+        });
+
+        it('should upload a new material and delete the old one', async () => {
+            const programWithMaterial = {
+                ...mockProgram,
+                course: {
+                    ...mockProgram.course,
+                    modules: [
+                        {
+                            id: 1,
+                            materialUrl:
+                                'https://my-bucket.com/documents/programs/old-material.pdf',
+                        },
+                    ],
+                },
+            };
+            Program.findByPk.mockResolvedValue(programWithMaterial);
+            fromBuffer.mockResolvedValue({
+                ext: 'pdf',
+                mime: 'application/pdf',
+            });
+
+            await ProgramService.uploadMaterial(mockData);
+
+            expect(s3.send).toHaveBeenCalledTimes(1);
+            expect(DeleteObjectCommand).toHaveBeenCalledWith({
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: 'documents/programs/old-material.pdf',
+            });
+        });
+
+        it('should not throw an error if S3 location is not returned', async () => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+            fromBuffer.mockResolvedValue({
+                ext: 'pdf',
+                mime: 'application/pdf',
+            });
+            Upload.mockImplementationOnce(() => {
+                return {
+                    done: jest.fn().mockResolvedValue({ Location: undefined }),
+                };
+            });
+
+            const result = await ProgramService.uploadMaterial(mockData);
+
+            expect(CourseModule.update).not.toHaveBeenCalled();
+            expect(result).toEqual({ materialUrl: undefined });
+        });
+
+        it('should throw a 400 error if no file is provided', async () => {
+            await expect(
+                ProgramService.uploadMaterial({ ...mockData, file: null }),
+            ).rejects.toThrow(
+                new HTTPError(400, 'Validation error.', [
+                    {
+                        message: '"material" is empty',
+                        context: { key: 'material', value: null },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 404 error if the program is not found', async () => {
+            Program.findByPk.mockResolvedValue(null);
+            await expect(
+                ProgramService.uploadMaterial(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Program with "programId" does not exist',
+                        context: {
+                            key: 'programId',
+                            value: mockData.programId,
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 404 error if the module is not found', async () => {
+            Program.findByPk.mockResolvedValue({
+                ...mockProgram,
+                course: null,
+            });
+            await expect(
+                ProgramService.uploadMaterial(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Module with "moduleId" does not exist',
+                        context: { key: 'moduleId', value: mockData.moduleId },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 415 error for an unsupported file type', async () => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+            fromBuffer.mockResolvedValue({
+                mime: 'application/x-msdos-program',
+            });
+
+            await expect(
+                ProgramService.uploadMaterial(mockData),
+            ).rejects.toThrow(new HTTPError(415, 'Unsupported Media Type.'));
+        });
+
+        it('should throw a 415 error if file type cannot be determined', async () => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+            fromBuffer.mockResolvedValue(null);
+
+            await expect(
+                ProgramService.uploadMaterial(mockData),
+            ).rejects.toThrow(new HTTPError(415, 'Unsupported Media Type.'));
+        });
+    });
 });
