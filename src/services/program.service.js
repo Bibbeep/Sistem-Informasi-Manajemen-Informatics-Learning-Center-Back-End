@@ -627,6 +627,54 @@ class ProgramService {
             deletedAt: moduleRows[0].deletedAt,
         };
     }
+
+    static async deleteOneModule(data) {
+        const { programId, moduleId } = data;
+
+        const program = await Program.findByPk(programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            where: {
+                                id: moduleId,
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        if (!program.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: moduleId,
+                    },
+                },
+            ]);
+        }
+
+        await CourseModule.destroy({ where: { id: moduleId } });
+    }
 }
 
 module.exports = ProgramService;

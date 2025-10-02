@@ -99,7 +99,14 @@ router.patch(
     authorize({ rules: ['admin'] }),
     ProgramController.updateModuleById,
 );
-// DELETE /api/v1/programs/:programId/modules/:moduleId
+router.delete(
+    '/:programId/modules/:moduleId',
+    authenticate,
+    validatePathParameterId('programId'),
+    validatePathParameterId('moduleId'),
+    authorize({ rules: ['admin'] }),
+    ProgramController.deleteModuleById,
+);
 // PUT /api/v1/programs/:programId/modules/:moduleId/materials
 
 module.exports = router;

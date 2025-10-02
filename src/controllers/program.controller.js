@@ -234,4 +234,22 @@ module.exports = {
             next(err);
         }
     },
+    deleteModuleById: async (req, res, next) => {
+        try {
+            await ProgramService.deleteOneModule({
+                programId: parseInt(req.params.programId, 10),
+                moduleId: parseInt(req.params.moduleId, 10),
+            });
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a module.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
