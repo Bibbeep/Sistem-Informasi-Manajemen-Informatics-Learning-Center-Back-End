@@ -11,6 +11,7 @@ const {
     getAllModules,
     getModuleById,
     createModule,
+    updateModuleById,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
@@ -18,6 +19,7 @@ const {
     validateUpdateProgramData,
     validateModuleQuery,
     validateModule,
+    validateUpdateModuleData,
 } = require('../../../src/validations/validator');
 const ProgramService = require('../../../src/services/program.service');
 const HTTPError = require('../../../src/utils/httpError');
@@ -669,6 +671,107 @@ describe('Program Controller Unit Tests', () => {
             expect(ProgramService.createModule).toHaveBeenCalledWith({
                 ...req.body,
                 programId: 1,
+            });
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('updateModuleById Tests', () => {
+        it('should send 200 on success', async () => {
+            req.body = {
+                numberCode: 2,
+                youtubeUrl: 'https://youtube.com/test',
+            };
+            req.params = {
+                programId: '1',
+                moduleId: '1',
+            };
+            const mockValue = req.body;
+            const mockModule = {
+                id: 1,
+                numberCode: 2,
+                materialUrl: null,
+                youtubeUrl: 'https://youtube.com/test',
+                updatedAt: '2025-10-01T19:48:52.849Z',
+                createdAt: '2025-10-01T18:30:38.255Z',
+                deletedAt: null,
+            };
+            validateUpdateModuleData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            ProgramService.updateOneModule.mockResolvedValue(mockModule);
+
+            await updateModuleById(req, res, next);
+
+            expect(validateUpdateModuleData).toHaveBeenCalledWith(req.body);
+            expect(ProgramService.updateOneModule).toHaveBeenCalledWith({
+                programId: 1,
+                moduleId: 1,
+                updateData: mockValue,
+            });
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully updated a module.',
+                    data: {
+                        module: mockModule,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should call next with a validation error', async () => {
+            req.body = {
+                numberCode: '101',
+                youtubeUrl: 'not a uri',
+            };
+            req.params = {
+                programId: 'abc',
+                moduleId: 'def',
+            };
+            const mockError = new ValidationError();
+            validateUpdateModuleData.mockReturnValue({ error: mockError });
+
+            await updateModuleById(req, res, next);
+
+            expect(validateUpdateModuleData).toHaveBeenCalledWith(req.body);
+            expect(ProgramService.updateOneModule).not.toHaveBeenCalled();
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to next', async () => {
+            req.body = {
+                numberCode: 2,
+                youtubeUrl: 'https://youtube.com/test',
+            };
+            req.params = {
+                programId: '1',
+                moduleId: '1',
+            };
+            const mockValue = req.body;
+            const mockError = new Error('BOOM!');
+            validateUpdateModuleData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            ProgramService.updateOneModule.mockRejectedValue(mockError);
+
+            await updateModuleById(req, res, next);
+
+            expect(validateUpdateModuleData).toHaveBeenCalledWith(req.body);
+            expect(ProgramService.updateOneModule).toHaveBeenCalledWith({
+                programId: 1,
+                moduleId: 1,
+                updateData: mockValue,
             });
             expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
