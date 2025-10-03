@@ -6,6 +6,7 @@ const {
     validateForgotPassword,
     validateResetPassword,
     validateProgramQuery,
+    validateEnrollmentQuery,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -482,6 +483,42 @@ describe('Authentication Validation Unit Tests', () => {
                     type: 'competition',
                     'price.gte': 1000000,
                     'price.lte': 2000000,
+                }),
+            );
+        });
+    });
+
+    describe('validateEnrollmentQuery Tests', () => {
+        it('should pass validation with sort by updatedAt descending', async () => {
+            const { error, value } = validateEnrollmentQuery({
+                sort: '-updatedAt',
+            });
+
+            expect(error).toBeUndefined();
+            expect(value).toEqual(
+                expect.objectContaining({
+                    page: 1,
+                    limit: 10,
+                    sort: '-updatedAt',
+                    programType: 'all',
+                    status: 'all',
+                }),
+            );
+        });
+
+        it('should pass validation with sort by progress ascending', async () => {
+            const { error, value } = validateEnrollmentQuery({
+                sort: 'progress',
+            });
+
+            expect(error).toBeUndefined();
+            expect(value).toEqual(
+                expect.objectContaining({
+                    page: 1,
+                    limit: 10,
+                    sort: 'progressPercentage',
+                    programType: 'all',
+                    status: 'all',
                 }),
             );
         });
