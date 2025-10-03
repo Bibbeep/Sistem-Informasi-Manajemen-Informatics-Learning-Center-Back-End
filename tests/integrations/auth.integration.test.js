@@ -17,7 +17,7 @@ const jwtOptions = require('../../src/configs/jsonwebtoken');
 const mailer = require('../../src/utils/mailer');
 const { randomBytes, createHash } = require('crypto');
 
-describe('Authentication Integration Test', () => {
+describe('Authentication Integration Tests', () => {
     const mockUserPassword = 'password123';
     let users, tokens;
 
