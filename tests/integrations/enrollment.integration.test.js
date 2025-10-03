@@ -11,7 +11,7 @@ const { redisClient } = require('../../src/configs/redis');
 
 describe('Enrollment Integration Tests', () => {
     const mockUserPassword = 'password123';
-    let users, tokens, programs;
+    let users, tokens, programs, enrollments;
 
     afterAll(async () => {
         server.close();
@@ -49,23 +49,29 @@ describe('Enrollment Integration Tests', () => {
             seminar: seminarProgram,
         };
 
-        await enrollmentFactory({
+        const courseEnrollment = await enrollmentFactory({
             userId: users.regular.id,
             programId: programs.course.id,
             status: 'In Progress',
             progressPercentage: 50.0,
         });
-        await enrollmentFactory({
+        const workshopEnrollment = await enrollmentFactory({
             userId: users.regular.id,
             programId: programs.workshop.id,
             status: 'Completed',
             progressPercentage: 100.0,
         });
-        await enrollmentFactory({
+        const seminarEnrollment = await enrollmentFactory({
             userId: users.another.id,
             programId: programs.seminar.id,
             status: 'Unpaid',
         });
+
+        enrollments = {
+            course: courseEnrollment,
+            workshop: workshopEnrollment,
+            seminar: seminarEnrollment,
+        };
 
         tokens = {
             admin: (
@@ -77,6 +83,12 @@ describe('Enrollment Integration Tests', () => {
             regular: (
                 await AuthService.login({
                     email: users.regular.email,
+                    password: mockUserPassword,
+                })
+            ).accessToken,
+            another: (
+                await AuthService.login({
+                    email: users.another.email,
                     password: mockUserPassword,
                 })
             ).accessToken,
@@ -173,6 +185,64 @@ describe('Enrollment Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`);
 
             expect(response.status).toBe(403);
+        });
+    });
+
+    describe('GET /api/v1/enrollments/:enrollmentId', () => {
+        it('should return 200 and fetches enrollment Course data', async () => {
+            const response = await request(server)
+                .get(`/api/v1/enrollments/${enrollments.course.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.enrollment.programType).toBe('Course');
+            expect(
+                response.body.data.enrollment.completedModules,
+            ).toBeDefined();
+        });
+
+        it('should return 200 and fetches enrollment Seminar data', async () => {
+            const response = await request(server)
+                .get(`/api/v1/enrollments/${enrollments.seminar.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.enrollment.programType).toBe('Seminar');
+            expect(
+                response.body.data.enrollment.completedModules,
+            ).toBeUndefined();
+        });
+
+        it('should return 400 when invalid path param', async () => {
+            const response = await request(server)
+                .get('/api/v1/enrollments/abc')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when no access token is provided', async () => {
+            const response = await request(server).get(
+                `/api/v1/enrollments/${enrollments.course.id}`,
+            );
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when forbidden user access', async () => {
+            const response = await request(server)
+                .get(`/api/v1/enrollments/${enrollments.seminar.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when enrollment does not exist', async () => {
+            const response = await request(server)
+                .get('/api/v1/enrollments/9999')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
         });
     });
 });
