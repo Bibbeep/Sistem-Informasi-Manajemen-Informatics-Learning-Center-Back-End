@@ -293,6 +293,33 @@ describe('Authentication Middleware Unit Tests', () => {
             expect(Enrollment.findByPk).toHaveBeenCalledWith(parseInt('1', 10));
             expect(next).toHaveBeenCalledWith(mockError);
         });
+
+        it('should call next with error when userId query parameter is required and regular user does not provide it', async () => {
+            const mockOptions = {
+                rules: ['self', 'admin'],
+                requireUserIdQuery: true,
+            };
+
+            req.tokenPayload = {
+                sub: 1,
+                admin: false,
+            };
+
+            const mockError = new HTTPError(403, 'Forbidden.', [
+                {
+                    message:
+                        'You do not have the necessary permissions to access this resource.',
+                    context: {
+                        key: 'role',
+                        value: 'User',
+                    },
+                },
+            ]);
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockError);
+        });
     });
 
     describe('validatePathParameterId Tests', () => {
