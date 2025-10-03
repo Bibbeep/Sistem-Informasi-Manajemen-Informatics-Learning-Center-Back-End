@@ -36,7 +36,8 @@ module.exports = {
         }
     },
     authorize: (options) => {
-        const { rules, model, param, ownerForeignKey } = options;
+        const { rules, model, param, ownerForeignKey, requireUserIdQuery } =
+            options;
 
         return async (req, res, next) => {
             try {
@@ -48,13 +49,26 @@ module.exports = {
                 }
 
                 if (rules.includes('self')) {
-                    const targetUserId = req.params.userId;
+                    const targetUserId = req.params.userId || req.query.userId;
 
                     if (
                         targetUserId &&
                         parseInt(targetUserId, 10) === loggedInUserId
                     ) {
                         return next();
+                    }
+
+                    if (requireUserIdQuery && !req.query.userId) {
+                        throw new HTTPError(403, 'Forbidden.', [
+                            {
+                                message:
+                                    'You do not have the necessary permissions to access this resource.',
+                                context: {
+                                    key: 'role',
+                                    value: 'User',
+                                },
+                            },
+                        ]);
                     }
 
                     if (model && param && ownerForeignKey) {

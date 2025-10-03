@@ -39,7 +39,7 @@ module.exports = {
             },
             progressPercentage: {
                 allowNull: false,
-                type: Sequelize.DECIMAL,
+                type: Sequelize.DECIMAL(5, 2),
                 defaultValue: 0,
                 field: 'progress_percentage',
             },
@@ -57,6 +57,11 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE,
                 field: 'updated_at',
+            },
+            deletedAt: {
+                allowNull: true,
+                type: Sequelize.DATE,
+                field: 'deleted_at',
             },
         });
     },
