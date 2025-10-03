@@ -320,6 +320,57 @@ describe('Authentication Middleware Unit Tests', () => {
 
             expect(next).toHaveBeenCalledWith(mockError);
         });
+
+        it('should call next with error when userId is prohibited but still provide it in query param', async () => {
+            const mockOptions = {
+                rules: ['self', 'admin'],
+                ownerQueryParam: 'prohibited',
+            };
+            req.query = { userId: 1 };
+            req.tokenPayload = {
+                sub: 1,
+                admin: false,
+            };
+            const mockError = new HTTPError(403, 'Forbidden.', [
+                {
+                    message:
+                        'You do not have the necessary permissions to access this resource.',
+                    context: {
+                        key: 'role',
+                        value: 'User',
+                    },
+                },
+            ]);
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockError);
+        });
+
+        it('should call next with error when userId is required but does not provide it in query param', async () => {
+            const mockOptions = {
+                rules: ['self', 'admin'],
+                ownerQueryParam: 'required',
+            };
+            req.tokenPayload = {
+                sub: 1,
+                admin: false,
+            };
+            const mockError = new HTTPError(403, 'Forbidden.', [
+                {
+                    message:
+                        'You do not have the necessary permissions to access this resource.',
+                    context: {
+                        key: 'role',
+                        value: 'User',
+                    },
+                },
+            ]);
+
+            await authorize(mockOptions)(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockError);
+        });
     });
 
     describe('validatePathParameterId Tests', () => {
