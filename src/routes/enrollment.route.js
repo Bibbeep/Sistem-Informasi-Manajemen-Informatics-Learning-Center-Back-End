@@ -22,6 +22,7 @@ router.get(
         model: Enrollment,
         param: 'enrollmentId',
         ownerForeignKey: 'userId',
+        ownerQueryParam: 'prohibited',
     }),
     EnrollmentController.getById,
 );
