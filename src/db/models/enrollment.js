@@ -68,6 +68,11 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'userId',
             as: 'user',
         });
+
+        Enrollment.hasMany(models.CompletedModule, {
+            foreignKey: 'enrollmentId',
+            as: 'completedModules',
+        });
     };
 
     return Enrollment;

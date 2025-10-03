@@ -27,4 +27,23 @@ module.exports = {
             next(err);
         }
     },
+    getById: async (req, res, next) => {
+        try {
+            const enrollment = await EnrollmentService.getOne(
+                parseInt(req.params.enrollmentId, 10),
+            );
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved program enrollment details.',
+                data: {
+                    enrollment,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

@@ -1,4 +1,5 @@
-const { Enrollment, Program } = require('../db/models');
+const { Enrollment, Program, CompletedModule } = require('../db/models');
+const HTTPError = require('../utils/httpError');
 
 class EnrollmentService {
     static async getMany(data) {
@@ -77,6 +78,62 @@ class EnrollmentService {
             },
             enrollments: rows,
         };
+    }
+
+    static async getOne(enrollmentId) {
+        const enrollment = await Enrollment.findByPk(enrollmentId, {
+            include: [
+                {
+                    model: CompletedModule,
+                    as: 'completedModules',
+                    attributes: {
+                        exclude: [
+                            'id',
+                            'enrollmentId',
+                            'createdAt',
+                            'updatedAt',
+                        ],
+                    },
+                },
+                {
+                    model: Program,
+                    as: 'program',
+                },
+            ],
+        });
+
+        if (!enrollment) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Enrollment with "enrollmentId" does not exist',
+                    context: {
+                        key: 'enrollmentId',
+                        value: enrollmentId,
+                    },
+                },
+            ]);
+        }
+
+        const returnValue = {
+            id: enrollment.id,
+            userId: enrollment.userId,
+            programId: enrollment.programId,
+            programTitle: enrollment.program.title,
+            programType: enrollment.program.type,
+            programThumbnailUrl: enrollment.program.thumbnailUrl,
+            progressPercentage: enrollment.progressPercentage,
+            status: enrollment.status,
+            completedAt: enrollment.completedAt,
+            createdAt: enrollment.createdAt,
+            updatedAt: enrollment.updatedAt,
+            deletedAt: enrollment.deletedAt,
+        };
+
+        if (enrollment.program.type === 'Course') {
+            returnValue.completedModules = enrollment.completedModules;
+        }
+
+        return returnValue;
     }
 }
 
