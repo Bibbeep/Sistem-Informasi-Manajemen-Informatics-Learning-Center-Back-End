@@ -6,6 +6,7 @@ const {
     getById,
     create,
     updateById,
+    deleteById,
 } = require('../../../src/controllers/enrollment.controller');
 const EnrollmentService = require('../../../src/services/enrollment.service');
 const {
@@ -349,6 +350,39 @@ describe('Enrollment Controller Unit Tests', () => {
             await updateById(req, res, next);
 
             expect(next).toHaveBeenCalledWith(serviceError);
+        });
+    });
+
+    describe('deleteById Tests', () => {
+        it('should send 200 on successful deletion', async () => {
+            req.params = { enrollmentId: '1' };
+            EnrollmentService.deleteOne.mockResolvedValue();
+
+            await deleteById(req, res, next);
+
+            expect(EnrollmentService.deleteOne).toHaveBeenCalledWith(1);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted an enrollment.',
+                data: null,
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to next', async () => {
+            req.params = { enrollmentId: '999' };
+            const serviceError = new Error('Not Found');
+            EnrollmentService.deleteOne.mockRejectedValue(serviceError);
+
+            await deleteById(req, res, next);
+
+            expect(EnrollmentService.deleteOne).toHaveBeenCalledWith(999);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
         });
     });
 });
