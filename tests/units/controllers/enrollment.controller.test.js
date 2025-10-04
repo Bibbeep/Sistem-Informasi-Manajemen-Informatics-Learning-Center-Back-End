@@ -7,12 +7,14 @@ const {
     create,
     updateById,
     deleteById,
+    completeModule,
 } = require('../../../src/controllers/enrollment.controller');
 const EnrollmentService = require('../../../src/services/enrollment.service');
 const {
     validateEnrollmentQuery,
     validateEnrollment,
     validateUpdateEnrollmentData,
+    validateCompleteModule,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -383,6 +385,68 @@ describe('Enrollment Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('completeModule Tests', () => {
+        it('should send 201 on success', async () => {
+            req.params = { enrollmentId: '1' };
+            req.body = { courseModuleId: 1 };
+            const mockValue = { courseModuleId: 1 };
+            const mockResponse = {
+                progressPercentage: '10.00',
+                completedModule: { id: 1 },
+            };
+            validateCompleteModule.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            EnrollmentService.completeModule.mockResolvedValue(mockResponse);
+
+            await completeModule(req, res, next);
+
+            expect(validateCompleteModule).toHaveBeenCalledWith(req.body);
+            expect(EnrollmentService.completeModule).toHaveBeenCalledWith({
+                enrollmentId: 1,
+                ...mockValue,
+            });
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully completed a module.',
+                data: mockResponse,
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error', async () => {
+            req.params = { enrollmentId: '1' };
+            req.body = { courseModuleId: 'abc' };
+            const mockError = new ValidationError();
+            validateCompleteModule.mockReturnValue({ error: mockError });
+
+            await completeModule(req, res, next);
+
+            expect(validateCompleteModule).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockError);
+        });
+
+        it('should forward service errors to next', async () => {
+            req.params = { enrollmentId: '1' };
+            req.body = { courseModuleId: 1 };
+            const mockValue = { courseModuleId: 1 };
+            const serviceError = new Error('Service Error');
+            validateCompleteModule.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            EnrollmentService.completeModule.mockRejectedValue(serviceError);
+
+            await completeModule(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
 });
