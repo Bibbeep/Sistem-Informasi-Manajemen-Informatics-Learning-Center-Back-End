@@ -4014,6 +4014,128 @@
                         }
                     }
                 }
+            },
+            "delete": {
+                "summary": "Deletes a specific program enrollment",
+                "tags": ["Enrollment Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "enrollmentId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the enrollment to delete."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted an enrollment. This action is restricted to admins only.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EnrollmentDeleteSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid enrollment ID format.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Enrollment with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -5850,6 +5972,35 @@
                             "updatedAt": "2025-10-04T16:30:00.000Z"
                         }
                     },
+                    "errors": null
+                }
+            },
+            "EnrollmentDeleteSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully deleted an enrollment.",
+                    "data": null,
                     "errors": null
                 }
             }
