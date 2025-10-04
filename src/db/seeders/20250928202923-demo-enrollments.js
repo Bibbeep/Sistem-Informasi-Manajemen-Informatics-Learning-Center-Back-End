@@ -17,15 +17,10 @@ module.exports = {
             for (let i = 0; i < numberOfEnrollments; i++) {
                 if (shuffledPrograms[i]) {
                     const createdAt = faker.date.past();
-                    const status = faker.helpers.arrayElement([
-                        'Unpaid',
-                        'In Progress',
-                    ]);
-
                     enrollments.push({
                         program_id: shuffledPrograms[i].id,
                         user_id: user.id,
-                        status: status,
+                        status: 'In Progress',
                         progress_percentage: 0,
                         completed_at: null,
                         created_at: createdAt,

@@ -1,4 +1,10 @@
-const { Enrollment, Program, CompletedModule } = require('../db/models');
+const {
+    Enrollment,
+    Program,
+    CompletedModule,
+    sequelize,
+    Invoice,
+} = require('../db/models');
 const HTTPError = require('../utils/httpError');
 
 class EnrollmentService {
@@ -134,6 +140,105 @@ class EnrollmentService {
         }
 
         return returnValue;
+    }
+
+    static async create(data) {
+        const { programId, userId } = data;
+
+        const program = await Program.findByPk(programId);
+
+        if (!program) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        const existingEnrollment = await Enrollment.findOne({
+            where: {
+                programId,
+                userId,
+            },
+        });
+
+        if (existingEnrollment) {
+            throw new HTTPError(409, 'Resource conflict.', [
+                {
+                    message: 'Enrollment for "programId" has already been made',
+                    context: {
+                        key: 'programId',
+                        value: programId,
+                    },
+                },
+            ]);
+        }
+
+        const { enrollment, invoice } = await sequelize.transaction(
+            async (t) => {
+                const enrollment = await Enrollment.create(
+                    {
+                        programId,
+                        userId,
+                        status: 'Unpaid',
+                        progressPercentage: 0,
+                        completedAt: null,
+                    },
+                    {
+                        transaction: t,
+                    },
+                );
+
+                const virtualAccountNumberLength =
+                    Math.floor(Math.random() * 3) + 16;
+                let virtualAccountNumber = '';
+                for (let i = 0; i < virtualAccountNumberLength; i++) {
+                    virtualAccountNumber += Math.floor(Math.random() * 10);
+                }
+
+                const invoice = await Invoice.create(
+                    {
+                        enrollmentId: enrollment.id,
+                        virtualAccountNumber,
+                        amountIdr: program.priceIdr,
+                        paymentDueDatetime: new Date(
+                            Date.now() + 60 * 60 * 1000,
+                        ).toISOString(),
+                        status: 'Unverified',
+                    },
+                    {
+                        transaction: t,
+                    },
+                );
+
+                return {
+                    enrollment,
+                    invoice,
+                };
+            },
+        );
+
+        return {
+            enrollment: {
+                id: enrollment.id,
+                userId: enrollment.userId,
+                programId: enrollment.programId,
+                programTitle: program.title,
+                programType: program.type,
+                programThumbnailUrl: program.thumbnailUrl,
+                progressPercentage: enrollment.progressPercentage,
+                status: enrollment.status,
+                completedAt: enrollment.completedAt,
+                createdAt: enrollment.createdAt,
+                updatedAt: enrollment.updatedAt,
+                deletedAt: enrollment.deletedAt,
+            },
+            invoice,
+        };
     }
 }
 

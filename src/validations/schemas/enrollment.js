@@ -24,6 +24,11 @@ const enrollmentQueryParam = Joi.object({
         .default('all'),
 });
 
+const enrollmentPayload = Joi.object({
+    programId: Joi.number().integer().positive().required(),
+}).unknown(false);
+
 module.exports = {
     enrollmentQueryParam,
+    enrollmentPayload,
 };

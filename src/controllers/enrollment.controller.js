@@ -1,5 +1,8 @@
 const EnrollmentService = require('../services/enrollment.service');
-const { validateEnrollmentQuery } = require('../validations/validator');
+const {
+    validateEnrollmentQuery,
+    validateEnrollment,
+} = require('../validations/validator');
 
 module.exports = {
     getAll: async (req, res, next) => {
@@ -39,6 +42,34 @@ module.exports = {
                 message: 'Successfully retrieved program enrollment details.',
                 data: {
                     enrollment,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    create: async (req, res, next) => {
+        try {
+            const { error, value } = validateEnrollment(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const { enrollment, invoice } = await EnrollmentService.create({
+                ...value,
+                userId: req.tokenPayload.sub,
+            });
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message:
+                    'Successfully created an enrollment. Please complete the payment to access the contents.',
+                data: {
+                    enrollment,
+                    invoice,
                 },
                 errors: null,
             });

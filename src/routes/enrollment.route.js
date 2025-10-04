@@ -5,6 +5,7 @@ const {
     authorize,
     validatePathParameterId,
 } = require('../middlewares/auth.middleware');
+const { requireJsonContent } = require('../middlewares/contentType.middleware');
 const { Enrollment } = require('../db/models');
 
 router.get(
@@ -26,5 +27,6 @@ router.get(
     }),
     EnrollmentController.getById,
 );
+router.post('/', authenticate, requireJsonContent, EnrollmentController.create);
 
 module.exports = router;
