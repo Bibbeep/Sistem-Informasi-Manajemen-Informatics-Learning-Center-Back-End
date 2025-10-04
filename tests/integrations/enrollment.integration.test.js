@@ -63,11 +63,21 @@ describe('Enrollment Integration Tests', () => {
         const workshopEnrollment = await enrollmentFactory({
             userId: users.regular.id,
             programId: programs.workshop.id,
-            status: 'Completed',
-            progressPercentage: 100.0,
+            status: 'In Progress',
         });
         const seminarEnrollment = await enrollmentFactory({
             userId: users.another.id,
+            programId: programs.seminar.id,
+            status: 'In Progress',
+        });
+        const completedEnrollment = await enrollmentFactory({
+            userId: users.regular.id,
+            programId: programs.seminar.id,
+            status: 'Completed',
+            progressPercentage: 100.0,
+        });
+        const unpaidEnrollment = await enrollmentFactory({
+            userId: users.regular.id,
             programId: programs.seminar.id,
             status: 'Unpaid',
         });
@@ -76,6 +86,8 @@ describe('Enrollment Integration Tests', () => {
             course: courseEnrollment,
             workshop: workshopEnrollment,
             seminar: seminarEnrollment,
+            completed: completedEnrollment,
+            unpaid: unpaidEnrollment,
         };
 
         tokens = {
@@ -112,7 +124,7 @@ describe('Enrollment Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.admin}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.pagination.totalRecords).toBe(3);
+            expect(response.body.pagination.totalRecords).toBe(5);
         });
 
         it('should return 200 and fetches enrollment data for a specific user', async () => {
@@ -121,7 +133,7 @@ describe('Enrollment Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.enrollments.length).toBe(2);
+            expect(response.body.data.enrollments.length).toBe(4);
         });
 
         it('should return 200 and filter enrollments by programType and status', async () => {
@@ -319,6 +331,112 @@ describe('Enrollment Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`)
                 .set('Content-Type', 'text/plain')
                 .send('programId=1');
+
+            expect(response.status).toBe(415);
+        });
+    });
+
+    describe('PATCH /api/v1/enrollments/:enrollmentId', () => {
+        it('should return 200 and update enrollment status to Completed', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/enrollments/${enrollments.workshop.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ status: 'Completed' });
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.enrollment.status).toBe('Completed');
+            expect(response.body.data.enrollment.progressPercentage).toBe(
+                '100.00',
+            );
+        });
+
+        it('should return 200 and update enrollment as admin', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/enrollments/${enrollments.seminar.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ status: 'Completed' });
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.enrollment.status).toBe('Completed');
+        });
+
+        it('should return 400 for invalid enrollmentId', async () => {
+            const response = await request(server)
+                .patch('/api/v1/enrollments/abc')
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ status: 'Completed' });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for invalid request body', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/enrollments/${enrollments.workshop.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ status: 'In Progress' });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for an already completed enrollment', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/enrollments/${enrollments.completed.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ status: 'Completed' });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for an unpaid enrollment', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/enrollments/${enrollments.unpaid.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ status: 'Completed' });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for a course enrollment', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/enrollments/${enrollments.course.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ status: 'Completed' });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 when no token is provided', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/enrollments/${enrollments.workshop.id}`)
+                .send({ status: 'Completed' });
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when user tries to update another user enrollment', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/enrollments/${enrollments.seminar.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ status: 'Completed' });
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when enrollment does not exist', async () => {
+            const response = await request(server)
+                .patch('/api/v1/enrollments/9999')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ status: 'Completed' });
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 415 when content type is not application/json', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/enrollments/${enrollments.workshop.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Content-Type', 'text/plain')
+                .send('status=Completed');
 
             expect(response.status).toBe(415);
         });
