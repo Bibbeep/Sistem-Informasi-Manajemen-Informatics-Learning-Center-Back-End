@@ -8,10 +8,17 @@ const enrollmentFactory = require('../../src/db/seeders/factories/enrollment');
 const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
+const {
+    CourseModule,
+    Course,
+    CompletedModule,
+    Enrollment,
+} = require('../../src/db/models');
+const courseFactory = require('../../src/db/seeders/factories/course');
 
 describe('Enrollment Integration Tests', () => {
     const mockUserPassword = 'password123';
-    let users, tokens, programs, enrollments;
+    let users, tokens, programs, enrollments, courseModules;
 
     afterAll(async () => {
         server.close();
@@ -47,6 +54,8 @@ describe('Enrollment Integration Tests', () => {
             priceIdr: 0,
         });
 
+        await courseFactory({ programId: courseProgram.id });
+
         programs = {
             course: courseProgram,
             workshop: workshopProgram,
@@ -58,7 +67,6 @@ describe('Enrollment Integration Tests', () => {
             userId: users.regular.id,
             programId: programs.course.id,
             status: 'In Progress',
-            progressPercentage: 50.0,
         });
         const workshopEnrollment = await enrollmentFactory({
             userId: users.regular.id,
@@ -78,8 +86,21 @@ describe('Enrollment Integration Tests', () => {
         });
         const unpaidEnrollment = await enrollmentFactory({
             userId: users.regular.id,
-            programId: programs.seminar.id,
+            programId: programs.course.id,
             status: 'Unpaid',
+        });
+
+        const courseModel = await Course.findOne({
+            where: { programId: courseProgram.id },
+        });
+        courseModules = await CourseModule.findAll({
+            where: { courseId: courseModel.id },
+        });
+
+        await CompletedModule.create({
+            enrollmentId: courseEnrollment.id,
+            courseModuleId: courseModules[1].id,
+            completedAt: new Date(),
         });
 
         enrollments = {
@@ -487,6 +508,163 @@ describe('Enrollment Integration Tests', () => {
 
             expect(response.status).toBe(404);
             expect(response.body.message).toBe('Resource not found.');
+        });
+    });
+
+    describe('POST /api/v1/enrollments/:enrollmentId/completed-modules', () => {
+        it('should return 201 and mark a module as completed', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.course.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ courseModuleId: courseModules[0].id });
+
+            expect(response.status).toBe(201);
+            expect(response.body.data).toHaveProperty('progressPercentage');
+            expect(response.body.data).toHaveProperty('completedModule');
+        });
+
+        it('should return 201 and mark the last module, completing the course', async () => {
+            for (let i = 2; i < courseModules.length; i++) {
+                await CompletedModule.create({
+                    enrollmentId: enrollments.course.id,
+                    courseModuleId: courseModules[i].id,
+                    completedAt: new Date(),
+                });
+            }
+
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.course.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ courseModuleId: courseModules[0].id });
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.progressPercentage).toBe('100.00');
+
+            const updatedEnrollment = await Enrollment.findByPk(
+                enrollments.course.id,
+            );
+            expect(updatedEnrollment.status).toBe('Completed');
+        });
+
+        it('should return 201 as admin for another user enrollment', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.course.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ courseModuleId: courseModules[0].id });
+
+            expect(response.status).toBe(201);
+        });
+
+        it('should return 400 for invalid enrollmentId', async () => {
+            const response = await request(server)
+                .post('/api/v1/enrollments/abc/completed-modules')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ courseModuleId: courseModules[0].id });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for invalid courseModuleId', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.course.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ courseModuleId: 'abc' });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for a non-course enrollment', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.workshop.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ courseModuleId: courseModules[0].id });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for an unpaid enrollment', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.unpaid.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ courseModuleId: courseModules[0].id });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 for unauthenticated user', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.course.id}/completed-modules`,
+                )
+                .send({ courseModuleId: courseModules[0].id });
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 for unauthorized user', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.course.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.another}`)
+                .send({ courseModuleId: courseModules[0].id });
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 if enrollment does not exist', async () => {
+            const response = await request(server)
+                .post('/api/v1/enrollments/9999/completed-modules')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ courseModuleId: courseModules[0].id });
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 if module does not exist', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.course.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ courseModuleId: 9999 });
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 409 if module is already completed', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.course.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ courseModuleId: courseModules[1].id });
+
+            expect(response.status).toBe(409);
+        });
+
+        it('should return 415 for invalid content type', async () => {
+            const response = await request(server)
+                .post(
+                    `/api/v1/enrollments/${enrollments.course.id}/completed-modules`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Content-Type', 'text/plain')
+                .send('courseModuleId=1');
+
+            expect(response.status).toBe(415);
         });
     });
 });
