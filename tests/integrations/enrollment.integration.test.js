@@ -42,11 +42,16 @@ describe('Enrollment Integration Tests', () => {
         const courseProgram = await programFactory({ type: 'Course' });
         const workshopProgram = await programFactory({ type: 'Workshop' });
         const seminarProgram = await programFactory({ type: 'Seminar' });
+        const freeProgram = await programFactory({
+            type: 'Course',
+            priceIdr: 0,
+        });
 
         programs = {
             course: courseProgram,
             workshop: workshopProgram,
             seminar: seminarProgram,
+            free: freeProgram,
         };
 
         const courseEnrollment = await enrollmentFactory({
@@ -248,23 +253,74 @@ describe('Enrollment Integration Tests', () => {
 
     describe('POST /api/v1/enrollments', () => {
         it('should return 201 and creates a new enrollment of paid program', async () => {
-            //
+            const response = await request(server)
+                .post('/api/v1/enrollments')
+                .set('Authorization', `Bearer ${tokens.another}`)
+                .send({ programId: programs.course.id });
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.enrollment).toBeDefined();
+            expect(response.body.data.invoice).toBeDefined();
+            expect(response.body.data.enrollment.status).toBe('Unpaid');
+            expect(response.body.data.invoice.status).toBe('Unverified');
         });
 
         it('should return 201 and creates a new enrollment of free program', async () => {
-            //
+            const response = await request(server)
+                .post('/api/v1/enrollments')
+                .set('Authorization', `Bearer ${tokens.another}`)
+                .send({ programId: programs.free.id });
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.enrollment).toBeDefined();
+            expect(response.body.data.invoice).toBeDefined();
+            expect(response.body.data.enrollment.status).toBe('In Progress');
+            expect(response.body.data.invoice.status).toBe('Verified');
         });
 
         it('should return 400 when invalid request body', async () => {
-            //
+            const response = await request(server)
+                .post('/api/v1/enrollments')
+                .set('Authorization', `Bearer ${tokens.another}`)
+                .send({ programId: 'abc' });
+
+            expect(response.status).toBe(400);
         });
 
         it('should return 401 when invalid access token', async () => {
-            //
+            const response = await request(server)
+                .post('/api/v1/enrollments')
+                .send({ programId: programs.course.id });
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .post('/api/v1/enrollments')
+                .set('Authorization', `Bearer ${tokens.another}`)
+                .send({ programId: 9999 });
+
+            expect(response.status).toBe(404);
         });
 
         it('should return 409 when enrollment already exist for a program', async () => {
-            //
+            const response = await request(server)
+                .post('/api/v1/enrollments')
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ programId: programs.course.id });
+
+            expect(response.status).toBe(409);
+        });
+
+        it('should return 415 when invalid Content-Type header', async () => {
+            const response = await request(server)
+                .post('/api/v1/enrollments')
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Content-Type', 'text/plain')
+                .send('programId=1');
+
+            expect(response.status).toBe(415);
         });
     });
 });
