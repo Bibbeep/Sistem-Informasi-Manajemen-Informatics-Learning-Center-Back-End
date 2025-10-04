@@ -535,4 +535,42 @@ describe('Enrollment Service Unit Tests', () => {
             );
         });
     });
+
+    describe('deleteOne Tests', () => {
+        it('should delete an enrollment successfully', async () => {
+            const mockEnrollmentId = 1;
+            Enrollment.findByPk.mockResolvedValue({ id: mockEnrollmentId });
+            Enrollment.destroy.mockResolvedValue(1);
+
+            await EnrollmentService.deleteOne(mockEnrollmentId);
+
+            expect(Enrollment.findByPk).toHaveBeenCalledWith(mockEnrollmentId);
+            expect(Enrollment.destroy).toHaveBeenCalledWith({
+                where: { id: mockEnrollmentId },
+            });
+        });
+
+        it('should throw a 404 error if enrollment is not found', async () => {
+            const mockEnrollmentId = 999;
+            Enrollment.findByPk.mockResolvedValue(null);
+
+            await expect(
+                EnrollmentService.deleteOne(mockEnrollmentId),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Enrollment with "enrollmentId" does not exist',
+                        context: {
+                            key: 'enrollmentId',
+                            value: mockEnrollmentId,
+                        },
+                    },
+                ]),
+            );
+
+            expect(Enrollment.findByPk).toHaveBeenCalledWith(mockEnrollmentId);
+            expect(Enrollment.destroy).not.toHaveBeenCalled();
+        });
+    });
 });
