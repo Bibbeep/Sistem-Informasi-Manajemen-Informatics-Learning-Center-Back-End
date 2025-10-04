@@ -6,6 +6,8 @@ const {
     sequelize,
     Program,
     Invoice,
+    CourseModule,
+    CompletedModule,
 } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
 
@@ -571,6 +573,139 @@ describe('Enrollment Service Unit Tests', () => {
 
             expect(Enrollment.findByPk).toHaveBeenCalledWith(mockEnrollmentId);
             expect(Enrollment.destroy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('completeModule Tests', () => {
+        it('should complete a module and update progress', async () => {
+            const mockData = { enrollmentId: 1, courseModuleId: 1 };
+            CourseModule.findByPk.mockResolvedValue({ id: 1 });
+            const mockEnrollment = {
+                id: 1,
+                status: 'In Progress',
+                program: {
+                    type: 'Course',
+                    course: {
+                        toJSON: () => {
+                            return { totalModules: 10 };
+                        },
+                    },
+                },
+                completedModules: [],
+            };
+            Enrollment.findByPk.mockResolvedValue(mockEnrollment);
+            CompletedModule.create.mockResolvedValue({ id: 1, ...mockData });
+            Enrollment.update.mockResolvedValue([1]);
+
+            const result = await EnrollmentService.completeModule(mockData);
+
+            expect(result.progressPercentage).toBe('10.00');
+            expect(Enrollment.update).toHaveBeenCalled();
+        });
+
+        it('should complete the final module and mark enrollment as completed', async () => {
+            const mockData = { enrollmentId: 1, courseModuleId: 1 };
+            CourseModule.findByPk.mockResolvedValue({ id: 1 });
+            const mockEnrollment = {
+                id: 1,
+                status: 'In Progress',
+                program: {
+                    type: 'Course',
+                    course: {
+                        toJSON: () => {
+                            return { totalModules: 1 };
+                        },
+                    },
+                },
+                completedModules: [],
+            };
+            Enrollment.findByPk.mockResolvedValue(mockEnrollment);
+            CompletedModule.create.mockResolvedValue({ id: 1, ...mockData });
+            Enrollment.update.mockResolvedValue([1]);
+
+            const result = await EnrollmentService.completeModule(mockData);
+
+            expect(result.progressPercentage).toBe('100.00');
+            expect(Enrollment.update).toHaveBeenCalledWith(
+                expect.objectContaining({ status: 'Completed' }),
+                expect.any(Object),
+            );
+        });
+
+        it('should throw 404 if module not found', async () => {
+            const mockData = { enrollmentId: 1, courseModuleId: 999 };
+            CourseModule.findByPk.mockResolvedValue(null);
+
+            await expect(
+                EnrollmentService.completeModule(mockData),
+            ).rejects.toThrow(HTTPError);
+        });
+
+        it('should throw 404 if enrollment not found', async () => {
+            const mockData = { enrollmentId: 999, courseModuleId: 1 };
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Enrollment with "enrollmentId" does not exist',
+                    context: {
+                        key: 'enrollmentId',
+                        value: mockData.enrollmentId,
+                    },
+                },
+            ]);
+            CourseModule.findByPk.mockResolvedValue({ id: 1 });
+
+            Enrollment.findByPk.mockImplementation((id, options) => {
+                if (options && options.include && options.include.length > 1) {
+                    return Promise.resolve(null);
+                }
+                return Promise.resolve({ id: 1 });
+            });
+
+            await expect(
+                EnrollmentService.completeModule(mockData),
+            ).rejects.toThrow(mockError);
+        });
+
+        it('should throw 400 if program is not a course', async () => {
+            const mockData = { enrollmentId: 1, courseModuleId: 1 };
+            CourseModule.findByPk.mockResolvedValue({ id: 1 });
+            Enrollment.findByPk.mockResolvedValue({
+                id: 1,
+                program: { type: 'Workshop' },
+            });
+
+            await expect(
+                EnrollmentService.completeModule(mockData),
+            ).rejects.toThrow(HTTPError);
+        });
+
+        it('should throw 400 if enrollment is unpaid', async () => {
+            const mockData = { enrollmentId: 1, courseModuleId: 1 };
+            CourseModule.findByPk.mockResolvedValue({ id: 1 });
+            Enrollment.findByPk.mockResolvedValue({
+                id: 1,
+                status: 'Unpaid',
+                program: { type: 'Course' },
+            });
+
+            await expect(
+                EnrollmentService.completeModule(mockData),
+            ).rejects.toThrow(HTTPError);
+        });
+
+        it('should throw 409 if module is already completed', async () => {
+            const mockData = { enrollmentId: 1, courseModuleId: 1 };
+            CourseModule.findByPk.mockResolvedValue({ id: 1 });
+            Enrollment.findByPk.mockResolvedValue({
+                id: 1,
+                status: 'In Progress',
+                program: { type: 'Course' },
+                completedModules: [{ courseModuleId: 1 }],
+            });
+
+            await expect(
+                EnrollmentService.completeModule(mockData),
+            ).rejects.toThrow(HTTPError);
         });
     });
 });
