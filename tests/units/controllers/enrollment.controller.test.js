@@ -4,10 +4,12 @@ jest.mock('../../../src/services/enrollment.service');
 const {
     getAll,
     getById,
+    create,
 } = require('../../../src/controllers/enrollment.controller');
 const EnrollmentService = require('../../../src/services/enrollment.service');
 const {
     validateEnrollmentQuery,
+    validateEnrollment,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -190,6 +192,96 @@ describe('Enrollment Controller Unit Tests', () => {
             await getById(req, res, next);
 
             expect(EnrollmentService.getOne).toHaveBeenCalledWith(1);
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('create Tests', () => {
+        it('should sends 201 on success and does not call next', async () => {
+            req.body = {
+                programId: 1,
+            };
+            req.tokenPayload = { sub: 1 };
+            const mockValue = req.body;
+            const mockEnrollment = {
+                id: 1,
+            };
+            const mockInvoice = {
+                id: 1,
+            };
+            validateEnrollment.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            EnrollmentService.create.mockResolvedValue({
+                enrollment: mockEnrollment,
+                invoice: mockInvoice,
+            });
+
+            await create(req, res, next);
+
+            expect(validateEnrollment).toHaveBeenCalledWith(req.body);
+            expect(EnrollmentService.create).toHaveBeenCalledWith({
+                ...mockValue,
+                userId: 1,
+            });
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message:
+                        'Successfully created an enrollment. Please complete the payment to access the contents.',
+                    data: {
+                        enrollment: mockEnrollment,
+                        invoice: mockInvoice,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should call next with a validation errort', async () => {
+            req.body = {
+                programId: 'abc',
+            };
+            const mockError = new ValidationError();
+            validateEnrollment.mockReturnValue({
+                error: mockError,
+            });
+
+            await create(req, res, next);
+
+            expect(validateEnrollment).toHaveBeenCalledWith(req.body);
+            expect(EnrollmentService.create).not.toHaveBeenCalled();
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should sends 201 on success and does not call next', async () => {
+            req.body = {
+                programId: 1,
+            };
+            req.tokenPayload = { sub: 1 };
+            const mockValue = req.body;
+            const mockError = new Error('Error');
+            validateEnrollment.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            EnrollmentService.create.mockRejectedValue(mockError);
+
+            await create(req, res, next);
+
+            expect(validateEnrollment).toHaveBeenCalledWith(req.body);
+            expect(EnrollmentService.create).toHaveBeenCalledWith({
+                ...mockValue,
+                userId: 1,
+            });
             expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();

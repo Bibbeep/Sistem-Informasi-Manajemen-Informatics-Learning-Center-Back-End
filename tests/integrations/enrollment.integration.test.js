@@ -245,4 +245,26 @@ describe('Enrollment Integration Tests', () => {
             expect(response.status).toBe(404);
         });
     });
+
+    describe('POST /api/v1/enrollments', () => {
+        it('should return 201 and creates a new enrollment of paid program', async () => {
+            //
+        });
+
+        it('should return 201 and creates a new enrollment of free program', async () => {
+            //
+        });
+
+        it('should return 400 when invalid request body', async () => {
+            //
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            //
+        });
+
+        it('should return 409 when enrollment already exist for a program', async () => {
+            //
+        });
+    });
 });
