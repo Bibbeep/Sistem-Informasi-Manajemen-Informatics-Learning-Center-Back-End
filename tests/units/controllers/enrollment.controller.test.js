@@ -5,12 +5,13 @@ const {
     getAll,
     getById,
     create,
-    
+    updateById,
 } = require('../../../src/controllers/enrollment.controller');
 const EnrollmentService = require('../../../src/services/enrollment.service');
 const {
     validateEnrollmentQuery,
     validateEnrollment,
+    validateUpdateEnrollmentData,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -286,6 +287,68 @@ describe('Enrollment Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('updateById Tests', () => {
+        it('should send 200 on success and not call next', async () => {
+            req.params = { enrollmentId: '1' };
+            req.body = { status: 'Completed' };
+            const mockValue = { status: 'Completed' };
+            const mockEnrollment = { id: 1, status: 'Completed' };
+
+            validateUpdateEnrollmentData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            EnrollmentService.updateOne.mockResolvedValue(mockEnrollment);
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateEnrollmentData).toHaveBeenCalledWith(req.body);
+            expect(EnrollmentService.updateOne).toHaveBeenCalledWith({
+                enrollmentId: 1,
+                ...mockValue,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully updated program enrollment details.',
+                data: {
+                    enrollment: mockEnrollment,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error', async () => {
+            req.params = { enrollmentId: '1' };
+            req.body = { status: 'InvalidStatus' };
+            const mockError = new ValidationError();
+            validateUpdateEnrollmentData.mockReturnValue({ error: mockError });
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateEnrollmentData).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockError);
+        });
+
+        it('should forward service errors to next', async () => {
+            req.params = { enrollmentId: '1' };
+            req.body = { status: 'Completed' };
+            const mockValue = { status: 'Completed' };
+            const serviceError = new Error('Service Error');
+            validateUpdateEnrollmentData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            EnrollmentService.updateOne.mockRejectedValue(serviceError);
+
+            await updateById(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
 });
