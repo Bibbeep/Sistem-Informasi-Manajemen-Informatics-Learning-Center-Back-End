@@ -28,5 +28,19 @@ router.get(
     EnrollmentController.getById,
 );
 router.post('/', authenticate, requireJsonContent, EnrollmentController.create);
+router.patch(
+    '/:enrollmentId',
+    authenticate,
+    validatePathParameterId('enrollmentId'),
+    requireJsonContent,
+    authorize({
+        rules: ['self', 'admin'],
+        model: Enrollment,
+        param: 'enrollmentId',
+        ownerForeignKey: 'userId',
+        ownerQueryParam: 'prohibited',
+    }),
+    EnrollmentController.updateById,
+);
 
 module.exports = router;

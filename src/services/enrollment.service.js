@@ -269,6 +269,85 @@ class EnrollmentService {
             invoice,
         };
     }
+
+    static async updateOne(data) {
+        const { enrollmentId, status } = data;
+
+        const enrollment = await Enrollment.findByPk(enrollmentId, {
+            include: [
+                {
+                    model: Program,
+                    as: 'program',
+                },
+            ],
+        });
+
+        if (!enrollment) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Enrollment with "enrollmentId" does not exist',
+                    context: {
+                        key: 'enrollmentId',
+                        value: enrollmentId,
+                    },
+                },
+            ]);
+        }
+
+        if (['Unpaid', 'Completed'].includes(enrollment.status)) {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: `Cannot update enrollment with ${enrollment.status} status`,
+                    context: {
+                        key: 'status',
+                        value: enrollment.status,
+                    },
+                },
+            ]);
+        }
+
+        if (enrollment.program.type === 'Course') {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: `Cannot update enrollment with ${enrollment.program.type} type`,
+                    context: {
+                        key: 'type',
+                        value: enrollment.program.type,
+                    },
+                },
+            ]);
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const [updatedCount, updatedRows] = await Enrollment.update(
+            {
+                status,
+                progressPercentage: 100,
+                completedAt: new Date(Date.now()),
+            },
+            {
+                where: {
+                    id: enrollmentId,
+                },
+                returning: true,
+            },
+        );
+
+        return {
+            id: updatedRows[0].id,
+            userId: updatedRows[0].userId,
+            programId: updatedRows[0].programId,
+            programTitle: enrollment.program.title,
+            programType: enrollment.program.type,
+            programThumbnailUrl: enrollment.program.thumbnailUrl,
+            progressPercentage: updatedRows[0].progressPercentage,
+            status: updatedRows[0].status,
+            completedAt: updatedRows[0].completedAt,
+            createdAt: updatedRows[0].createdAt,
+            updatedAt: updatedRows[0].updatedAt,
+            deletedAt: updatedRows[0].deletedAt,
+        };
+    }
 }
 
 module.exports = EnrollmentService;

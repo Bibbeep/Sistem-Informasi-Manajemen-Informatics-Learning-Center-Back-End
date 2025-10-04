@@ -24,11 +24,18 @@ const enrollmentQueryParam = Joi.object({
         .default('all'),
 });
 
+// Request body for POST /api/v1/enrollments
 const enrollmentPayload = Joi.object({
     programId: Joi.number().integer().positive().required(),
+}).unknown(false);
+
+// Request body for PATCH /api/v1/enrollments/:enrollmentId
+const enrollmentUpdate = Joi.object({
+    status: Joi.string().valid('Completed').required(),
 }).unknown(false);
 
 module.exports = {
     enrollmentQueryParam,
     enrollmentPayload,
+    enrollmentUpdate,
 };

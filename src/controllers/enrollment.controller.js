@@ -2,6 +2,7 @@ const EnrollmentService = require('../services/enrollment.service');
 const {
     validateEnrollmentQuery,
     validateEnrollment,
+    validateUpdateEnrollmentData,
 } = require('../validations/validator');
 
 module.exports = {
@@ -70,6 +71,32 @@ module.exports = {
                 data: {
                     enrollment,
                     invoice,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    updateById: async (req, res, next) => {
+        try {
+            const { error, value } = validateUpdateEnrollmentData(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const enrollment = await EnrollmentService.updateOne({
+                enrollmentId: parseInt(req.params.enrollmentId, 10),
+                ...value,
+            });
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully updated program enrollment details.',
+                data: {
+                    enrollment,
                 },
                 errors: null,
             });

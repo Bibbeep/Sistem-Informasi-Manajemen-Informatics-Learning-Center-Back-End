@@ -106,13 +106,15 @@ module.exports = {
                         );
 
                         if (!resource) {
-                            throw new HTTPError(404, 'Resource not found.', {
-                                message: `${model.name} with "${param}" does not exist`,
-                                context: {
-                                    key: param,
-                                    value: req.params[param],
+                            throw new HTTPError(404, 'Resource not found.', [
+                                {
+                                    message: `${model.name} with "${param}" does not exist`,
+                                    context: {
+                                        key: param,
+                                        value: req.params[param],
+                                    },
                                 },
-                            });
+                            ]);
                         }
 
                         if (resource[ownerForeignKey] === loggedInUserId) {
