@@ -461,4 +461,78 @@ describe('Enrollment Service Unit Tests', () => {
             );
         });
     });
+
+    describe('updateOne Tests', () => {
+        it('should update an enrollment and return the updated data', async () => {
+            const mockData = { enrollmentId: 1, status: 'Completed' };
+            const mockEnrollment = {
+                id: 1,
+                status: 'In Progress',
+                program: { type: 'Workshop' },
+            };
+            const mockUpdatedRows = [
+                {
+                    id: 1,
+                    status: 'Completed',
+                    progressPercentage: 100,
+                    completedAt: new Date(),
+                },
+            ];
+            Enrollment.findByPk.mockResolvedValue(mockEnrollment);
+            Enrollment.update.mockResolvedValue([1, mockUpdatedRows]);
+
+            const result = await EnrollmentService.updateOne(mockData);
+
+            expect(Enrollment.findByPk).toHaveBeenCalledWith(
+                mockData.enrollmentId,
+                { include: [{ model: Program, as: 'program' }] },
+            );
+            expect(Enrollment.update).toHaveBeenCalled();
+            expect(result.status).toBe('Completed');
+            expect(result.progressPercentage).toBe(100);
+        });
+
+        it('should throw 404 error if enrollment is not found', async () => {
+            const mockData = { enrollmentId: 999, status: 'Completed' };
+            Enrollment.findByPk.mockResolvedValue(null);
+
+            await expect(EnrollmentService.updateOne(mockData)).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.'),
+            );
+        });
+
+        it('should throw 400 error for unpaid enrollment', async () => {
+            const mockData = { enrollmentId: 1, status: 'Completed' };
+            const mockEnrollment = { id: 1, status: 'Unpaid' };
+            Enrollment.findByPk.mockResolvedValue(mockEnrollment);
+
+            await expect(EnrollmentService.updateOne(mockData)).rejects.toThrow(
+                new HTTPError(400, 'Validation error.'),
+            );
+        });
+
+        it('should throw 400 error for already completed enrollment', async () => {
+            const mockData = { enrollmentId: 1, status: 'Completed' };
+            const mockEnrollment = { id: 1, status: 'Completed' };
+            Enrollment.findByPk.mockResolvedValue(mockEnrollment);
+
+            await expect(EnrollmentService.updateOne(mockData)).rejects.toThrow(
+                new HTTPError(400, 'Validation error.'),
+            );
+        });
+
+        it('should throw 400 error for course program type', async () => {
+            const mockData = { enrollmentId: 1, status: 'Completed' };
+            const mockEnrollment = {
+                id: 1,
+                status: 'In Progress',
+                program: { type: 'Course' },
+            };
+            Enrollment.findByPk.mockResolvedValue(mockEnrollment);
+
+            await expect(EnrollmentService.updateOne(mockData)).rejects.toThrow(
+                new HTTPError(400, 'Validation error.'),
+            );
+        });
+    });
 });
