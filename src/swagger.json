@@ -3867,6 +3867,153 @@
                         }
                     }
                 }
+            },
+            "patch": {
+                "summary": "Updates a specific program enrollment",
+                "tags": ["Enrollment Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "enrollmentId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the enrollment to update."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/EnrollmentUpdateRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated program enrollment details. This action is irreversible and sets the program's progress to 100%. Note: This endpoint cannot be used for enrollments in 'Course' type programs.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EnrollmentUpdateSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body, enrollment ID, or business logic violation (e.g., trying to update a 'Course', 'Unpaid', or already 'Completed' enrollment).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access, user is not an admin or the owner of the enrollment.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Enrollment with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type. Request must be application/json.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "TooManyRequests": {
+                                        "$ref": "#/components/examples/TooManyRequests"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     },
@@ -4487,6 +4634,19 @@
                 "required": ["programId"],
                 "example": {
                     "programId": 1
+                }
+            },
+            "EnrollmentUpdateRequestBody": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": ["Completed"]
+                    }
+                },
+                "required": ["status"],
+                "example": {
+                    "status": "Completed"
                 }
             },
             "FailedResponse": {
@@ -5641,6 +5801,53 @@
                             "status": "Unverified",
                             "createdAt": "2025-10-04T08:30:00.000Z",
                             "updatedAt": "2025-10-04T08:30:00.000Z"
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "EnrollmentUpdateSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "enrollment": {
+                                "$ref": "#/components/schemas/Enrollment"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully updated program enrollment details.",
+                    "data": {
+                        "enrollment": {
+                            "id": 2,
+                            "userId": 1,
+                            "programId": 2,
+                            "programTitle": "Web Development Workshop",
+                            "programType": "Workshop",
+                            "programThumbnailUrl": "https://example.com/thumb2.jpg",
+                            "progressPercentage": "100.00",
+                            "status": "Completed",
+                            "completedAt": "2025-10-04T16:30:00.000Z",
+                            "createdAt": "2025-10-04T10:00:00.000Z",
+                            "updatedAt": "2025-10-04T16:30:00.000Z"
                         }
                     },
                     "errors": null
