@@ -104,4 +104,21 @@ module.exports = {
             next(err);
         }
     },
+    deleteById: async (req, res, next) => {
+        try {
+            await EnrollmentService.deleteOne(
+                parseInt(req.params.enrollmentId, 10),
+            );
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted an enrollment.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

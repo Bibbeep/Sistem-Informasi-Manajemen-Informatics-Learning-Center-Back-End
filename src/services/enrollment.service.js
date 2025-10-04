@@ -348,6 +348,24 @@ class EnrollmentService {
             deletedAt: updatedRows[0].deletedAt,
         };
     }
+
+    static async deleteOne(enrollmentId) {
+        const isEnrollmentExist = await Enrollment.findByPk(enrollmentId);
+
+        if (!isEnrollmentExist) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Enrollment with "enrollmentId" does not exist',
+                    context: {
+                        key: 'enrollmentId',
+                        value: enrollmentId,
+                    },
+                },
+            ]);
+        }
+
+        await Enrollment.destroy({ where: { id: enrollmentId } });
+    }
 }
 
 module.exports = EnrollmentService;

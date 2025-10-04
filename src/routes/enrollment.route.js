@@ -42,5 +42,12 @@ router.patch(
     }),
     EnrollmentController.updateById,
 );
+router.delete(
+    '/:enrollmentId',
+    authenticate,
+    validatePathParameterId('enrollmentId'),
+    authorize({ rules: ['admin'] }),
+    EnrollmentController.deleteById,
+);
 
 module.exports = router;
