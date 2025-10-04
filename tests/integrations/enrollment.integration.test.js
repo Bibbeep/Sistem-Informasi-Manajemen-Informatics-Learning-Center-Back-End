@@ -441,4 +441,52 @@ describe('Enrollment Integration Tests', () => {
             expect(response.status).toBe(415);
         });
     });
+
+    describe('DELETE /api/v1/enrollments/:enrollmentId', () => {
+        it('should return 200 and delete an enrollment as an admin', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/enrollments/${enrollments.course.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe(
+                'Successfully deleted an enrollment.',
+            );
+        });
+
+        it('should return 400 for an invalid enrollmentId', async () => {
+            const response = await request(server)
+                .delete('/api/v1/enrollments/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 401 when no token is provided', async () => {
+            const response = await request(server).delete(
+                `/api/v1/enrollments/${enrollments.course.id}`,
+            );
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 when a non-admin user tries to delete an enrollment', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/enrollments/${enrollments.course.id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(403);
+            expect(response.body.message).toBe('Forbidden.');
+        });
+
+        it('should return 404 when the enrollment does not exist', async () => {
+            const response = await request(server)
+                .delete('/api/v1/enrollments/9999')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+        });
+    });
 });
