@@ -3,50 +3,43 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('user_program_enrollments', {
+        await queryInterface.createTable('user_program_invoices', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            programId: {
+            enrollmentId: {
                 allowNull: false,
                 type: Sequelize.INTEGER,
-                field: 'program_id',
+                field: 'user_program_enrollment_id',
                 references: {
-                    model: 'programs',
+                    model: 'user_program_enrollments',
                     key: 'id',
                 },
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
             },
-            userId: {
+            virtualAccountNumber: {
+                allowNull: true,
+                type: Sequelize.STRING(18),
+                field: 'virtual_account_number',
+            },
+            amountIdr: {
                 allowNull: false,
                 type: Sequelize.INTEGER,
-                field: 'user_id',
-                references: {
-                    model: 'users',
-                    key: 'id',
-                },
-                onUpdate: 'CASCADE',
-                onDelete: 'CASCADE',
+                field: 'amount_idr',
+            },
+            paymentDueDatetime: {
+                allowNull: true,
+                type: Sequelize.DATE,
+                field: 'payment_due_datetime',
             },
             status: {
                 allowNull: false,
-                type: Sequelize.ENUM('Unpaid', 'In Progress', 'Completed'),
-                defaultValue: 'Unpaid',
-            },
-            progressPercentage: {
-                allowNull: false,
-                type: Sequelize.DECIMAL(5, 2),
-                defaultValue: 0,
-                field: 'progress_percentage',
-            },
-            completedAt: {
-                allowNull: true,
-                type: Sequelize.DATE,
-                field: 'completed_at',
+                type: Sequelize.ENUM('Unverified', 'Verified', 'Expired'),
+                defaultValue: 'Unverified',
             },
             createdAt: {
                 allowNull: false,
@@ -66,6 +59,6 @@ module.exports = {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('user_program_enrollments');
+        await queryInterface.dropTable('user_program_invoices');
     },
 };

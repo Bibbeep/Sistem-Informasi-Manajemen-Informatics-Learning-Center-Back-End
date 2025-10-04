@@ -17,35 +17,12 @@ module.exports = {
             for (let i = 0; i < numberOfEnrollments; i++) {
                 if (shuffledPrograms[i]) {
                     const createdAt = faker.date.past();
-                    const status = faker.helpers.arrayElement([
-                        'Unpaid',
-                        'In Progress',
-                        'Completed',
-                    ]);
-
-                    let progressPercentage = 0;
-                    let completedAt = null;
-
-                    if (status === 'Completed') {
-                        progressPercentage = 100;
-                        completedAt = faker.date.between({
-                            from: createdAt,
-                            to: new Date(),
-                        });
-                    } else if (status === 'In Progress') {
-                        progressPercentage = faker.number.float({
-                            min: 1,
-                            max: 99,
-                            fractionDigits: 2,
-                        });
-                    }
-
                     enrollments.push({
                         program_id: shuffledPrograms[i].id,
                         user_id: user.id,
-                        status: status,
-                        progress_percentage: progressPercentage,
-                        completed_at: completedAt,
+                        status: 'In Progress',
+                        progress_percentage: 0,
+                        completed_at: null,
                         created_at: createdAt,
                         updated_at: faker.date.between({
                             from: createdAt,

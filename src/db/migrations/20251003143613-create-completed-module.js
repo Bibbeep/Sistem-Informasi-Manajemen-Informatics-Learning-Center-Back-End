@@ -3,48 +3,37 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('user_program_enrollments', {
+        await queryInterface.createTable('user_completed_modules', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            programId: {
+            courseModuleId: {
                 allowNull: false,
                 type: Sequelize.INTEGER,
-                field: 'program_id',
+                field: 'course_module_id',
                 references: {
-                    model: 'programs',
+                    model: 'course_modules',
                     key: 'id',
                 },
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
             },
-            userId: {
+            enrollmentId: {
                 allowNull: false,
                 type: Sequelize.INTEGER,
-                field: 'user_id',
+                field: 'user_program_enrollment_id',
                 references: {
-                    model: 'users',
+                    model: 'user_program_enrollments',
                     key: 'id',
                 },
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
-            },
-            status: {
-                allowNull: false,
-                type: Sequelize.ENUM('Unpaid', 'In Progress', 'Completed'),
-                defaultValue: 'Unpaid',
-            },
-            progressPercentage: {
-                allowNull: false,
-                type: Sequelize.DECIMAL(5, 2),
-                defaultValue: 0,
-                field: 'progress_percentage',
             },
             completedAt: {
-                allowNull: true,
+                allowNull: false,
                 type: Sequelize.DATE,
                 field: 'completed_at',
             },
@@ -58,14 +47,9 @@ module.exports = {
                 type: Sequelize.DATE,
                 field: 'updated_at',
             },
-            deletedAt: {
-                allowNull: true,
-                type: Sequelize.DATE,
-                field: 'deleted_at',
-            },
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('user_program_enrollments');
+        await queryInterface.dropTable('user_completed_modules');
     },
 };

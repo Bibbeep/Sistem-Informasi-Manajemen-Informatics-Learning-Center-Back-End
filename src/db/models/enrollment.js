@@ -26,7 +26,7 @@ module.exports = (sequelize, DataTypes) => {
             },
             progressPercentage: {
                 allowNull: false,
-                type: DataTypes.DECIMAL,
+                type: DataTypes.DECIMAL(5, 2),
                 defaultValue: 0,
                 field: 'progress_percentage',
             },
@@ -45,9 +45,16 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.DATE,
                 field: 'updated_at',
             },
+            deletedAt: {
+                allowNull: true,
+                type: DataTypes.DATE,
+                field: 'deleted_at',
+            },
         },
         {
             tableName: 'user_program_enrollments',
+            paranoid: true,
+            deletedAt: 'deletedAt',
         },
     );
 
@@ -60,6 +67,16 @@ module.exports = (sequelize, DataTypes) => {
         Enrollment.belongsTo(models.User, {
             foreignKey: 'userId',
             as: 'user',
+        });
+
+        Enrollment.hasMany(models.CompletedModule, {
+            foreignKey: 'enrollmentId',
+            as: 'completedModules',
+        });
+
+        Enrollment.hasOne(models.Invoice, {
+            foreignKey: 'enrollmentId',
+            as: 'invoice',
         });
     };
 

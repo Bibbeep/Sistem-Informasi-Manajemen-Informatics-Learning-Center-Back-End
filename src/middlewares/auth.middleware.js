@@ -6,6 +6,12 @@ const { Enrollment } = require('../db/models');
 const { Op } = require('sequelize');
 
 module.exports = {
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @param {import('express').NextFunction} next
+     * @description Middleware to authenticate user by validating JWT token.
+     */
     authenticate: async (req, res, next) => {
         try {
             const token = req.headers.authorization?.includes('Bearer ')
@@ -35,8 +41,19 @@ module.exports = {
             next(err);
         }
     },
+    /**
+     * @param {Object} options
+     * @param {Array<'admin'|'self'>} options.rules - The authorization rules to apply.
+     * @param {import('sequelize').Model} [options.model] - The Sequelize model to check for ownership.
+     * @param {string} [options.param] - The request parameter name containing the resource ID.
+     * @param {string} [options.ownerForeignKey] - The foreign key in the model that links to the user ID.
+     * @param {('required'|'prohibited')} [options.ownerQueryParam] - Whether to oblige a userId in the query parameter to present for non-admin users or prohibit it.
+     * @returns {import('express').RequestHandler}
+     * @description Middleware factory to authorize user access based on rules.
+     */
     authorize: (options) => {
-        const { rules, model, param, ownerForeignKey } = options;
+        const { rules, model, param, ownerForeignKey, ownerQueryParam } =
+            options;
 
         return async (req, res, next) => {
             try {
@@ -48,7 +65,20 @@ module.exports = {
                 }
 
                 if (rules.includes('self')) {
-                    const targetUserId = req.params.userId;
+                    if (ownerQueryParam === 'prohibited' && req.query.userId) {
+                        throw new HTTPError(403, 'Forbidden.', [
+                            {
+                                message:
+                                    'You do not have the necessary permissions to access this resource.',
+                                context: {
+                                    key: 'role',
+                                    value: 'User',
+                                },
+                            },
+                        ]);
+                    }
+
+                    const targetUserId = req.params.userId || req.query.userId;
 
                     if (
                         targetUserId &&
@@ -57,19 +87,34 @@ module.exports = {
                         return next();
                     }
 
+                    if (ownerQueryParam === 'required' && !req.query.userId) {
+                        throw new HTTPError(403, 'Forbidden.', [
+                            {
+                                message:
+                                    'You do not have the necessary permissions to access this resource.',
+                                context: {
+                                    key: 'role',
+                                    value: 'User',
+                                },
+                            },
+                        ]);
+                    }
+
                     if (model && param && ownerForeignKey) {
                         const resource = await model.findByPk(
                             parseInt(req.params[param], 10),
                         );
 
                         if (!resource) {
-                            throw new HTTPError(404, 'Resource not found.', {
-                                message: `${model.name} with "${param}" does not exist`,
-                                context: {
-                                    key: param,
-                                    value: req.params[param],
+                            throw new HTTPError(404, 'Resource not found.', [
+                                {
+                                    message: `${model.name} with "${param}" does not exist`,
+                                    context: {
+                                        key: param,
+                                        value: req.params[param],
+                                    },
                                 },
-                            });
+                            ]);
                         }
 
                         if (resource[ownerForeignKey] === loggedInUserId) {
@@ -93,6 +138,11 @@ module.exports = {
             }
         };
     },
+    /**
+     * @param {string} paramName - The name of the path parameter to validate.
+     * @returns {import('express').RequestHandler}
+     * @description Middleware factory to validate a path parameter as a positive integer ID.
+     */
     validatePathParameterId: (paramName) => {
         return (req, res, next) => {
             try {
@@ -108,6 +158,12 @@ module.exports = {
             }
         };
     },
+    /**
+     * @param {import('express').Request} req
+     * @param {import('express').Response} res
+     * @param {import('express').NextFunction} next
+     * @description Middleware to authorize access to program details.
+     */
     authorizeProgramDetails: async (req, res, next) => {
         try {
             if (req.tokenPayload.admin) {

@@ -20,7 +20,7 @@ class ProgramService {
         const { page, limit, sort, type } = data;
         const where = {};
 
-        if (type != 'all') {
+        if (type !== 'all') {
             where.type = type.charAt(0).toUpperCase() + type.slice(1);
         }
 

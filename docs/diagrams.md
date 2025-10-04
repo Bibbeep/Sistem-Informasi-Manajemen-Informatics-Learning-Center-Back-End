@@ -41,6 +41,7 @@ erDiagram
         timestamp completed_at "Nullable"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
+        timestamp deleted_at "Default: null"
     }
     certificates {
         integer id PK "NN"
@@ -58,11 +59,12 @@ erDiagram
         integer id PK "NN"
         integer user_program_enrollment_id FK "NN"
         varchar virtual_account_number "Nullable"
-        numeric amount_idr "Default: 0"
+        integer amount_idr "Default: 0"
         timestamp payment_due_datetime "Nullable"
         payment_status status "Default: 'Unverified'"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
+        timestamp deleted_at "Default: null"
     }
     user_program_payments {
         integer id PK "NN"
@@ -153,6 +155,7 @@ erDiagram
         varchar title "NN"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
+        timestamp deleted_at "Default: null"
     }
     comments {
         integer id PK "NN"
@@ -162,6 +165,7 @@ erDiagram
         text message "NN"
         timestamp created_at "Default: NOW()"
         timestamp updated_at "Default: NOW()"
+        timestamp deleted_at "Default: null"
     }
     comment_likes {
         integer id PK "NN"
