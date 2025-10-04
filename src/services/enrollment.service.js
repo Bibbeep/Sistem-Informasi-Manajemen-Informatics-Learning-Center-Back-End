@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const {
     Enrollment,
     Program,
@@ -160,9 +161,29 @@ class EnrollmentService {
         }
 
         const existingEnrollment = await Enrollment.findOne({
+            include: [
+                {
+                    model: Invoice,
+                    as: 'invoice',
+                },
+            ],
             where: {
                 programId,
                 userId,
+                [Op.or]: [
+                    {
+                        status: 'In Progress',
+                    },
+                    {
+                        status: 'Completed',
+                    },
+                    {
+                        status: 'Unpaid',
+                        '$invoice.status$': {
+                            [Op.eq]: 'Unverified',
+                        },
+                    },
+                ],
             },
         });
 
@@ -184,7 +205,8 @@ class EnrollmentService {
                     {
                         programId,
                         userId,
-                        status: 'Unpaid',
+                        status:
+                            program.priceIdr !== 0 ? 'Unpaid' : 'In Progress',
                         progressPercentage: 0,
                         completedAt: null,
                     },
@@ -203,12 +225,19 @@ class EnrollmentService {
                 const invoice = await Invoice.create(
                     {
                         enrollmentId: enrollment.id,
-                        virtualAccountNumber,
+                        virtualAccountNumber:
+                            program.priceIdr !== 0
+                                ? virtualAccountNumber
+                                : null,
                         amountIdr: program.priceIdr,
-                        paymentDueDatetime: new Date(
-                            Date.now() + 60 * 60 * 1000,
-                        ).toISOString(),
-                        status: 'Unverified',
+                        paymentDueDatetime:
+                            program.priceIdr !== 0
+                                ? new Date(
+                                      Date.now() + 60 * 60 * 1000,
+                                  ).toISOString()
+                                : null,
+                        status:
+                            program.priceIdr !== 0 ? 'Unverified' : 'Verified',
                     },
                     {
                         transaction: t,

@@ -21,7 +21,7 @@ module.exports = (sequelize, DataTypes) => {
                 onDelete: 'CASCADE',
             },
             virtualAccountNumber: {
-                allowNull: false,
+                allowNull: true,
                 type: DataTypes.STRING(18),
                 field: 'virtual_account_number',
             },

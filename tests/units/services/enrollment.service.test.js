@@ -1,7 +1,12 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models');
 const EnrollmentService = require('../../../src/services/enrollment.service');
-const { Enrollment } = require('../../../src/db/models');
+const {
+    Enrollment,
+    sequelize,
+    Program,
+    Invoice,
+} = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
 
 describe('Enrollment Service Unit Tests', () => {
@@ -355,6 +360,104 @@ describe('Enrollment Service Unit Tests', () => {
             expect(Enrollment.findByPk).toHaveBeenCalledWith(
                 mockEnrollmentId,
                 expect.any(Object),
+            );
+        });
+    });
+
+    describe('create Tests', () => {
+        it('should create a new enrollment and return enrollment and invoice data', async () => {
+            const mockData = { programId: 1, userId: 1 };
+            const mockProgram = {
+                id: 1,
+                priceIdr: 50000,
+                title: 'Test Program',
+                type: 'Course',
+            };
+            const mockEnrollment = { id: 1, ...mockData };
+            const mockInvoice = { id: 1, enrollmentId: 1, amountIdr: 50000 };
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Enrollment.findOne.mockResolvedValue(null);
+            sequelize.transaction.mockImplementation(async (callback) => {
+                return callback();
+            });
+            Enrollment.create.mockResolvedValue(mockEnrollment);
+            Invoice.create.mockResolvedValue(mockInvoice);
+
+            const result = await EnrollmentService.create(mockData);
+
+            expect(result.enrollment).toBeDefined();
+            expect(result.invoice).toBeDefined();
+        });
+
+        it('should create a new enrollment and return enrollment and invoice data for a free program', async () => {
+            const mockData = { programId: 1, userId: 1 };
+            const mockProgram = {
+                id: 1,
+                priceIdr: 0,
+                title: 'Free Program',
+                type: 'Seminar',
+            };
+            const mockEnrollment = {
+                id: 1,
+                ...mockData,
+                status: 'In Progress',
+            };
+            const mockInvoice = {
+                id: 1,
+                enrollmentId: 1,
+                amountIdr: 0,
+                status: 'Verified',
+            };
+
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Enrollment.findOne.mockResolvedValue(null);
+            sequelize.transaction.mockImplementation(async (callback) => {
+                return callback();
+            });
+            Enrollment.create.mockResolvedValue(mockEnrollment);
+            Invoice.create.mockResolvedValue(mockInvoice);
+
+            const result = await EnrollmentService.create(mockData);
+
+            expect(Enrollment.create).toHaveBeenCalledWith(
+                {
+                    programId: mockData.programId,
+                    userId: mockData.userId,
+                    status: 'In Progress',
+                    progressPercentage: 0,
+                    completedAt: null,
+                },
+                expect.any(Object),
+            );
+            expect(result.invoice.status).toBe('Verified');
+        });
+
+        it('should throw 404 error when program does not exist', async () => {
+            const mockData = { programId: 999, userId: 1 };
+            Program.findByPk.mockResolvedValue(null);
+
+            await expect(EnrollmentService.create(mockData)).rejects.toThrow(
+                HTTPError,
+            );
+        });
+
+        it('should throw 409 error when enrollment for program already exist', async () => {
+            const mockData = { programId: 1, userId: 1 };
+            const mockProgram = { id: 1 };
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Enrollment.findOne.mockResolvedValue({ id: 1 });
+
+            await expect(EnrollmentService.create(mockData)).rejects.toThrow(
+                new HTTPError(409, 'Resource conflict.', [
+                    {
+                        message:
+                            'Enrollment for "programId" has already been made',
+                        context: {
+                            key: 'programId',
+                            value: mockData.programId,
+                        },
+                    },
+                ]),
             );
         });
     });

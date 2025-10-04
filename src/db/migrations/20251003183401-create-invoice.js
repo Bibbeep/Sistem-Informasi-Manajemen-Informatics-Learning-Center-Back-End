@@ -22,7 +22,7 @@ module.exports = {
                 onDelete: 'CASCADE',
             },
             virtualAccountNumber: {
-                allowNull: false,
+                allowNull: true,
                 type: Sequelize.STRING(18),
                 field: 'virtual_account_number',
             },
