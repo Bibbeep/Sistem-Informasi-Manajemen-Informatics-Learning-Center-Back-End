@@ -24,6 +24,7 @@ const {
     enrollmentQueryParam,
     enrollmentPayload,
     enrollmentUpdate,
+    completedModulePayload,
 } = require('./schemas/enrollment');
 
 // Any auto-increment integer id
@@ -56,4 +57,5 @@ module.exports = {
     validateEnrollmentQuery: validator(enrollmentQueryParam),
     validateEnrollment: validator(enrollmentPayload),
     validateUpdateEnrollmentData: validator(enrollmentUpdate),
+    validateCompleteModule: validator(completedModulePayload),
 };

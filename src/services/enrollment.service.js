@@ -5,6 +5,9 @@ const {
     CompletedModule,
     sequelize,
     Invoice,
+    Course,
+    CourseModule,
+    Sequelize,
 } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 
@@ -365,6 +368,143 @@ class EnrollmentService {
         }
 
         await Enrollment.destroy({ where: { id: enrollmentId } });
+    }
+
+    static async completeModule(data) {
+        const { enrollmentId, courseModuleId } = data;
+
+        const courseModule = await CourseModule.findByPk(courseModuleId);
+
+        if (!courseModule) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "courseModuleId" does not exist',
+                    context: {
+                        key: 'courseModuleId',
+                        value: courseModuleId,
+                    },
+                },
+            ]);
+        }
+
+        const enrollment = await Enrollment.findByPk(enrollmentId, {
+            include: [
+                {
+                    model: Program,
+                    as: 'program',
+                    include: [
+                        {
+                            model: Course,
+                            as: 'course',
+                            required: false,
+                            attributes: {
+                                include: [
+                                    [
+                                        Sequelize.literal(`
+                                            (SELECT COUNT(*) FROM course_modules AS modules WHERE modules.course_id = "program->course".id)
+                                        `),
+                                        'totalModules',
+                                    ],
+                                ],
+                            },
+                        },
+                    ],
+                },
+                {
+                    model: CompletedModule,
+                    as: 'completedModules',
+                    required: false,
+                },
+            ],
+        });
+
+        if (!enrollment) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Enrollment with "enrollmentId" does not exist',
+                    context: {
+                        key: 'enrollmentId',
+                        value: enrollmentId,
+                    },
+                },
+            ]);
+        }
+
+        if (enrollment.program.type !== 'Course') {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: `Cannot add completed module on program with ${enrollment.program.type} type`,
+                    context: {
+                        key: 'type',
+                        value: enrollment.program.type,
+                    },
+                },
+            ]);
+        }
+
+        if (enrollment.status === 'Unpaid') {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: `Cannot add completed module with ${enrollment.status} status`,
+                    context: {
+                        key: 'status',
+                        value: enrollment.status,
+                    },
+                },
+            ]);
+        }
+
+        if (
+            enrollment.completedModules.some((item) => {
+                return item.courseModuleId === courseModuleId;
+            })
+        ) {
+            throw new HTTPError(409, 'Resource conflict.', [
+                {
+                    message: 'Module with "courseModuleId" has been completed',
+                    context: {
+                        key: 'courseModuleId',
+                        value: courseModuleId,
+                    },
+                },
+            ]);
+        }
+
+        const completedModule = await CompletedModule.create({
+            enrollmentId,
+            courseModuleId,
+            completedAt: new Date(Date.now()),
+        });
+
+        const progressPercentage = (
+            ((enrollment.completedModules.length + 1) /
+                Number(enrollment.program.course.toJSON().totalModules)) *
+            100
+        ).toFixed(2);
+
+        await Enrollment.update(
+            {
+                status:
+                    progressPercentage === '100.00'
+                        ? 'Completed'
+                        : 'In Progress',
+                progressPercentage,
+                completedAt:
+                    progressPercentage === '100.00'
+                        ? new Date(Date.now())
+                        : null,
+            },
+            {
+                where: {
+                    id: enrollmentId,
+                },
+            },
+        );
+
+        return {
+            progressPercentage,
+            completedModule,
+        };
     }
 }
 

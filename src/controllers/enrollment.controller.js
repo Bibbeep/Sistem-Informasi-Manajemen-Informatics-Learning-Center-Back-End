@@ -3,6 +3,7 @@ const {
     validateEnrollmentQuery,
     validateEnrollment,
     validateUpdateEnrollmentData,
+    validateCompleteModule,
 } = require('../validations/validator');
 
 module.exports = {
@@ -115,6 +116,34 @@ module.exports = {
                 statusCode: 200,
                 message: 'Successfully deleted an enrollment.',
                 data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    completeModule: async (req, res, next) => {
+        try {
+            const { error, value } = validateCompleteModule(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const { progressPercentage, completedModule } =
+                await EnrollmentService.completeModule({
+                    enrollmentId: parseInt(req.params.enrollmentId, 10),
+                    ...value,
+                });
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully completed a module.',
+                data: {
+                    progressPercentage,
+                    completedModule,
+                },
                 errors: null,
             });
         } catch (err) {

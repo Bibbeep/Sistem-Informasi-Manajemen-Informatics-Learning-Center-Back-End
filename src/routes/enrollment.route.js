@@ -49,5 +49,19 @@ router.delete(
     authorize({ rules: ['admin'] }),
     EnrollmentController.deleteById,
 );
+router.post(
+    '/:enrollmentId/completed-modules',
+    authenticate,
+    validatePathParameterId('enrollmentId'),
+    requireJsonContent,
+    authorize({
+        rules: ['self', 'admin'],
+        model: Enrollment,
+        param: 'enrollmentId',
+        ownerForeignKey: 'userId',
+        ownerQueryParam: 'prohibited',
+    }),
+    EnrollmentController.completeModule,
+);
 
 module.exports = router;

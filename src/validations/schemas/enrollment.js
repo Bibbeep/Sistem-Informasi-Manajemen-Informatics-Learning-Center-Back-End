@@ -34,8 +34,14 @@ const enrollmentUpdate = Joi.object({
     status: Joi.string().valid('Completed').required(),
 }).unknown(false);
 
+// Request body for POST /api/v1/enrollments/:enrollmentId/completed-modules
+const completedModulePayload = Joi.object({
+    courseModuleId: Joi.number().integer().positive(),
+});
+
 module.exports = {
     enrollmentQueryParam,
     enrollmentPayload,
     enrollmentUpdate,
+    completedModulePayload,
 };
