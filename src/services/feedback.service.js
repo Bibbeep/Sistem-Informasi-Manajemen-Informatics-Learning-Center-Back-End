@@ -1,5 +1,9 @@
 const { Feedback, FeedbackResponse } = require('../db/models');
 const HTTPError = require('../utils/httpError');
+const mailer = require('../utils/mailer');
+const handlebars = require('handlebars');
+const fs = require('fs');
+const path = require('path');
 
 class FeedbackService {
     static async getMany(data) {
@@ -100,6 +104,30 @@ class FeedbackService {
                 },
             ]);
         }
+
+        const templateSource = fs.readFileSync(
+            path.join(
+                __dirname,
+                '..',
+                'templates',
+                'emails',
+                'feedback-response.hbs',
+            ),
+            'utf8',
+        );
+
+        const template = handlebars.compile(templateSource);
+        const html = template({
+            fullName: isFeedbackExist.fullName,
+            responseMessage: message,
+        });
+
+        await mailer(
+            isFeedbackExist.email,
+            'Your Feedback has a new Response - Informatics Learning Center',
+            `Hi ${isFeedbackExist.fullName},\n\nAn admin has responded to your feedback:\n\n${message}\n\nThank you for your contribution!`,
+            html,
+        );
 
         const feedbackResponse = await FeedbackResponse.create({
             feedbackId,

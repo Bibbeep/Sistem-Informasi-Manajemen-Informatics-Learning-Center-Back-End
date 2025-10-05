@@ -1,8 +1,10 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models');
+jest.mock('../../../src/utils/mailer');
 const FeedbackService = require('../../../src/services/feedback.service');
 const { Feedback, FeedbackResponse } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
+const mailer = require('../../../src/utils/mailer');
 
 describe('Feedback Service Unit Tests', () => {
     afterEach(() => {
@@ -412,6 +414,7 @@ describe('Feedback Service Unit Tests', () => {
 
             Feedback.findByPk.mockResolvedValue(true);
             FeedbackResponse.create.mockResolvedValue(mockReturnData);
+            mailer.mockReturnValue();
 
             const returnValue = await FeedbackService.createResponse(mockData);
 
