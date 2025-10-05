@@ -382,6 +382,7 @@ describe('Feedback Management Integration Tests', () => {
                             message: expect.any(String),
                             updatedAt: expect.any(String),
                             createdAt: expect.any(String),
+                            deletedAt: null,
                         },
                     },
                     errors: null,
