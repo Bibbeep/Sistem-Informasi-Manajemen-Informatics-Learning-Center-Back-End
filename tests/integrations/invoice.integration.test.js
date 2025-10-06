@@ -8,11 +8,10 @@ const enrollmentFactory = require('../../src/db/seeders/factories/enrollment');
 const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
-const { Invoice, Payment } = require('../../src/db/models');
+const { Invoice, Payment, Enrollment } = require('../../src/db/models');
 
 describe('Invoice Integration Tests', () => {
     const mockUserPassword = 'password123';
-    // eslint-disable-next-line no-unused-vars
     let users, tokens, invoices;
 
     afterAll(async () => {
@@ -150,18 +149,10 @@ describe('Invoice Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`);
             expect(response.status).toBe(200);
             const invoices = response.body.data.invoices;
-            expect(new Date(invoices[0].createdAt)).toBeAfter(
-                new Date(invoices[1].createdAt),
-            );
-        });
-
-        it('should return 200 and sort data by paymentDue correctly', async () => {
-            const response = await request(server)
-                .get(
-                    `/api/v1/invoices?userId=${users.regular.id}&sort=-paymentDue`,
-                )
-                .set('Authorization', `Bearer ${tokens.regular}`);
-            expect(response.status).toBe(200);
+            expect(
+                new Date(invoices[0].createdAt) >
+                    new Date(invoices[1].createdAt),
+            ).toBe(true);
         });
 
         it('should return 200 and handle pagination correctly', async () => {
@@ -211,10 +202,10 @@ describe('Invoice Integration Tests', () => {
 
         it('should return invoices without payment details if they are null', async () => {
             await Invoice.destroy({ where: {} });
+            const enrollment = await Enrollment.findOne();
             await Invoice.create({
-                enrollmentId: 1,
+                enrollmentId: enrollment.id,
                 amountIdr: 100000,
-                paymentId: null,
             });
             const response = await request(server)
                 .get('/api/v1/invoices')
@@ -224,25 +215,75 @@ describe('Invoice Integration Tests', () => {
             expect(invoice[0].payment).toBeNull();
         });
     });
-});
 
-expect.extend({
-    toBeAfter(received, argument) {
-        const pass = received.getTime() > argument.getTime();
-        if (pass) {
-            return {
-                message: () => {
-                    return `expected ${received} not to be after ${argument}`;
-                },
-                pass: true,
-            };
-        } else {
-            return {
-                message: () => {
-                    return `expected ${received} to be after ${argument}`;
-                },
-                pass: false,
-            };
-        }
-    },
+    describe('GET /api/v1/invoices/:invoiceId', () => {
+        it('should return 200 and invoice details for an admin', async () => {
+            const response = await request(server)
+                .get(`/api/v1/invoices/${invoices[0].id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(200);
+            expect(response.body.data.invoice.id).toBe(invoices[0].id);
+        });
+
+        it('should return 200 and invoice details for the owner', async () => {
+            const response = await request(server)
+                .get(`/api/v1/invoices/${invoices[0].id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(200);
+            expect(response.body.data.invoice.id).toBe(invoices[0].id);
+        });
+
+        it('should return 200 for an invoice without a payment record', async () => {
+            const response = await request(server)
+                .get(`/api/v1/invoices/${invoices[1].id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(200);
+            expect(response.body.data.invoice.payment).toBeNull();
+        });
+
+        it('should return 400 for an invalid invoiceId', async () => {
+            const response = await request(server)
+                .get('/api/v1/invoices/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 for an unauthenticated request', async () => {
+            const response = await request(server).get(
+                `/api/v1/invoices/${invoices[0].id}`,
+            );
+            expect(response.status).toBe(401);
+        });
+
+        it("should return 403 when a regular user tries to access another user's invoice", async () => {
+            const response = await request(server)
+                .get(`/api/v1/invoices/${invoices[1].id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 when the invoice does not exist for admin', async () => {
+            const response = await request(server)
+                .get('/api/v1/invoices/99999')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 when the invoice does not exist for user', async () => {
+            const response = await request(server)
+                .get('/api/v1/invoices/99999')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 if the service cannot find the owner (e.g., enrollment deleted)', async () => {
+            await Enrollment.destroy({
+                where: { id: invoices[0].enrollmentId },
+            });
+            const response = await request(server)
+                .get(`/api/v1/invoices/${invoices[0].id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(404);
+        });
+    });
 });

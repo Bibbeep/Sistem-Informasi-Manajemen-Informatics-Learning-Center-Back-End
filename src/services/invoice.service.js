@@ -14,7 +14,7 @@ class InvoiceService {
             ],
         });
 
-        return invoice ? invoice.enrollment.userId : null;
+        return invoice ? invoice.enrollment?.userId : null;
     }
 
     static async getMany(data) {
