@@ -302,4 +302,43 @@ describe('Invoice Service Unit Tests', () => {
             expect(result).toBe(null);
         });
     });
+
+    describe('deleteOne', () => {
+        it('should delete an invoice', async () => {
+            const mockInvoiceId = 1;
+            const mockInvoice = {
+                id: 1,
+            };
+            Invoice.findByPk.mockResolvedValue(mockInvoice);
+            Invoice.destroy.mockResolvedValue();
+
+            await InvoiceService.deleteOne(mockInvoiceId);
+
+            expect(Invoice.findByPk).toHaveBeenCalledWith(mockInvoiceId);
+            expect(Invoice.destroy).toHaveBeenCalledWith(
+                expect.objectContaining({ where: { id: mockInvoiceId } }),
+            );
+        });
+
+        it('should throw 404 error if invoice does not exist', async () => {
+            const mockInvoiceId = 404;
+            Invoice.findByPk.mockResolvedValue(null);
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Invoice with "invoiceId" does not exist',
+                    context: {
+                        key: 'invoiceId',
+                        value: mockInvoiceId,
+                    },
+                },
+            ]);
+
+            await expect(
+                InvoiceService.deleteOne(mockInvoiceId),
+            ).rejects.toThrow(mockError);
+
+            expect(Invoice.findByPk).toHaveBeenCalledWith(mockInvoiceId);
+            expect(Invoice.destroy).not.toHaveBeenCalled();
+        });
+    });
 });
