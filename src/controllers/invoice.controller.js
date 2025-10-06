@@ -61,4 +61,23 @@ module.exports = {
             next(err);
         }
     },
+    createPayment: async (req, res, next) => {
+        try {
+            const payment = await InvoiceService.createPayment(
+                parseInt(req.params.invoiceId, 10),
+            );
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a payment.',
+                data: {
+                    payment,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

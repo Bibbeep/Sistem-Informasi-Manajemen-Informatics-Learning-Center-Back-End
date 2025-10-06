@@ -5,6 +5,7 @@ const {
     authorize,
     validatePathParameterId,
 } = require('../middlewares/auth.middleware');
+const { requireJsonContent } = require('../middlewares/contentType.middleware');
 const InvoiceService = require('../services/invoice.service');
 
 router.get(
@@ -31,6 +32,18 @@ router.delete(
     validatePathParameterId('invoiceId'),
     authorize({ rules: ['admin'] }),
     InvoiceController.deleteById,
+);
+router.post(
+    '/:invoiceId/payments',
+    authenticate,
+    validatePathParameterId('invoiceId'),
+    authorize({
+        rules: ['self', 'admin'],
+        ownerService: InvoiceService,
+        param: 'invoiceId',
+        ownerQueryParam: 'prohibited',
+    }),
+    InvoiceController.createPayment,
 );
 
 module.exports = router;

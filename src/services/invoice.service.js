@@ -1,4 +1,10 @@
-const { Invoice, Enrollment, Program, Payment } = require('../db/models');
+const {
+    Invoice,
+    Enrollment,
+    Program,
+    Payment,
+    sequelize,
+} = require('../db/models');
 const HTTPError = require('../utils/httpError');
 
 class InvoiceService {
@@ -193,6 +199,86 @@ class InvoiceService {
         }
 
         await Invoice.destroy({ where: { id: invoiceId } });
+    }
+
+    static async createPayment(invoiceId) {
+        const isInvoiceExist = await Invoice.findByPk(invoiceId);
+
+        if (!isInvoiceExist) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Invoice with "invoiceId" does not exist',
+                    context: {
+                        key: 'invoiceId',
+                        value: invoiceId,
+                    },
+                },
+            ]);
+        }
+
+        if (isInvoiceExist.status === 'Expired') {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: 'Invoice with "invoiceId" is expired',
+                    context: {
+                        key: 'invoiceId',
+                        value: invoiceId,
+                    },
+                },
+            ]);
+        }
+
+        if (isInvoiceExist.status === 'Verified') {
+            throw new HTTPError(409, 'Resource conflict.', [
+                {
+                    message: 'Payment has already been made for this invoice',
+                    context: {
+                        key: 'invoiceId',
+                        value: invoiceId,
+                    },
+                },
+            ]);
+        }
+
+        const payment = await sequelize.transaction(async (t) => {
+            const payment = await Payment.create(
+                {
+                    invoiceId,
+                    amountPaidIdr: isInvoiceExist.amountIdr,
+                },
+                {
+                    transaction: t,
+                },
+            );
+
+            await Invoice.update(
+                {
+                    status: 'Verified',
+                },
+                {
+                    where: {
+                        id: invoiceId,
+                    },
+                    transaction: t,
+                },
+            );
+
+            await Enrollment.update(
+                {
+                    status: 'In Progress',
+                },
+                {
+                    where: {
+                        id: isInvoiceExist.enrollmentId,
+                    },
+                    transaction: t,
+                },
+            );
+
+            return payment;
+        });
+
+        return payment;
     }
 }
 
