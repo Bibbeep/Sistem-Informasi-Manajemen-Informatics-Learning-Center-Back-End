@@ -71,7 +71,10 @@ describe('Invoice Service Unit Tests', () => {
                 type: 'course',
                 userId: 1,
             };
-            Invoice.findAndCountAll.mockResolvedValue({ count: 0, rows: [] });
+            Invoice.findAndCountAll.mockResolvedValue({
+                count: 100,
+                rows: new Array(10),
+            });
 
             await InvoiceService.getMany(data);
 
@@ -153,6 +156,27 @@ describe('Invoice Service Unit Tests', () => {
             expect(result.invoices.length).toBe(0);
             expect(result.pagination.currentPage).toBe(100);
             expect(result.pagination.prevPage).toBe(null);
+        });
+
+        it('should handle last page number', async () => {
+            const data = {
+                page: 2,
+                limit: 10,
+                sort: 'id',
+                status: 'all',
+                type: 'all',
+            };
+            Invoice.findAndCountAll.mockResolvedValue({
+                count: 15,
+                rows: new Array(10),
+            });
+
+            const result = await InvoiceService.getMany(data);
+
+            expect(result.invoices.length).toBe(10);
+            expect(result.pagination.currentPage).toBe(2);
+            expect(result.pagination.prevPage).toBe(1);
+            expect(result.pagination.nextPage).toBe(null);
         });
 
         it('should handle invoices with null payment or enrollment', async () => {
