@@ -275,4 +275,31 @@ describe('Invoice Service Unit Tests', () => {
             );
         });
     });
+
+    describe('getOwnerId', () => {
+        it('should return userId', async () => {
+            const mockInvoiceId = 1;
+            const mockInvoice = {
+                id: 1,
+                enrollment: {
+                    id: 1,
+                    userId: 1,
+                },
+            };
+            Invoice.findByPk.mockResolvedValue(mockInvoice);
+
+            const result = await InvoiceService.getOwnerId(mockInvoiceId);
+
+            expect(result).toBe(mockInvoice.enrollment.userId);
+        });
+
+        it('should return null when invoice does not exist', async () => {
+            const mockInvoiceId = 404;
+            Invoice.findByPk.mockResolvedValue(null);
+
+            const result = await InvoiceService.getOwnerId(mockInvoiceId);
+
+            expect(result).toBe(null);
+        });
+    });
 });
