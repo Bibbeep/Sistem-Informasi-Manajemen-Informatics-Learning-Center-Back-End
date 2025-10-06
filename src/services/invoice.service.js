@@ -1,0 +1,98 @@
+const { Invoice, Enrollment, Program, Payment } = require('../db/models');
+
+class InvoiceService {
+    static async getMany(data) {
+        const { page, limit, sort, status, type } = data;
+        let where = {};
+
+        if (status !== 'all') {
+            where.status = status.charAt(0).toUpperCase() + status.slice(1);
+        }
+
+        let enrollmentWhere = {};
+        if (data.userId) {
+            enrollmentWhere.userId = data.userId;
+        }
+
+        let programWhere = {};
+        if (type !== 'all') {
+            programWhere.type = type.charAt(0).toUpperCase() + type.slice(1);
+        }
+
+        const { count, rows } = await Invoice.findAndCountAll({
+            where,
+            include: [
+                {
+                    model: Enrollment,
+                    as: 'enrollment',
+                    required: false,
+                    where: enrollmentWhere,
+                    include: [
+                        {
+                            model: Program,
+                            as: 'program',
+                            required: false,
+                            where: {
+                                type: programWhere,
+                            },
+                        },
+                    ],
+                },
+                {
+                    model: Payment,
+                    as: 'payment',
+                    required: false,
+                },
+            ],
+            limit,
+            offset: (page - 1) * limit,
+            order: sort.startsWith('-')
+                ? [[sort.replace('-', ''), 'DESC']]
+                : [[sort, 'ASC']],
+        });
+
+        if (rows.length) {
+            rows.forEach((invoice, index) => {
+                rows[index] = {
+                    id: invoice.id,
+                    userId: invoice.enrollment?.userId,
+                    programId: invoice.enrollment?.programId,
+                    programTitle: invoice.enrollment?.program?.title,
+                    programType: invoice.enrollment?.program?.type,
+                    programThumbnailUrl:
+                        invoice.enrollment?.program?.thumbnailUrl,
+                    virtualAccountNumber: invoice.virtualAccountNumber,
+                    amountIdr: invoice.amountIdr,
+                    paymentDueDatetime: invoice.paymentDueDatetime,
+                    status: invoice.status,
+                    payment: {
+                        id: invoice.payment?.id,
+                        amountPaidIdr: invoice.payment?.amountPaidIdr,
+                        createdAt: invoice.payment?.createdAt,
+                        updatedAt: invoice.payment?.updatedAt,
+                    },
+                    createdAt: invoice.createdAt,
+                    updatedAt: invoice.updatedAt,
+                    deletedAt: invoice.deletedAt,
+                };
+            });
+        }
+
+        const totalPages = Math.ceil(count / limit);
+
+        return {
+            pagination: {
+                currentRecords: rows.length,
+                totalRecords: count,
+                currentPage: page,
+                totalPages,
+                nextPage: page < totalPages ? page + 1 : null,
+                prevPage:
+                    page > totalPages + 1 ? null : page > 1 ? page - 1 : null,
+            },
+            invoices: rows,
+        };
+    }
+}
+
+module.exports = InvoiceService;

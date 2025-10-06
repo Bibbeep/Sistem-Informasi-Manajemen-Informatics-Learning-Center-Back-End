@@ -11,7 +11,7 @@ const { Enrollment } = require('../db/models');
 router.get(
     '/',
     authenticate,
-    authorize({ rules: ['self', 'admin'], requireUserIdQuery: true }),
+    authorize({ rules: ['self', 'admin'], ownerQueryParam: 'required' }),
     EnrollmentController.getAll,
 );
 router.get(

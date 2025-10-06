@@ -13,12 +13,6 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 type: DataTypes.INTEGER,
                 field: 'user_program_enrollment_id',
-                references: {
-                    model: 'user_program_enrollments',
-                    key: 'id',
-                },
-                onUpdate: 'CASCADE',
-                onDelete: 'CASCADE',
             },
             virtualAccountNumber: {
                 allowNull: true,
@@ -67,6 +61,11 @@ module.exports = (sequelize, DataTypes) => {
         Invoice.belongsTo(models.Enrollment, {
             foreignKey: 'enrollmentId',
             as: 'enrollment',
+        });
+
+        Invoice.hasOne(models.Payment, {
+            foreignKey: 'invoiceId',
+            as: 'payment',
         });
     };
 
