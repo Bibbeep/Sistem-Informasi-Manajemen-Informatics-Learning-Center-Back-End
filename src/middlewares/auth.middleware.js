@@ -44,16 +44,23 @@ module.exports = {
     /**
      * @param {Object} options
      * @param {Array<'admin'|'self'>} options.rules - The authorization rules to apply.
-     * @param {import('sequelize').Model} [options.model] - The Sequelize model to check for ownership.
+     * @param {import('sequelize').Model} [options.model] - The Sequelize model to check for ownership directly.
+     * @param {Object} [options.ownerService] - A service with a `getOwnerId` method for more complex ownership checks.
      * @param {string} [options.param] - The request parameter name containing the resource ID.
      * @param {string} [options.ownerForeignKey] - The foreign key in the model that links to the user ID.
-     * @param {('required'|'prohibited')} [options.ownerQueryParam] - Whether to oblige a userId in the query parameter to present for non-admin users or prohibit it.
+     * @param {('required'|'prohibited')} [options.ownerQueryParam] - Whether to require or prohibit a `userId` in the query parameter for non-admin users.
      * @returns {import('express').RequestHandler}
      * @description Middleware factory to authorize user access based on rules.
      */
     authorize: (options) => {
-        const { rules, model, param, ownerForeignKey, ownerQueryParam } =
-            options;
+        const {
+            rules,
+            model,
+            param,
+            ownerForeignKey,
+            ownerQueryParam,
+            ownerService,
+        } = options;
 
         return async (req, res, next) => {
             try {
@@ -118,6 +125,27 @@ module.exports = {
                         }
 
                         if (resource[ownerForeignKey] === loggedInUserId) {
+                            return next();
+                        }
+                    }
+
+                    if (ownerService && param) {
+                        const resourceId = req.params[param];
+                        const ownerId = await ownerService.getOwnerId(
+                            parseInt(resourceId, 10),
+                        );
+
+                        if (!ownerId) {
+                            throw new HTTPError(404, 'Resource not found.', {
+                                message: `${ownerService.name} with "${param}" does not exist`,
+                                context: {
+                                    key: param,
+                                    value: req.params[param],
+                                },
+                            });
+                        }
+
+                        if (ownerId === loggedInUserId) {
                             return next();
                         }
                     }

@@ -27,4 +27,23 @@ module.exports = {
             next(err);
         }
     },
+    getById: async (req, res, next) => {
+        try {
+            const invoice = await InvoiceService.getOne(
+                parseInt(req.params.invoiceId, 10),
+            );
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved an invoice details.',
+                data: {
+                    invoice,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
