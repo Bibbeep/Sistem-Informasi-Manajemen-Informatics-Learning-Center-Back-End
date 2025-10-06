@@ -25,5 +25,12 @@ router.get(
     }),
     InvoiceController.getById,
 );
+router.delete(
+    '/:invoiceId',
+    authenticate,
+    validatePathParameterId('invoiceId'),
+    authorize({ rules: ['admin'] }),
+    InvoiceController.deleteById,
+);
 
 module.exports = router;

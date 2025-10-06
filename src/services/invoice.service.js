@@ -176,6 +176,24 @@ class InvoiceService {
             deletedAt: invoice.deletedAt,
         };
     }
+
+    static async deleteOne(invoiceId) {
+        const isInvoiceExist = await Invoice.findByPk(invoiceId);
+
+        if (!isInvoiceExist) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Invoice with "invoiceId" does not exist',
+                    context: {
+                        key: 'invoiceId',
+                        value: invoiceId,
+                    },
+                },
+            ]);
+        }
+
+        await Invoice.destroy({ where: { id: invoiceId } });
+    }
 }
 
 module.exports = InvoiceService;
