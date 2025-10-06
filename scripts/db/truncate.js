@@ -3,6 +3,9 @@ const models = require('../../src/db/models');
 const { redisClient } = require('../../src/configs/redis');
 
 module.exports = async function truncate() {
+    if (!redisClient.isReady) {
+        await redisClient.connect();
+    }
     await redisClient.flushDb();
 
     return await Promise.all(
