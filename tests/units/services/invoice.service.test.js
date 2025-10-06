@@ -1,7 +1,13 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models');
 
-const { Invoice, Enrollment, Program } = require('../../../src/db/models');
+const {
+    Invoice,
+    Enrollment,
+    Program,
+    sequelize,
+    Payment,
+} = require('../../../src/db/models');
 const InvoiceService = require('../../../src/services/invoice.service');
 const HTTPError = require('../../../src/utils/httpError');
 
@@ -339,6 +345,98 @@ describe('Invoice Service Unit Tests', () => {
 
             expect(Invoice.findByPk).toHaveBeenCalledWith(mockInvoiceId);
             expect(Invoice.destroy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('createPayment', () => {
+        it('should create a payment', async () => {
+            const mockInvoiceId = 1;
+            const mockInvoice = {
+                id: 1,
+                status: 'Unverified',
+                amountIdr: 1000_000,
+                enrollmentId: 1,
+            };
+            const mockPayment = {
+                id: 1,
+            };
+            Invoice.findByPk.mockResolvedValue(mockInvoice);
+            Payment.create.mockResolvedValue(mockPayment);
+            Invoice.update.mockResolvedValue();
+            Enrollment.update.mockResolvedValue();
+            sequelize.transaction.mockImplementation(async (callback) => {
+                return callback();
+            });
+
+            const result = await InvoiceService.createPayment(mockInvoiceId);
+
+            expect(result).toEqual(expect.objectContaining(mockPayment));
+        });
+
+        it('should throw 404 error when invoice does not exist', async () => {
+            const mockInvoiceId = 404;
+            Invoice.findByPk.mockResolvedValue(null);
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Invoice with "invoiceId" does not exist',
+                    context: {
+                        key: 'invoiceId',
+                        value: mockInvoiceId,
+                    },
+                },
+            ]);
+
+            await expect(
+                InvoiceService.createPayment(mockInvoiceId),
+            ).rejects.toThrow(mockError);
+        });
+
+        it('should throw 400 error when invoice is expired', async () => {
+            const mockInvoiceId = 1;
+            const mockInvoice = {
+                id: 1,
+                status: 'Expired',
+                amountIdr: 1000_000,
+                enrollmentId: 1,
+            };
+            const mockError = new HTTPError(400, 'Validation error.', [
+                {
+                    message: 'Invoice with "invoiceId" is expired',
+                    context: {
+                        key: 'invoiceId',
+                        value: mockInvoiceId,
+                    },
+                },
+            ]);
+            Invoice.findByPk.mockResolvedValue(mockInvoice);
+
+            await expect(
+                InvoiceService.createPayment(mockInvoiceId),
+            ).rejects.toThrow(mockError);
+        });
+
+        it('should throw 409 error when payment is already made', async () => {
+            const mockInvoiceId = 1;
+            const mockInvoice = {
+                id: 1,
+                status: 'Verified',
+                amountIdr: 1000_000,
+                enrollmentId: 1,
+            };
+            const mockError = new HTTPError(409, 'Resource conflict.', [
+                {
+                    message: 'Payment has already been made for this invoice',
+                    context: {
+                        key: 'invoiceId',
+                        value: mockInvoiceId,
+                    },
+                },
+            ]);
+            Invoice.findByPk.mockResolvedValue(mockInvoice);
+
+            await expect(
+                InvoiceService.createPayment(mockInvoiceId),
+            ).rejects.toThrow(mockError);
         });
     });
 });

@@ -5,7 +5,6 @@ const {
     authorize,
     validatePathParameterId,
 } = require('../middlewares/auth.middleware');
-const { requireJsonContent } = require('../middlewares/contentType.middleware');
 const InvoiceService = require('../services/invoice.service');
 
 router.get(
