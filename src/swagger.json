@@ -4462,6 +4462,115 @@
                     }
                 }
             }
+        },
+        "/api/v1/invoices/{invoiceId}": {
+            "get": {
+                "summary": "Retrieves the details of a specific invoice",
+                "tags": ["Invoice Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "invoiceId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the invoice to retrieve."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved an invoice details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceDetailsSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid invoice ID format.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access. User is not an admin or the owner of the invoice.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Invoice with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -6507,6 +6616,61 @@
                         "totalPages": 1,
                         "nextPage": null,
                         "prevPage": null
+                    },
+                    "errors": null
+                }
+            },
+            "InvoiceDetailsSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "invoice": {
+                                "$ref": "#/components/schemas/Invoice"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved an invoice details.",
+                    "data": {
+                        "invoice": {
+                            "id": 1,
+                            "userId": 1,
+                            "programId": 1,
+                            "programTitle": "Introduction to Backend Development",
+                            "programType": "Course",
+                            "programThumbnailUrl": "https://example.com/thumb.jpg",
+                            "virtualAccountNumber": "1234567890123456",
+                            "amountIdr": 150000,
+                            "paymentDueDatetime": "2025-10-07T12:00:00.000Z",
+                            "status": "Verified",
+                            "payment": {
+                                "id": 1,
+                                "amountPaidIdr": 150000,
+                                "createdAt": "2025-10-06T11:30:00.000Z",
+                                "updatedAt": "2025-10-06T11:30:00.000Z"
+                            },
+                            "createdAt": "2025-10-06T10:00:00.000Z",
+                            "updatedAt": "2025-10-06T11:30:00.000Z",
+                            "deletedAt": null
+                        }
                     },
                     "errors": null
                 }
