@@ -344,4 +344,62 @@ describe('Invoice Integration Tests', () => {
             expect(response.statusCode).toBe(404);
         });
     });
+
+    describe('POST /api/v1/invoices/:invoiceId/payments', () => {
+        it('should return 201 and create payment', async () => {
+            const response = await request(server)
+                .post('/api/v1/invoices/2/payments')
+                .set('Authorization', `Bearer ${tokens.another}`);
+
+            expect(response.statusCode).toBe(201);
+        });
+
+        it('should return 400 when invalid invoiceId', async () => {
+            const response = await request(server)
+                .post('/api/v1/invoices/abc/payments')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it('should return 400 when invoice is expired', async () => {
+            const response = await request(server)
+                .post('/api/v1/invoices/3/payments')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server)
+                .post('/api/v1/invoices/1/payments')
+                .set('Authorization', `Bearer abcde`);
+
+            expect(response.statusCode).toBe(401);
+        });
+
+        it('should return 403 when forbidden access', async () => {
+            const response = await request(server)
+                .post('/api/v1/invoices/2/payments')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.statusCode).toBe(403);
+        });
+
+        it('should return 404 when invoice does not exist', async () => {
+            const response = await request(server)
+                .post('/api/v1/invoices/404/payments')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.statusCode).toBe(404);
+        });
+
+        it('should return 409 when payment is already made', async () => {
+            const response = await request(server)
+                .post('/api/v1/invoices/1/payments')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.statusCode).toBe(409);
+        });
+    });
 });
