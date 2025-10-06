@@ -4301,6 +4301,167 @@
                     }
                 }
             }
+        },
+        "/api/v1/invoices": {
+            "get": {
+                "summary": "Retrieves a list of all invoices",
+                "tags": ["Invoice Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "description": "The page number to retrieve."
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "description": "The number of invoices per page."
+                    },
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "-id",
+                                "paymentDue",
+                                "-paymentDue",
+                                "createdAt",
+                                "-createdAt",
+                                "updatedAt",
+                                "-updatedAt"
+                            ],
+                            "default": "id"
+                        },
+                        "description": "The field to sort by. Use a '-' prefix for descending order."
+                    },
+                    {
+                        "in": "query",
+                        "name": "userId",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter invoices by user ID. Required for non-admin users."
+                    },
+                    {
+                        "in": "query",
+                        "name": "status",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "verified",
+                                "unverified",
+                                "expired",
+                                "all"
+                            ],
+                            "default": "all"
+                        },
+                        "description": "Filter invoices by their payment status."
+                    },
+                    {
+                        "in": "query",
+                        "name": "type",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "course",
+                                "seminar",
+                                "workshop",
+                                "competition",
+                                "all"
+                            ],
+                            "default": "all"
+                        },
+                        "description": "Filter invoices by the type of program."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the list of invoices.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InvoiceListSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access. Non-admin users must provide their own `userId` and cannot view others' invoices.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -4598,30 +4759,14 @@
                     }
                 }
             },
-            "Invoice": {
+            "Payment": {
                 "type": "object",
                 "properties": {
                     "id": {
                         "type": "integer"
                     },
-                    "enrollmentId": {
+                    "amountPaidIdr": {
                         "type": "integer"
-                    },
-                    "virtualAccountNumber": {
-                        "type": "string",
-                        "nullable": true
-                    },
-                    "amountIdr": {
-                        "type": "integer"
-                    },
-                    "paymentDueDatetime": {
-                        "type": "string",
-                        "format": "date-time",
-                        "nullable": true
-                    },
-                    "status": {
-                        "type": "string",
-                        "enum": ["Unverified", "Verified", "Expired"]
                     },
                     "createdAt": {
                         "type": "string",
@@ -4630,6 +4775,74 @@
                     "updatedAt": {
                         "type": "string",
                         "format": "date-time"
+                    }
+                }
+            },
+            "Invoice": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "description": "The unique identifier for the invoice."
+                    },
+                    "userId": {
+                        "type": "integer",
+                        "description": "The ID of the user associated with the invoice."
+                    },
+                    "programId": {
+                        "type": "integer",
+                        "description": "The ID of the program this invoice is for."
+                    },
+                    "programTitle": {
+                        "type": "string",
+                        "description": "The title of the program."
+                    },
+                    "programType": {
+                        "type": "string",
+                        "description": "The type of the program (e.g., Course, Workshop)."
+                    },
+                    "programThumbnailUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true,
+                        "description": "URL of the program's thumbnail image."
+                    },
+                    "virtualAccountNumber": {
+                        "type": "string",
+                        "nullable": true,
+                        "description": "The virtual account number for payment."
+                    },
+                    "amountIdr": {
+                        "type": "integer",
+                        "description": "The total amount due in IDR."
+                    },
+                    "paymentDueDatetime": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true,
+                        "description": "The date and time when the payment is due."
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": ["Verified", "Unverified", "Expired"],
+                        "description": "The current status of the invoice."
+                    },
+                    "payment": {
+                        "$ref": "#/components/schemas/Payment",
+                        "nullable": true
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "deletedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
                     }
                 }
             },
@@ -6224,6 +6437,77 @@
                     "statusCode": 200,
                     "message": "Successfully deleted an enrollment.",
                     "data": null,
+                    "errors": null
+                }
+            },
+            "InvoiceListSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "invoices": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        }
+                    },
+                    "pagination": {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved all invoices.",
+                    "data": {
+                        "invoices": [
+                            {
+                                "id": 1,
+                                "userId": 1,
+                                "programId": 1,
+                                "programTitle": "Introduction to Backend Development",
+                                "programType": "Course",
+                                "programThumbnailUrl": "https://example.com/thumb.jpg",
+                                "virtualAccountNumber": "1234567890123456",
+                                "amountIdr": 150000,
+                                "paymentDueDatetime": "2025-10-07T12:00:00.000Z",
+                                "status": "Verified",
+                                "payment": {
+                                    "id": 1,
+                                    "amountPaidIdr": 150000,
+                                    "createdAt": "2025-10-06T11:30:00.000Z",
+                                    "updatedAt": "2025-10-06T11:30:00.000Z"
+                                },
+                                "createdAt": "2025-10-06T10:00:00.000Z",
+                                "updatedAt": "2025-10-06T11:30:00.000Z",
+                                "deletedAt": null
+                            }
+                        ]
+                    },
+                    "pagination": {
+                        "currentRecords": 1,
+                        "totalRecords": 1,
+                        "currentPage": 1,
+                        "totalPages": 1,
+                        "nextPage": null,
+                        "prevPage": null
+                    },
                     "errors": null
                 }
             }
