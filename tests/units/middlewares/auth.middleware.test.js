@@ -371,6 +371,76 @@ describe('Authentication Middleware Unit Tests', () => {
 
             expect(next).toHaveBeenCalledWith(mockError);
         });
+
+        it('should call next without error when complex ownership check', async () => {
+            req.params = { invoiceId: '1' };
+            req.tokenPayload = { sub: 1, admin: false };
+            const mockOptions = {
+                rules: ['self', 'admin'],
+                ownerService: {
+                    name: 'Invoice',
+                    getOwnerId: jest.fn().mockResolvedValue(1),
+                },
+                param: 'invoiceId',
+                ownerQueryParam: 'prohibited',
+            };
+
+            await authorize(mockOptions)(req, res, next);
+            expect(next).toHaveBeenCalledWith();
+        });
+
+        it('should call next with error when complex ownership check failed', async () => {
+            req.params = { invoiceId: '404' };
+            req.tokenPayload = { sub: 1, admin: false };
+            const mockOptions = {
+                rules: ['self', 'admin'],
+                ownerService: {
+                    name: 'Invoice',
+                    getOwnerId: jest.fn().mockResolvedValue(null),
+                },
+                param: 'invoiceId',
+                ownerQueryParam: 'prohibited',
+            };
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: `Invoice with "invoiceId" does not exist`,
+                    context: {
+                        key: 'invoiceId',
+                        value: '404',
+                    },
+                },
+            ]);
+
+            await authorize(mockOptions)(req, res, next);
+            expect(next).toHaveBeenCalledWith(mockError);
+        });
+
+        it('should call next with error when complex ownership return different owner', async () => {
+            req.params = { invoiceId: '1' };
+            req.tokenPayload = { sub: 1, admin: false };
+            const mockOptions = {
+                rules: ['self', 'admin'],
+                ownerService: {
+                    name: 'Invoice',
+                    getOwnerId: jest.fn().mockResolvedValue(2),
+                },
+                param: 'invoiceId',
+                ownerQueryParam: 'prohibited',
+            };
+            const mockError = new HTTPError(403, 'Forbidden.', [
+                {
+                    message:
+                        'You do not have the necessary permissions to access this resource.',
+                    context: {
+                        key: 'role',
+                        value: 'User',
+                    },
+                },
+            ]);
+
+            await authorize(mockOptions)(req, res, next);
+            expect(next).toHaveBeenCalledWith(mockError);
+        });
     });
 
     describe('validatePathParameterId Tests', () => {

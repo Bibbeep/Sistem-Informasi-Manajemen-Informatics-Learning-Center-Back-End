@@ -6,12 +6,14 @@ const UserRoutes = require('./user.route');
 const FeedbackRoutes = require('./feedback.route');
 const ProgramRoutes = require('./program.route');
 const EnrollmentRoutes = require('./enrollment.route');
+const InvoiceRoutes = require('./invoice.route');
 
 router.use('/auth', AuthRoutes);
 router.use('/users', UserRoutes);
 router.use('/feedbacks', FeedbackRoutes);
 router.use('/programs', ProgramRoutes);
 router.use('/enrollments', EnrollmentRoutes);
+router.use('/invoices', InvoiceRoutes);
 router.use(
     '/docs',
     swaggerUI.serve,

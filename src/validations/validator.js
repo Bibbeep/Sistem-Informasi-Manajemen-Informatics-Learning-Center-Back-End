@@ -26,6 +26,7 @@ const {
     enrollmentUpdate,
     completedModulePayload,
 } = require('./schemas/enrollment');
+const { invoiceQueryParam } = require('./schemas/invoice');
 
 // Any auto-increment integer id
 const uniqueIdentifier = Joi.number().integer().positive().required();
@@ -58,4 +59,5 @@ module.exports = {
     validateEnrollment: validator(enrollmentPayload),
     validateUpdateEnrollmentData: validator(enrollmentUpdate),
     validateCompleteModule: validator(completedModulePayload),
+    validateInvoiceQuery: validator(invoiceQueryParam),
 };
