@@ -3,6 +3,7 @@ jest.mock('../../../src/db/models');
 
 const { Invoice, Enrollment, Program } = require('../../../src/db/models');
 const InvoiceService = require('../../../src/services/invoice.service');
+const HTTPError = require('../../../src/utils/httpError');
 
 describe('Invoice Service Unit Tests', () => {
     afterEach(() => {
@@ -73,7 +74,10 @@ describe('Invoice Service Unit Tests', () => {
             };
             Invoice.findAndCountAll.mockResolvedValue({
                 count: 100,
-                rows: new Array(10),
+                rows: new Array(10).fill({
+                    enrollment: { program: {} },
+                    payment: {},
+                }),
             });
 
             await InvoiceService.getMany(data);
@@ -126,7 +130,10 @@ describe('Invoice Service Unit Tests', () => {
             };
             Invoice.findAndCountAll.mockResolvedValue({
                 count: 15,
-                rows: new Array(5),
+                rows: new Array(5).fill({
+                    enrollment: { program: {} },
+                    payment: {},
+                }),
             });
 
             const result = await InvoiceService.getMany(data);
@@ -168,7 +175,10 @@ describe('Invoice Service Unit Tests', () => {
             };
             Invoice.findAndCountAll.mockResolvedValue({
                 count: 15,
-                rows: new Array(10),
+                rows: new Array(10).fill({
+                    enrollment: { program: {} },
+                    payment: {},
+                }),
             });
 
             const result = await InvoiceService.getMany(data);
@@ -191,7 +201,11 @@ describe('Invoice Service Unit Tests', () => {
                 count: 2,
                 rows: [
                     { id: 1, enrollment: null, payment: null },
-                    { id: 2, enrollment: { program: {} }, payment: null },
+                    {
+                        id: 2,
+                        enrollment: { program: {} },
+                        payment: null,
+                    },
                 ],
             };
             Invoice.findAndCountAll.mockResolvedValue(mockInvoices);
@@ -201,6 +215,64 @@ describe('Invoice Service Unit Tests', () => {
             expect(result.invoices[0].userId).toBeUndefined();
             expect(result.invoices[0].payment).toBeNull();
             expect(result.invoices[1].payment).toBeNull();
+        });
+    });
+
+    describe('getOne', () => {
+        it('should return a single invoice with all details', async () => {
+            const invoiceId = 1;
+            const mockInvoice = {
+                id: 1,
+                enrollment: {
+                    userId: 1,
+                    programId: 1,
+                    program: {
+                        title: 'Test Program',
+                        type: 'Course',
+                        thumbnailUrl: 'url',
+                    },
+                },
+                payment: {
+                    id: 1,
+                    amountPaidIdr: 100000,
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+            };
+            Invoice.findByPk.mockResolvedValue(mockInvoice);
+
+            const result = await InvoiceService.getOne(invoiceId);
+
+            expect(Invoice.findByPk).toHaveBeenCalledWith(
+                invoiceId,
+                expect.any(Object),
+            );
+            expect(result.id).toBe(invoiceId);
+            expect(result.payment).toBeDefined();
+        });
+
+        it('should return an invoice with null payment and enrollment details', async () => {
+            const invoiceId = 1;
+            const mockInvoice = {
+                id: 1,
+                enrollment: null,
+                payment: null,
+            };
+            Invoice.findByPk.mockResolvedValue(mockInvoice);
+
+            const result = await InvoiceService.getOne(invoiceId);
+
+            expect(result.payment).toBeNull();
+            expect(result.userId).toBeUndefined();
+        });
+
+        it('should throw HTTPError if invoice not found', async () => {
+            const invoiceId = 999;
+            Invoice.findByPk.mockResolvedValue(null);
+
+            await expect(InvoiceService.getOne(invoiceId)).rejects.toThrow(
+                HTTPError,
+            );
         });
     });
 });
