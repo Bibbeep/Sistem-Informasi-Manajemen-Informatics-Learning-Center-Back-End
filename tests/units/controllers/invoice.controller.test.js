@@ -116,4 +116,37 @@ describe('Invoice Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
+
+    describe('deleteById', () => {
+        it('should return 200 and not throw error', async () => {
+            req.params = { invoiceId: '1' };
+            InvoiceService.deleteOne.mockResolvedValue();
+
+            await InvoiceController.deleteById(req, res, next);
+
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully deleted an invoice.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should forwards service error to next', async () => {
+            req.params = { invoiceId: '404' };
+            const mockError = new Error('BOOM');
+            InvoiceService.deleteOne.mockRejectedValue(mockError);
+
+            await InvoiceController.deleteById(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
 });
