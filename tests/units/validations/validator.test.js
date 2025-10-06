@@ -7,6 +7,7 @@ const {
     validateResetPassword,
     validateProgramQuery,
     validateEnrollmentQuery,
+    validateInvoiceQuery,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -518,6 +519,42 @@ describe('Authentication Validation Unit Tests', () => {
                     limit: 10,
                     sort: 'progressPercentage',
                     programType: 'all',
+                    status: 'all',
+                }),
+            );
+        });
+    });
+
+    describe('validateInvoiceQuery Tests', () => {
+        it('should pass validation with sort by paymentDue descending', async () => {
+            const { error, value } = validateInvoiceQuery({
+                sort: '-paymentDue',
+            });
+
+            expect(error).toBeUndefined();
+            expect(value).toEqual(
+                expect.objectContaining({
+                    page: 1,
+                    limit: 10,
+                    sort: '-paymentDueDatetime',
+                    type: 'all',
+                    status: 'all',
+                }),
+            );
+        });
+
+        it('should pass validation with sort by id ascending', async () => {
+            const { error, value } = validateInvoiceQuery({
+                sort: 'id',
+            });
+
+            expect(error).toBeUndefined();
+            expect(value).toEqual(
+                expect.objectContaining({
+                    page: 1,
+                    limit: 10,
+                    sort: 'id',
+                    type: 'all',
                     status: 'all',
                 }),
             );
