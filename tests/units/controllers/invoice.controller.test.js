@@ -6,12 +6,13 @@ const InvoiceController = require('../../../src/controllers/invoice.controller')
 const InvoiceService = require('../../../src/services/invoice.service');
 const { validateInvoiceQuery } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
+const HTTPError = require('../../../src/utils/httpError');
 
 describe('Invoice Controller Unit Tests', () => {
     let req, res, next;
 
     beforeEach(() => {
-        req = { query: {} };
+        req = { query: {}, params: {} };
         res = {
             status: jest.fn().mockReturnThis(),
             json: jest.fn(),
@@ -78,6 +79,40 @@ describe('Invoice Controller Unit Tests', () => {
 
             expect(validateInvoiceQuery).toHaveBeenCalledWith(req.query);
             expect(InvoiceService.getMany).toHaveBeenCalledWith(mockValue);
+            expect(next).toHaveBeenCalledWith(serviceError);
+        });
+    });
+
+    describe('getById', () => {
+        it('should return 200 with a single invoice on success', async () => {
+            req.params.invoiceId = '1';
+            const mockInvoice = { id: 1 };
+            InvoiceService.getOne.mockResolvedValue(mockInvoice);
+
+            await InvoiceController.getById(req, res, next);
+
+            expect(InvoiceService.getOne).toHaveBeenCalledWith(1);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved an invoice details.',
+                data: {
+                    invoice: mockInvoice,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with error if service throws an error', async () => {
+            req.params.invoiceId = '999';
+            const serviceError = new HTTPError(404, 'Not Found');
+            InvoiceService.getOne.mockRejectedValue(serviceError);
+
+            await InvoiceController.getById(req, res, next);
+
+            expect(InvoiceService.getOne).toHaveBeenCalledWith(999);
             expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
