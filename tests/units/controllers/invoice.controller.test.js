@@ -149,4 +149,41 @@ describe('Invoice Controller Unit Tests', () => {
             expect(res.json).not.toHaveBeenCalled();
         });
     });
+
+    describe('createPayment', () => {
+        it('should return 201 and not throw error', async () => {
+            req.params = { invoiceId: 1 };
+            const mockPayment = {
+                id: 1,
+            };
+            InvoiceService.createPayment.mockResolvedValue(mockPayment);
+
+            await InvoiceController.createPayment(req, res, next);
+
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message: 'Successfully created a payment.',
+                    data: {
+                        payment: mockPayment,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should forwards service error to next', async () => {
+            req.params = { invoiceId: 1 };
+            const mockError = new Error('BOOM');
+            InvoiceService.createPayment.mockRejectedValue(mockError);
+
+            await InvoiceController.createPayment(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
 });
