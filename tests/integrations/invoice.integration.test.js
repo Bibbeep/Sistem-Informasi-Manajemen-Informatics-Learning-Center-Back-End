@@ -115,7 +115,7 @@ describe('Invoice Integration Tests', () => {
     describe('GET /api/v1/invoices', () => {
         it('should return 200 and all invoices for admin', async () => {
             const response = await request(server)
-                .get('/api/v1/invoices')
+                .get('/api/v1/invoices?sort=paymentDue')
                 .set('Authorization', `Bearer ${tokens.admin}`);
             expect(response.status).toBe(200);
             expect(response.body.data.invoices.length).toBe(3);
@@ -262,6 +262,13 @@ describe('Invoice Integration Tests', () => {
             expect(response.status).toBe(403);
         });
 
+        it("should return 403 when a regular user tries to access another user's invoice by using query parameter", async () => {
+            const response = await request(server)
+                .get(`/api/v1/invoices/${invoices[1].id}?userId=2`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+            expect(response.status).toBe(403);
+        });
+
         it('should return 404 when the invoice does not exist for admin', async () => {
             const response = await request(server)
                 .get('/api/v1/invoices/99999')
@@ -284,6 +291,57 @@ describe('Invoice Integration Tests', () => {
                 .get(`/api/v1/invoices/${invoices[0].id}`)
                 .set('Authorization', `Bearer ${tokens.regular}`);
             expect(response.status).toBe(404);
+        });
+    });
+
+    describe('DELETE /api/v1/invoices/:invoiceId', () => {
+        it('should return 200 and delete invoice data', async () => {
+            const response = await request(server)
+                .delete('/api/v1/invoices/3')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully deleted an invoice.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should return 400 when invoiceId is invalid', async () => {
+            const response = await request(server)
+                .delete('/api/v1/invoices/abc')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.statusCode).toBe(400);
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server)
+                .delete('/api/v1/invoices/1')
+                .set('Authorization', `Bearer invalid`);
+
+            expect(response.statusCode).toBe(401);
+        });
+
+        it('should return 403 when forbidden access', async () => {
+            const response = await request(server)
+                .delete('/api/v1/invoices/2')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.statusCode).toBe(403);
+        });
+
+        it('should return 404 when invoice does not exist', async () => {
+            const response = await request(server)
+                .delete('/api/v1/invoices/404')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.statusCode).toBe(404);
         });
     });
 });
