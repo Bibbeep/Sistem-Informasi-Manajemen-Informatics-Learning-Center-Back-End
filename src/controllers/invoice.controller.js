@@ -4,7 +4,7 @@ const { validateInvoiceQuery } = require('../validations/validator');
 module.exports = {
     getAll: async (req, res, next) => {
         try {
-            const { error, value } = validateInvoiceQuery(req.body);
+            const { error, value } = validateInvoiceQuery(req.query);
 
             if (error) {
                 throw error;

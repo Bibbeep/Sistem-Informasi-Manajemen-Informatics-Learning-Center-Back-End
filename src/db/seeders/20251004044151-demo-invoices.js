@@ -55,6 +55,39 @@ module.exports = {
             }
         }
 
+        const usersForExpired = faker.helpers.shuffle(users).slice(0, 50);
+        for (const user of usersForExpired) {
+            const program = faker.helpers.arrayElement(programs);
+            if (program) {
+                const enrollmentKey = `${user.id}-${program.id}`;
+
+                if (!enrollmentSet.has(enrollmentKey)) {
+                    const createdAt = faker.date.past();
+                    const newEnrollment = await Enrollment.create({
+                        userId: user.id,
+                        programId: program.id,
+                        status: 'Unpaid',
+                        createdAt: createdAt,
+                        updatedAt: createdAt,
+                    });
+
+                    invoicesToCreate.push({
+                        user_program_enrollment_id: newEnrollment.id,
+                        virtual_account_number: faker.finance.accountNumber(18),
+                        amount_idr: program.priceIdr,
+                        payment_due_datetime: faker.date.past({
+                            refDate: createdAt,
+                        }),
+                        status: 'Expired',
+                        created_at: createdAt,
+                        updated_at: createdAt,
+                    });
+
+                    enrollmentSet.add(enrollmentKey);
+                }
+            }
+        }
+
         const paidEnrollments = await Enrollment.findAll({
             where: {
                 status: {

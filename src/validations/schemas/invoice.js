@@ -7,9 +7,7 @@ const invoiceQueryParam = Joi.object({
     sort: Joi.string()
         .regex(/^-?(id|paymentDue|createdAt|updatedAt)$/)
         .custom((value) => {
-            if (value.includes('progress')) {
-                return value + 'Percentage';
-            } else if (value.includes('paymentDue')) {
+            if (value.includes('paymentDue')) {
                 return value + 'Datetime';
             }
 

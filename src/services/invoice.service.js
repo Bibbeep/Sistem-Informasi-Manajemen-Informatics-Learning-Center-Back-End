@@ -25,23 +25,23 @@ class InvoiceService {
                 {
                     model: Enrollment,
                     as: 'enrollment',
-                    required: false,
                     where: enrollmentWhere,
+                    attributes: ['userId', 'programId'],
                     include: [
                         {
                             model: Program,
                             as: 'program',
-                            required: false,
-                            where: {
-                                type: programWhere,
-                            },
+                            where: programWhere,
+                            attributes: ['title', 'type', 'thumbnailUrl'],
                         },
                     ],
                 },
                 {
                     model: Payment,
                     as: 'payment',
-                    required: false,
+                    attributes: {
+                        exclude: ['invoiceId'],
+                    },
                 },
             ],
             limit,
@@ -65,12 +65,14 @@ class InvoiceService {
                     amountIdr: invoice.amountIdr,
                     paymentDueDatetime: invoice.paymentDueDatetime,
                     status: invoice.status,
-                    payment: {
-                        id: invoice.payment?.id,
-                        amountPaidIdr: invoice.payment?.amountPaidIdr,
-                        createdAt: invoice.payment?.createdAt,
-                        updatedAt: invoice.payment?.updatedAt,
-                    },
+                    payment: invoice.payment
+                        ? {
+                              id: invoice.payment.id,
+                              amountPaidIdr: invoice.payment.amountPaidIdr,
+                              createdAt: invoice.payment.createdAt,
+                              updatedAt: invoice.payment.updatedAt,
+                          }
+                        : null,
                     createdAt: invoice.createdAt,
                     updatedAt: invoice.updatedAt,
                     deletedAt: invoice.deletedAt,
