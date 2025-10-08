@@ -14,9 +14,10 @@ const server = app.listen(PORT, async () => {
     await connectNodemailer();
     await connectS3();
 
-    SchedulerService.start();
-
-    console.log(chalk.inverse.bold(`Server is listening on port ${PORT}`));
+    if (process.env.NODE_ENV !== 'test') {
+        SchedulerService.start();
+        console.log(chalk.inverse.bold(`Server is listening on port ${PORT}`));
+    }
 });
 
 module.exports = { server };

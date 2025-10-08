@@ -7,6 +7,7 @@ jest.mock('node-cron', () => {
 jest.mock('chalk', () => {
     return {
         blue: jest.fn(),
+        yellow: jest.fn(),
     };
 });
 jest.mock('../../../src/db/models', () => {
@@ -52,6 +53,7 @@ describe('Scheduler Service Unit Tests', () => {
 
     afterEach(() => {
         jest.clearAllMocks();
+        SchedulerService.cronJob = null;
     });
 
     afterAll(() => {
@@ -61,12 +63,33 @@ describe('Scheduler Service Unit Tests', () => {
     });
 
     describe('start', () => {
+        it('should not start a new job if one is already running', () => {
+            const mockCronJob = { destroy: jest.fn() };
+            cron.schedule.mockReturnValue(mockCronJob);
+
+            SchedulerService.start();
+            SchedulerService.start();
+
+            expect(cron.schedule).toHaveBeenCalledTimes(1);
+            expect(consoleLogSpy).toHaveBeenNthCalledWith(
+                1,
+                chalk.blue('[Cron Job]'),
+                'Job is starting',
+            );
+            expect(consoleLogSpy).toHaveBeenNthCalledWith(
+                2,
+                chalk.yellow('[Cron Job]'),
+                'Job is already running',
+            );
+        });
         it('should run cron job and update expired invoices and enrollments', async () => {
             const mockExpiredInvoices = [
                 { id: 1, enrollmentId: 101 },
                 { id: 2, enrollmentId: 102 },
             ];
+            const mockCronJob = { destroy: jest.fn() };
             Invoice.findAll.mockResolvedValue(mockExpiredInvoices);
+            cron.schedule.mockReturnValue(mockCronJob);
 
             SchedulerService.start();
 
@@ -133,6 +156,32 @@ describe('Scheduler Service Unit Tests', () => {
             expect(consoleErrorSpy).toHaveBeenCalledWith(
                 '[Cron Job] Error:',
                 mockError,
+            );
+        });
+    });
+
+    describe('stop', () => {
+        it('should stop the running cron job', () => {
+            const mockCronJob = { destroy: jest.fn() };
+            cron.schedule.mockReturnValue(mockCronJob);
+
+            SchedulerService.start();
+            SchedulerService.stop();
+
+            expect(consoleLogSpy).toHaveBeenNthCalledWith(
+                2,
+                chalk.blue('[Cron Job]'),
+                'Job is stopping',
+            );
+            expect(mockCronJob.destroy).toHaveBeenCalled();
+        });
+
+        it('should do nothing if no job is running', () => {
+            SchedulerService.stop();
+
+            expect(consoleLogSpy).not.toHaveBeenCalledWith(
+                chalk.blue('[Cron Job]'),
+                'Job is stopping',
             );
         });
     });

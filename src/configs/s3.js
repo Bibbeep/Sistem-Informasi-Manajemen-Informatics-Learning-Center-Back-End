@@ -12,11 +12,15 @@ const s3 = new S3Client({
 });
 
 const connectS3 = async () => {
-    console.log(chalk.green('[S3]'), 'Checking service connection...');
+    if (process.env.NODE_ENV !== 'test') {
+        console.log(chalk.green('[S3]'), 'Checking service connection...');
+    }
 
     try {
         await s3.send(new ListBucketsCommand({}));
-        console.log(chalk.green('[S3]'), 'S3 connection established');
+        if (process.env.NODE_ENV !== 'test') {
+            console.log(chalk.green('[S3]'), 'S3 connection established');
+        }
     } catch (err) {
         console.log(
             chalk.red('[S3]'),

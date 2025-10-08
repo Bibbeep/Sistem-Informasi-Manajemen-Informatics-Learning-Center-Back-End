@@ -27,14 +27,18 @@ const transportConfig =
 const transporter = nodemailer.createTransport(transportConfig);
 
 const connectNodemailer = async () => {
-    console.log(
-        chalk.yellow('[Nodemailer]'),
-        'Checking mailer service connection...',
-    );
+    if (process.env.NODE_ENV !== 'test') {
+        console.log(
+            chalk.yellow('[Nodemailer]'),
+            'Checking mailer service connection...',
+        );
+    }
 
     try {
         await transporter.verify();
-        console.log(chalk.yellow('[Nodemailer]'), 'Nodemailer is ready');
+        if (process.env.NODE_ENV !== 'test') {
+            console.log(chalk.yellow('[Nodemailer]'), 'Nodemailer is ready');
+        }
     } catch (err) {
         console.log(
             chalk.red('[Nodemailer]'),

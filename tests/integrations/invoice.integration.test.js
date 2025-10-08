@@ -9,12 +9,14 @@ const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
 const { Invoice, Payment, Enrollment } = require('../../src/db/models');
+const SchedulerService = require('../../src/services/scheduler.service');
 
 describe('Invoice Integration Tests', () => {
     const mockUserPassword = 'password123';
     let users, tokens, invoices;
 
     afterAll(async () => {
+        SchedulerService.stop();
         server.close();
         await sequelize.close();
         await redisClient.close();

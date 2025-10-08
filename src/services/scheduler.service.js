@@ -4,14 +4,21 @@ const { Op } = require('sequelize');
 const { Invoice, Enrollment, sequelize } = require('../db/models');
 
 class SchedulerService {
+    static cronJob = null;
+
     /**
      * Start cron job to check whether invoice's paymentDueDatetime is past expiration and change its status for every minute (* * * * *)
      * @static
      */
     static start() {
+        if (this.cronJob) {
+            console.log(chalk.yellow('[Cron Job]'), 'Job is already running');
+            return;
+        }
+
         console.log(chalk.blue('[Cron Job]'), 'Job is starting');
 
-        cron.schedule('* * * * *', async () => {
+        this.cronJob = cron.schedule('* * * * *', async () => {
             try {
                 await sequelize.transaction(async (t) => {
                     const expiredInvoices = await Invoice.findAll(
@@ -64,6 +71,18 @@ class SchedulerService {
                 console.error('[Cron Job] Error:', err);
             }
         });
+    }
+
+    /**
+     * Stop the running cron job
+     * @static
+     */
+    static stop() {
+        if (this.cronJob) {
+            console.log(chalk.blue('[Cron Job]'), 'Job is stopping');
+            this.cronJob.destroy();
+            this.cronJob = null;
+        }
     }
 }
 

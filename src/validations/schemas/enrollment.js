@@ -20,7 +20,7 @@ const enrollmentQueryParam = Joi.object({
         .valid('course', 'seminar', 'workshop', 'competition', 'all')
         .default('all'),
     status: Joi.string()
-        .valid('unpaid', 'in progress', 'completed', 'all')
+        .valid('unpaid', 'in progress', 'completed', 'expired', 'all')
         .default('all'),
 });
 

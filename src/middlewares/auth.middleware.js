@@ -136,13 +136,15 @@ module.exports = {
                         );
 
                         if (!ownerId) {
-                            throw new HTTPError(404, 'Resource not found.', {
-                                message: `${ownerService.name} with "${param}" does not exist`,
-                                context: {
-                                    key: param,
-                                    value: req.params[param],
+                            throw new HTTPError(404, 'Resource not found.', [
+                                {
+                                    message: `${ownerService.name} with "${param}" does not exist`,
+                                    context: {
+                                        key: param,
+                                        value: req.params[param],
+                                    },
                                 },
-                            });
+                            ]);
                         }
 
                         if (ownerId === loggedInUserId) {
@@ -212,7 +214,7 @@ module.exports = {
                         },
                         {
                             status: {
-                                [Op.ne]: 'Unpaid',
+                                [Op.notIn]: ['Unpaid', 'Expired'],
                             },
                         },
                     ],
