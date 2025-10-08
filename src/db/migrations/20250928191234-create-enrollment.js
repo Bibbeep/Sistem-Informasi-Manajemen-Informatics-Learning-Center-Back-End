@@ -34,7 +34,12 @@ module.exports = {
             },
             status: {
                 allowNull: false,
-                type: Sequelize.ENUM('Unpaid', 'In Progress', 'Completed'),
+                type: Sequelize.ENUM(
+                    'Unpaid',
+                    'In Progress',
+                    'Completed',
+                    'Expired',
+                ),
                 defaultValue: 'Unpaid',
             },
             progressPercentage: {

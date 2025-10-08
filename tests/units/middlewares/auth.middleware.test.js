@@ -236,13 +236,15 @@ describe('Authentication Middleware Unit Tests', () => {
                 enrollmentId: '404',
             };
 
-            const mockError = new HTTPError(404, 'Resource not found.', {
-                message: 'Enrollment with "enrollmentId" does not exist',
-                context: {
-                    key: 'enrollmentId',
-                    value: '404',
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Enrollment with "enrollmentId" does not exist',
+                    context: {
+                        key: 'enrollmentId',
+                        value: '404',
+                    },
                 },
-            });
+            ]);
 
             Enrollment.findByPk.mockResolvedValue(null);
 
@@ -500,7 +502,7 @@ describe('Authentication Middleware Unit Tests', () => {
                         },
                         {
                             status: {
-                                [Op.ne]: 'Unpaid',
+                                [Op.notIn]: ['Unpaid', 'Expired'],
                             },
                         },
                     ],
@@ -543,7 +545,7 @@ describe('Authentication Middleware Unit Tests', () => {
                         },
                         {
                             status: {
-                                [Op.ne]: 'Unpaid',
+                                [Op.notIn]: ['Unpaid', 'Expired'],
                             },
                         },
                     ],

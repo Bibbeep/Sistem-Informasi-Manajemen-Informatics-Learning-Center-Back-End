@@ -27,7 +27,12 @@ module.exports = {
         },
     ],
     collectCoverage: true,
-    collectCoverageFrom: ['src/**/*.js', '!src/configs/**', '!src/db/**'],
+    collectCoverageFrom: [
+        'src/**/*.js',
+        '!src/configs/**',
+        '!src/db/**',
+        '!src/server.js',
+    ],
     coveragePathIgnorePatterns: ['/node_modules/', '/coverage/'],
     coverageThreshold: {
         global: {

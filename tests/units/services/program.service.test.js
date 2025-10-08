@@ -1703,7 +1703,19 @@ describe('Program Service Unit Tests', () => {
 
             await expect(
                 ProgramService.uploadMaterial(mockData),
-            ).rejects.toThrow(new HTTPError(415, 'Unsupported Media Type.'));
+            ).rejects.toThrow(
+                new HTTPError(415, 'Unsupported Media Type.', [
+                    {
+                        message: expect.stringContaining(
+                            'File MIME type must be',
+                        ),
+                        context: {
+                            key: 'File MIME Type',
+                            value: 'application/x-msdos-program',
+                        },
+                    },
+                ]),
+            );
         });
 
         it('should throw a 415 error if file type cannot be determined', async () => {
@@ -1712,7 +1724,19 @@ describe('Program Service Unit Tests', () => {
 
             await expect(
                 ProgramService.uploadMaterial(mockData),
-            ).rejects.toThrow(new HTTPError(415, 'Unsupported Media Type.'));
+            ).rejects.toThrow(
+                new HTTPError(415, 'Unsupported Media Type.', [
+                    {
+                        message: expect.stringContaining(
+                            'File MIME type must be',
+                        ),
+                        context: {
+                            key: 'File MIME Type',
+                            value: null,
+                        },
+                    },
+                ]),
+            );
         });
     });
 });

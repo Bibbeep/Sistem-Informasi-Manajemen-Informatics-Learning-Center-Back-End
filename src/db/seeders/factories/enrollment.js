@@ -11,6 +11,7 @@ const data = async (props = {}) => {
         'Unpaid',
         'In Progress',
         'Completed',
+        'Expired',
     ]);
     let progressPercentage = 0;
     let completedAt = null;

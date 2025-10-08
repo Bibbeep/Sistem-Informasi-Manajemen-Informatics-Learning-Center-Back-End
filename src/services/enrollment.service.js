@@ -297,7 +297,7 @@ class EnrollmentService {
             ]);
         }
 
-        if (['Unpaid', 'Completed'].includes(enrollment.status)) {
+        if (['Unpaid', 'Completed', 'Expired'].includes(enrollment.status)) {
             throw new HTTPError(400, 'Validation error.', [
                 {
                     message: `Cannot update enrollment with ${enrollment.status} status`,
@@ -442,7 +442,7 @@ class EnrollmentService {
             ]);
         }
 
-        if (enrollment.status === 'Unpaid') {
+        if (['Unpaid', 'Expired'].includes(enrollment.status)) {
             throw new HTTPError(400, 'Validation error.', [
                 {
                     message: `Cannot add completed module with ${enrollment.status} status`,

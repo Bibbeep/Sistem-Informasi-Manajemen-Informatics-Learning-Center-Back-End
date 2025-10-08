@@ -21,7 +21,12 @@ module.exports = (sequelize, DataTypes) => {
             },
             status: {
                 allowNull: false,
-                type: DataTypes.ENUM('Unpaid', 'In Progress', 'Completed'),
+                type: DataTypes.ENUM(
+                    'Unpaid',
+                    'In Progress',
+                    'Completed',
+                    'Expired',
+                ),
                 defaultValue: 'Unpaid',
             },
             progressPercentage: {

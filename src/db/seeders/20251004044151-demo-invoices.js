@@ -66,7 +66,7 @@ module.exports = {
                     const newEnrollment = await Enrollment.create({
                         userId: user.id,
                         programId: program.id,
-                        status: 'Unpaid',
+                        status: 'Expired',
                         createdAt: createdAt,
                         updatedAt: createdAt,
                     });
