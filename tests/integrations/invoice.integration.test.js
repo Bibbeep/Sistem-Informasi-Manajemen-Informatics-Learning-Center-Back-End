@@ -23,7 +23,6 @@ describe('Invoice Integration Tests', () => {
     });
 
     beforeEach(async () => {
-        await truncate();
         const adminUser = await userFactory(
             { role: 'Admin' },
             mockUserPassword,
