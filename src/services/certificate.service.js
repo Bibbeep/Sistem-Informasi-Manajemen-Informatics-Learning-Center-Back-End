@@ -1,10 +1,6 @@
 const { Certificate, Enrollment, Program } = require('../db/models');
 
 class CertificateService {
-    /**
-     * @todo Get many certificates
-     * @param {Object} data
-     */
     static async getMany(data) {
         const { page, limit, sort, type } = data;
         let where = {};
@@ -19,7 +15,7 @@ class CertificateService {
             enrollmentWhere.userId = data.userId;
         }
 
-        if (data.userId) {
+        if (data.programId) {
             enrollmentWhere.programId = data.programId;
         }
 
