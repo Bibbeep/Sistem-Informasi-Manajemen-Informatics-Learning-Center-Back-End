@@ -3,7 +3,7 @@ jest.mock('../../../src/db/models');
 const { Certificate } = require('../../../src/db/models');
 const CertificateService = require('../../../src/services/certificate.service');
 
-describe('Invoice Service Unit Tests', () => {
+describe('Certificate Service Unit Tests', () => {
     afterEach(() => {
         jest.clearAllMocks();
     });
