@@ -9,6 +9,7 @@ const certificateQueryParam = Joi.object({
         .default('id'),
     userId: Joi.number().integer().positive(),
     programId: Joi.number().integer().positive(),
+    credential: Joi.string().pattern(/^(CRS|SMN|CMP|WRS)\d{4}-U\d{4}$/),
     type: Joi.string()
         .valid('course', 'seminar', 'workshop', 'competition', 'all')
         .default('all'),

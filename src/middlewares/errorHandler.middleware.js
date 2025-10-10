@@ -64,7 +64,7 @@ module.exports = (err, req, res, next) => {
         });
     } else {
         /* istanbul ignore next */
-        if (process.env.NODE_ENV == 'development') {
+        if (process.env.NODE_ENV === 'development') {
             console.error(err);
         }
 

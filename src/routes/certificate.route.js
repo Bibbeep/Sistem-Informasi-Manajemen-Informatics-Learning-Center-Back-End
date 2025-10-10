@@ -1,12 +1,21 @@
 /**
- * @todo GET /api/v1/certificates/:certificateId
- * @todo POST /api/v1/certificates
- * @todo PATCH /api/v1/certificates/:certificateId
- * @todo DELETE /api/v1/certificates/:certificateId
+ * @module CertificateAPI
  */
+
 const router = require('express').Router();
 const CertificateController = require('../controllers/certificate.controller');
+const { authenticate, authorize } = require('../middlewares/auth.middleware');
 
-router.get('/', CertificateController.getAll);
+/**
+ * @api {get} /api/v1/certificates Get all certificates
+ * @apiName GetCertificates
+ * @apiGroup Certificates
+ */
+router.get(
+    '/',
+    authenticate,
+    authorize({ rules: ['self', 'admin'], ownerQueryParam: 'required' }),
+    CertificateController.getAll,
+);
 
 module.exports = router;

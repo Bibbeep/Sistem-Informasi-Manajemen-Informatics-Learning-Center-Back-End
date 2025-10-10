@@ -83,6 +83,11 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'enrollmentId',
             as: 'invoice',
         });
+
+        Enrollment.hasOne(models.Certificate, {
+            foreignKey: 'enrollmentId',
+            as: 'certificate',
+        });
     };
 
     return Enrollment;
