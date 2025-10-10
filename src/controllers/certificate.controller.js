@@ -1,5 +1,8 @@
 const CertificateService = require('../services/certificate.service.js');
-const { validateCertificateQuery } = require('../validations/validator.js');
+const {
+    validateCertificateQuery,
+    validateCertificate,
+} = require('../validations/validator.js');
 
 module.exports = {
     getAll: async (req, res, next) => {
@@ -37,6 +40,29 @@ module.exports = {
                 success: true,
                 statusCode: 200,
                 message: 'Successfully retrieved a certificate.',
+                data: {
+                    certificate,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    create: async (req, res, next) => {
+        try {
+            const { error, value } = validateCertificate(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const certificate = await CertificateService.create(value);
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a certificate.',
                 data: {
                     certificate,
                 },

@@ -15,6 +15,14 @@ const certificateQueryParam = Joi.object({
         .default('all'),
 });
 
+const certificatePayload = Joi.object({
+    enrollmentId: Joi.number().integer().positive().required(),
+    title: Joi.string(),
+    issuedAt: Joi.date().iso().min(new Date()).default(new Date()),
+    expiredAt: Joi.date().iso().greater(Joi.ref('issuedAt')).optional(),
+});
+
 module.exports = {
     certificateQueryParam,
+    certificatePayload,
 };

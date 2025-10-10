@@ -1,0 +1,201 @@
+<html lang='en'>
+    <head>
+        <meta charset='UTF-8' />
+        <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+        <title>{{title}}</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Montserrat:wght@400;500;600&display=swap');
+
+            @page {
+                size: A4 landscape;
+                margin: 0;
+            }
+
+            html,
+            body {
+                width: 297mm;
+                height: 210mm;
+                margin: 0;
+                padding: 0;
+                background: #f0f4f8;
+                font-family: 'Montserrat', sans-serif;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .certificate-container {
+                width: 100%;
+                height: 100%;
+                background: #ffffff;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+                position: relative;
+                box-sizing: border-box;
+                overflow: hidden;
+                page-break-inside: avoid;
+            }
+
+            .header {
+                background-color: #004aad;
+                padding: 20mm 25mm;
+                color: white;
+                text-align: left;
+            }
+
+            .header h1 {
+                font-family: 'Merriweather', serif;
+                font-size: 24pt;
+                font-weight: 700;
+                margin: 0;
+                letter-spacing: 1.2px;
+            }
+
+            .main-content {
+                flex: 1;
+                padding: 15mm 25mm;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .presented-to {
+                font-size: 12pt;
+                color: #555;
+                margin-bottom: 8pt;
+                text-transform: uppercase;
+                letter-spacing: 2px;
+            }
+
+            .user-name {
+                font-family: 'Merriweather', serif;
+                font-size: 32pt;
+                font-weight: 700;
+                color: #002d6b;
+                margin: 0 0 10pt 0;
+                border-bottom: 1.5pt solid #e0e0e0;
+                padding-bottom: 10pt;
+                display: inline-block;
+            }
+
+            .completion-text {
+                font-size: 11pt;
+                color: #333;
+                margin: 0 auto 10pt auto;
+                max-width: 80%;
+                line-height: 1.6;
+            }
+
+            .program-title {
+                font-size: 14pt;
+                font-weight: 600;
+                color: #004aad;
+            }
+
+            .program-type {
+                font-size: 11pt;
+                color: #555;
+            }
+
+            .footer {
+                padding: 10mm 25mm;
+                background-color: #f7f9fc;
+                border-top: 0.5pt solid #e0e6ed;
+                text-align: center;
+            }
+
+            .footer-main {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 6pt;
+            }
+
+            .credential-info,
+            .date-info {
+                font-size: 9pt;
+                color: #666;
+            }
+
+            .credential-info span,
+            .date-info span {
+                font-weight: 600;
+                color: #333;
+            }
+
+            .copyright {
+                font-size: 8pt;
+                color: #888;
+            }
+
+            .decorative-corner {
+                position: absolute;
+                width: 60mm;
+                height: 60mm;
+                background: linear-gradient(
+                    45deg,
+                    rgba(0, 74, 173, 0.1),
+                    rgba(0, 74, 173, 0)
+                );
+                pointer-events: none;
+            }
+
+            .top-left {
+                top: -20mm;
+                left: -20mm;
+                transform: rotate(45deg);
+            }
+
+            .bottom-right {
+                bottom: -20mm;
+                right: -20mm;
+                transform: rotate(225deg);
+            }
+        </style>
+    </head>
+    <body>
+        <div class='certificate-container'>
+            <div class='decorative-corner top-left'></div>
+
+            <div class='header'>
+                <h1>Informatics Learning Center</h1>
+            </div>
+
+            <div class='main-content'>
+                <p class='presented-to'>Certificate of Completion</p>
+                <h2 class='user-name'>{{userFullName}}</h2>
+                <p class='completion-text'>
+                    has successfully completed the program
+                    <br />
+                    <strong class='program-title'>{{programTitle}}</strong><br
+                    />
+                    <span class='program-type'>({{programType}})</span>
+                </p>
+            </div>
+
+            <div class='footer'>
+                <div class='footer-main'>
+                    <div class='credential-info'>
+                        Credential ID:
+                        <span>{{credential}}</span>
+                    </div>
+                    <div class='date-info'>
+                        Issued on:
+                        <span>{{issuedAt}}</span>
+                        {{#if expiredAt}}
+                            | Expires on:
+                            <span>{{expiredAt}}</span>
+                        {{/if}}
+                    </div>
+                </div>
+                <div class='copyright'>
+                    &copy; 2025 Informatics Learning Center. All Rights
+                    Reserved.
+                </div>
+            </div>
+
+            <div class='decorative-corner bottom-right'></div>
+        </div>
+    </body>
+</html>

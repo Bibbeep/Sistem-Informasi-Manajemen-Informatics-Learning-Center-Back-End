@@ -1,5 +1,8 @@
-const { Certificate, Enrollment, Program } = require('../db/models');
+const { Upload } = require('@aws-sdk/lib-storage');
+const { Certificate, Enrollment, Program, User } = require('../db/models');
 const HTTPError = require('../utils/httpError');
+const printPdf = require('../utils/printPdf');
+const { s3 } = require('../configs/s3');
 
 class CertificateService {
     static name = 'Certificate';
@@ -149,6 +152,140 @@ class CertificateService {
             expiredAt: certificate.issuedAt,
             createdAt: certificate.createdAt,
             updatedAt: certificate.updatedAt,
+        };
+    }
+
+    static async create(data) {
+        const { enrollmentId, issuedAt } = data;
+
+        const enrollment = await Enrollment.findByPk(enrollmentId, {
+            include: [
+                {
+                    model: Certificate,
+                    as: 'certificate',
+                    required: false,
+                },
+                {
+                    model: Program,
+                    as: 'program',
+                    attributes: ['id', 'title', 'type'],
+                },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'fullName'],
+                },
+            ],
+        });
+
+        if (!enrollment) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Enrollment with "enrollmentId" does not exist',
+                    context: {
+                        key: 'enrollmentId',
+                        value: enrollmentId,
+                    },
+                },
+            ]);
+        }
+
+        if (
+            enrollment.certificate &&
+            (!enrollment.certificate.expiredAt ||
+                !(
+                    new Date(Date.now()) >=
+                    new Date(enrollment.certificate.expiredAt)
+                ))
+        ) {
+            throw new HTTPError(409, 'Resource conflict.', [
+                {
+                    message:
+                        'Enrollment with "enrollmentId" already has an active certificate',
+                    context: {
+                        key: 'enrollmentId',
+                        value: enrollmentId,
+                    },
+                },
+            ]);
+        }
+
+        if (enrollment.status !== 'Completed') {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: 'Enrollment "status" must be "Completed"',
+                    context: {
+                        key: 'status',
+                        value: enrollment.status,
+                    },
+                },
+            ]);
+        }
+
+        const credentialPrefix = {
+            Course: 'CRS',
+            Seminar: 'SMN',
+            Competition: 'CMP',
+            Workshop: 'WRS',
+        };
+
+        const title =
+            data.title ||
+            `${enrollment.program.title} Certificate of Completion`;
+        const credential = `${credentialPrefix[enrollment.program.type]}${String(
+            enrollment.program.id,
+        ).padStart(4, '0')}-U${String(enrollment.userId).padStart(4, '0')}`;
+
+        const fileBuffer = await printPdf(
+            {
+                userFullName: enrollment.user.fullName,
+                programTitle: enrollment.program.title,
+                programType: enrollment.program.type,
+                credential,
+                issuedAt: new Intl.DateTimeFormat('en-US', {
+                    dateStyle: 'long',
+                }).format(new Date(issuedAt)),
+                expiredAt: data.expiredAt
+                    ? new Intl.DateTimeFormat('en-US', {
+                          dateStyle: 'long',
+                      }).format(new Date(data.expiredAt))
+                    : null,
+            },
+            ['..', 'templates', 'documents', 'certificate.hbs'],
+        );
+
+        const fileName = `documents/certificates/${credential}-${Date.now().toString()}.pdf`;
+
+        const client = new Upload({
+            client: s3,
+            params: {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: fileBuffer,
+                ContentType: 'application/pdf',
+                ACL: 'public-read',
+            },
+        });
+
+        const { Location } = await client.done();
+        const payload = {
+            enrollmentId,
+            userId: enrollment.userId,
+            title,
+            credential,
+            documentUrl: Location,
+            issuedAt,
+            expiredAt: data.expiredAt || null,
+        };
+
+        const certificate = await Certificate.create(payload);
+
+        return {
+            ...certificate.toJSON(),
+            programId: enrollment.programId,
+            programTitle: enrollment.program.title,
+            programType: enrollment.program.type,
+            programThumbnailUrl: enrollment.program.thumbnailUrl,
         };
     }
 }

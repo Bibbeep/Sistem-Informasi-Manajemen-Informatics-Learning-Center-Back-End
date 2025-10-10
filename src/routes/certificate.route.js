@@ -6,6 +6,7 @@ const {
     authorize,
     validatePathParameterId,
 } = require('../middlewares/auth.middleware');
+const { requireJsonContent } = require('../middlewares/contentType.middleware');
 
 router.get(
     '/',
@@ -24,6 +25,15 @@ router.get(
         ownerQueryParam: 'prohibited',
     }),
     CertificateController.getById,
+);
+router.post(
+    '/',
+    authenticate,
+    requireJsonContent,
+    authorize({
+        rules: ['admin'],
+    }),
+    CertificateController.create,
 );
 
 module.exports = router;
