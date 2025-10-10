@@ -193,4 +193,70 @@ describe('Certificate Integration Tests', () => {
             expect(response.status).toBe(403);
         });
     });
+
+    describe('GET /api/v1/certificates/:certificateId', () => {
+        it('should return 200 when accessing certificate as admin', async () => {
+            const response = await request(server)
+                .get('/api/v1/certificates/1')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.data.certificate).toBeDefined();
+        });
+
+        it('should return 200 when accessing certificate as regular user', async () => {
+            const response = await request(server)
+                .get('/api/v1/certificates/1')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.statusCode).toBe(200);
+            expect(response.body.data.certificate).toBeDefined();
+        });
+
+        it('should return 400 when invalid path param', async () => {
+            const response = await request(server)
+                .get('/api/v1/certificates/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.statusCode).toBe(400);
+            expect(response.body.data).toBeNull();
+        });
+
+        it('should return 401 when invalid access token', async () => {
+            const response = await request(server).get(
+                '/api/v1/certificates/1',
+            );
+
+            expect(response.statusCode).toBe(401);
+            expect(response.body.data).toBeNull();
+        });
+
+        it('should return 403 when unauthorized access', async () => {
+            const response = await request(server)
+                .get('/api/v1/certificates/2')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.statusCode).toBe(403);
+            expect(response.body.data).toBeNull();
+            console.log(response.body.errors[0]);
+        });
+
+        it('should return 404 when certificate does not exist as admin', async () => {
+            const response = await request(server)
+                .get('/api/v1/certificates/404')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.statusCode).toBe(404);
+            expect(response.body.data).toBeNull();
+        });
+
+        it('should return 404 when certificate does not exist as regular user', async () => {
+            const response = await request(server)
+                .get('/api/v1/certificates/404')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.statusCode).toBe(404);
+            expect(response.body.data).toBeNull();
+        });
+    });
 });
