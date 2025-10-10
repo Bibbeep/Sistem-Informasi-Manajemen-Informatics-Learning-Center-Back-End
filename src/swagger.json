@@ -4802,6 +4802,168 @@
                     }
                 }
             }
+        },
+        "/api/v1/certificates": {
+            "get": {
+                "summary": "Retrieves a list of all certificates",
+                "tags": ["Certificate Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "description": "The page number to retrieve."
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "description": "The number of certificates per page."
+                    },
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "-id",
+                                "issuedAt",
+                                "-issuedAt",
+                                "expiredAt",
+                                "-expiredAt",
+                                "updatedAt",
+                                "-updatedAt"
+                            ],
+                            "default": "id"
+                        },
+                        "description": "The field to sort by. Use a '-' prefix for descending order (e.g., -issuedAt)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "userId",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter certificates by user ID. Required for non-admin users."
+                    },
+                    {
+                        "in": "query",
+                        "name": "programId",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter certificates by program ID."
+                    },
+                    {
+                        "in": "query",
+                        "name": "credential",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Filter certificates by a specific credential ID."
+                    },
+                    {
+                        "in": "query",
+                        "name": "type",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "course",
+                                "seminar",
+                                "workshop",
+                                "competition",
+                                "all"
+                            ],
+                            "default": "all"
+                        },
+                        "description": "Filter certificates by the type of program."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the list of certificates.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CertificateListSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access. Non-admin users must provide their own `userId` and cannot view others' certificates.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -5218,6 +5380,62 @@
                         }
                     }
                 ]
+            },
+            "Certificate": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "userId": {
+                        "type": "integer"
+                    },
+                    "enrollmentId": {
+                        "type": "integer"
+                    },
+                    "programId": {
+                        "type": "integer"
+                    },
+                    "programTitle": {
+                        "type": "string"
+                    },
+                    "programType": {
+                        "type": "string"
+                    },
+                    "programThumbnailUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "credential": {
+                        "type": "string"
+                    },
+                    "documentUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "issuedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "expiredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
             },
             "RegisterRequestBody": {
                 "type": "object",
@@ -6975,6 +7193,72 @@
                             "createdAt": "2025-10-06T11:30:00.000Z",
                             "updatedAt": "2025-10-06T11:30:00.000Z"
                         }
+                    },
+                    "errors": null
+                }
+            },
+            "CertificateListSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "certificates": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Certificate"
+                                }
+                            }
+                        }
+                    },
+                    "pagination": {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved all certificates.",
+                    "data": {
+                        "certificates": [
+                            {
+                                "id": 1,
+                                "userId": 1,
+                                "enrollmentId": 1,
+                                "programId": 1,
+                                "programTitle": "Introduction to Backend Development",
+                                "programType": "Course",
+                                "programThumbnailUrl": "https://example.com/thumb.jpg",
+                                "title": "Introduction to Backend Development Certificate of Completion",
+                                "credential": "CRS0001-U0001",
+                                "documentUrl": "https://example.com/certificate.pdf",
+                                "issuedAt": "2025-10-10T10:00:00.000Z",
+                                "expiredAt": null,
+                                "createdAt": "2025-10-10T10:00:00.000Z",
+                                "updatedAt": "2025-10-10T10:00:00.000Z"
+                            }
+                        ]
+                    },
+                    "pagination": {
+                        "currentRecords": 1,
+                        "totalRecords": 1,
+                        "currentPage": 1,
+                        "totalPages": 1,
+                        "nextPage": null,
+                        "prevPage": null
                     },
                     "errors": null
                 }

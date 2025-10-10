@@ -13,6 +13,7 @@ const AuthService = require('../../src/services/auth.service');
 
 describe('Certificate Integration Tests', () => {
     const mockUserPassword = 'password123';
+    // eslint-disable-next-line no-unused-vars
     let users, tokens, certificates;
 
     afterAll(async () => {
