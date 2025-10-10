@@ -14,6 +14,7 @@ const competitionFactory = require('../../src/db/seeders/factories/competition')
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
 const { createPublicTestBucket } = require('../../src/configs/s3TestSetup');
+const { fakerID_ID: faker } = require('@faker-js/faker');
 
 describe('Program Management Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -310,7 +311,7 @@ describe('Program Management Integration Tests', () => {
             const newProgram = {
                 title: 'New Course Program',
                 description: 'This is a new course program.',
-                availableDate: '2025-10-10T00:00:00.000Z',
+                availableDate: faker.date.future(),
                 type: 'Course',
                 priceIdr: 150000,
             };
@@ -342,7 +343,7 @@ describe('Program Management Integration Tests', () => {
             const newProgram = {
                 title: 'New Workshop Program',
                 description: 'This is a new workshop program.',
-                availableDate: '2025-11-11T00:00:00.000Z',
+                availableDate: faker.date.future(),
                 type: 'Workshop',
                 priceIdr: 250000,
                 isOnline: true,
@@ -396,7 +397,7 @@ describe('Program Management Integration Tests', () => {
                 title: 'UNTAN Programming Contest V',
                 description:
                     'Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. Donec pede justo, fringilla vel, aliquet nec, vulputate eget, arcu. In enim justo, rhoncus ut, imperdiet a, venenatis vitae, justo. Nullam dictum felis eu pede mollis pretium. Integer tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean vulputate eleifend tellus. Aenean leo ligula, porttitor eu, consequat vitae, eleifend ac, enim. Aliquam lorem ante, dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra nulla ut metus varius laoreet. Quisque rutrum. Aenean imperdiet. Etiam ultricies nisi vel augue. Curabitur ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus. Maecenas tempus, tellus eget condimentum rhoncus, sem quam semper libero, sit amet adipiscing sem neque sed ipsum. Nam quam nunc, blandit vel, luctus pulvinar, hendrerit id, lorem. Maecenas nec odio et ante tincidunt tempus. Donec vitae sapien ut libero venenatis faucibus. Nullam quis ante. Etiam sit amet orci eget eros faucibus tincidunt. Duis leo. Sed fringilla mauris sit amet nibh. Donec sodales sagittis magna. Sed consequat, leo eget bibendum sodales, augue velit cursus nunc.',
-                availableDate: '2025-10-11',
+                availableDate: faker.date.future(),
                 priceIdr: 50000,
                 isOnline: false,
                 locationAddress:
@@ -439,7 +440,7 @@ describe('Program Management Integration Tests', () => {
             const newProgram = {
                 title: 'Forbidden Program',
                 description: 'This should not be created.',
-                availableDate: '2025-12-12T00:00:00.000Z',
+                availableDate: faker.date.future(),
                 type: 'Course',
                 priceIdr: 50000,
             };
