@@ -27,4 +27,23 @@ module.exports = {
             next(err);
         }
     },
+    getById: async (req, res, next) => {
+        try {
+            const certificate = await CertificateService.getOne(
+                parseInt(req.params.certificateId, 10),
+            );
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved a certificate.',
+                data: {
+                    certificate,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
