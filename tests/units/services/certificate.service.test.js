@@ -377,4 +377,39 @@ describe('Certificate Service Unit Tests', () => {
             );
         });
     });
+
+    describe('getOwnerId', () => {
+        it('should return userId', async () => {
+            const mockCertificateId = 1;
+            const mockCertificate = {
+                enrollment: {
+                    userId: 1,
+                },
+            };
+            Certificate.findByPk.mockResolvedValue(mockCertificate);
+
+            const result =
+                await CertificateService.getOwnerId(mockCertificateId);
+
+            expect(Certificate.findByPk).toHaveBeenCalledWith(
+                mockCertificateId,
+                expect.any(Object),
+            );
+            expect(result).toEqual(1);
+        });
+
+        it('should return null when certificate does not exist', async () => {
+            const mockCertificateId = 404;
+            Certificate.findByPk.mockResolvedValue(null);
+
+            const result =
+                await CertificateService.getOwnerId(mockCertificateId);
+
+            expect(Certificate.findByPk).toHaveBeenCalledWith(
+                mockCertificateId,
+                expect.any(Object),
+            );
+            expect(result).toEqual(null);
+        });
+    });
 });
