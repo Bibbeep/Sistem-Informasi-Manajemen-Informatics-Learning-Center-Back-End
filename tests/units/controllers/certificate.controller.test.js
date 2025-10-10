@@ -77,4 +77,43 @@ describe('Certificate Controller Unit Tests', () => {
             expect(res.json).not.toHaveBeenCalled();
         });
     });
+
+    describe('getById', () => {
+        it('should call res with 200', async () => {
+            req.params = { certificateId: '1' };
+            const mockCertificate = {
+                id: 1,
+                title: 'title',
+            };
+            CertificateService.getOne.mockResolvedValue(mockCertificate);
+
+            await CertificateController.getById(req, res, next);
+
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully retrieved a certificate.',
+                    data: {
+                        certificate: mockCertificate,
+                    },
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should call next with service error', async () => {
+            req.params = { certificateId: '1' };
+            const mockServiceError = new Error('BOOM!');
+            CertificateService.getOne.mockRejectedValue(mockServiceError);
+
+            await CertificateController.getById(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockServiceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
 });
