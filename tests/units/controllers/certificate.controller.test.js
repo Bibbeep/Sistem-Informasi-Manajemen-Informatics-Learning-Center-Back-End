@@ -7,6 +7,7 @@ const CertificateService = require('../../../src/services/certificate.service');
 const {
     validateCertificateQuery,
     validateCertificate,
+    validateUpdateCertificateData,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -172,6 +173,79 @@ describe('Certificate Controller Unit Tests', () => {
             expect(CertificateService.create).toHaveBeenCalledWith(
                 mockRequestBody,
             );
+            expect(next).toHaveBeenCalledWith(serviceError);
+        });
+    });
+
+    describe('updateById', () => {
+        it('should return 200 and the updated certificate on success', async () => {
+            req.params.certificateId = '1';
+            const mockUpdateData = { title: 'New Title' };
+            const mockUpdatedCertificate = { id: 1, title: 'New Title' };
+
+            validateUpdateCertificateData.mockReturnValue({
+                error: null,
+                value: mockUpdateData,
+            });
+            CertificateService.updateOne.mockResolvedValue(
+                mockUpdatedCertificate,
+            );
+
+            await CertificateController.updateById(req, res, next);
+
+            expect(validateUpdateCertificateData).toHaveBeenCalledWith(
+                req.body,
+            );
+            expect(CertificateService.updateOne).toHaveBeenCalledWith({
+                certificateId: 1,
+                updateData: mockUpdateData,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully updated a certificate.',
+                data: {
+                    certificate: mockUpdatedCertificate,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error if request body is invalid', async () => {
+            req.params.certificateId = '1';
+            const validationError = new ValidationError('Validation failed');
+            validateUpdateCertificateData.mockReturnValue({
+                error: validationError,
+            });
+
+            await CertificateController.updateById(req, res, next);
+
+            expect(validateUpdateCertificateData).toHaveBeenCalledWith(
+                req.body,
+            );
+            expect(CertificateService.updateOne).not.toHaveBeenCalled();
+            expect(next).toHaveBeenCalledWith(validationError);
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            req.params.certificateId = '1';
+            const mockUpdateData = { title: 'New Title' };
+            const serviceError = new Error('Service error');
+
+            validateUpdateCertificateData.mockReturnValue({
+                error: null,
+                value: mockUpdateData,
+            });
+            CertificateService.updateOne.mockRejectedValue(serviceError);
+
+            await CertificateController.updateById(req, res, next);
+
+            expect(CertificateService.updateOne).toHaveBeenCalledWith({
+                certificateId: 1,
+                updateData: mockUpdateData,
+            });
             expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
