@@ -64,6 +64,7 @@ describe('Certificate Integration Tests', () => {
         const cert1 = await certificateFactory({
             enrollmentId: enrollment1.id,
             userId: users.regular.id,
+            issuedAt: faker.date.future({ years: 3, refDate: new Date() }),
         });
         const cert2 = await certificateFactory({
             enrollmentId: enrollment2.id,
@@ -98,7 +99,7 @@ describe('Certificate Integration Tests', () => {
             return {
                 done: () => {
                     return Promise.resolve({
-                        Location: 'https://fake-s3.com/new-cert.pdf',
+                        Location: 'https://fake-s3.com/updated-cert.pdf',
                     });
                 },
             };
@@ -404,6 +405,107 @@ describe('Certificate Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.admin}`)
                 .set('Content-Type', 'text/plain')
                 .send(`enrollmentId=${completedEnrollment.id}`);
+
+            expect(response.status).toBe(415);
+        });
+    });
+
+    describe('PATCH /api/v1/certificates/:certificateId', () => {
+        it('should return 200 and update the certificate title', async () => {
+            const updateData = { title: 'New Certificate Title' };
+            const response = await request(server)
+                .patch(`/api/v1/certificates/${certificates[0].id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.certificate.title).toBe(updateData.title);
+            expect(printPdf).toHaveBeenCalledTimes(1);
+            expect(Upload).toHaveBeenCalledTimes(1);
+        });
+
+        it('should return 200 and update the certificate expiredAt', async () => {
+            const updateData = {
+                expiredAt: faker.date.future({
+                    years: 1,
+                    refDate: certificates[0].issuedAt,
+                }),
+            };
+            const response = await request(server)
+                .patch(`/api/v1/certificates/${certificates[0].id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(200);
+        });
+
+        it('should return 400 for invalid certificate ID', async () => {
+            const response = await request(server)
+                .patch('/api/v1/certificates/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ title: 'New Title' });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 400 for invalid request body', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/certificates/${certificates[0].id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ title: 12345 });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 when expiredAt is earlier than issuedAt', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/certificates/${certificates[0].id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({
+                    expiredAt: faker.date
+                        .past({
+                            years: 1,
+                            refDate: certificates[0].issuedAt,
+                        })
+                        .toISOString(),
+                });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 for unauthenticated requests', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/certificates/${certificates[0].id}`)
+                .send({ title: 'New Title' });
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 for non-admin users', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/certificates/${certificates[0].id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ title: 'New Title' });
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 if the certificate does not exist', async () => {
+            const response = await request(server)
+                .patch('/api/v1/certificates/99999')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ title: 'New Title' });
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 415 for incorrect content-type', async () => {
+            const response = await request(server)
+                .patch(`/api/v1/certificates/${certificates[0].id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .set('Content-Type', 'text/plain')
+                .send('title=New Certificate Title');
 
             expect(response.status).toBe(415);
         });
