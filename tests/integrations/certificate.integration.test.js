@@ -1,6 +1,21 @@
 /* eslint-disable no-undef */
 jest.mock('../../src/utils/printPdf');
 jest.mock('@aws-sdk/lib-storage');
+jest.mock('@aws-sdk/client-s3', () => {
+    return {
+        ...jest.requireActual('@aws-sdk/client-s3'),
+        DeleteObjectCommand: jest.fn(),
+    };
+});
+jest.mock('../../src/configs/s3', () => {
+    return {
+        ...jest.requireActual('../../src/configs/s3'),
+        s3: {
+            send: jest.fn(),
+        },
+    };
+});
+
 const request = require('supertest');
 const { server } = require('../../src/server');
 const { sequelize } = require('../../src/configs/database');
@@ -13,6 +28,7 @@ const certificateFactory = require('../../src/db/seeders/factories/certificate')
 const AuthService = require('../../src/services/auth.service');
 const printPdf = require('../../src/utils/printPdf');
 const { Upload } = require('@aws-sdk/lib-storage');
+const { s3 } = require('../../src/configs/s3');
 const { faker } = require('@faker-js/faker');
 
 describe('Certificate Integration Tests', () => {
@@ -65,6 +81,8 @@ describe('Certificate Integration Tests', () => {
             enrollmentId: enrollment1.id,
             userId: users.regular.id,
             issuedAt: faker.date.future({ years: 3, refDate: new Date() }),
+            documentUrl:
+                'https://fake-s3.com/documents/certificates/cert-to-delete.pdf',
         });
         const cert2 = await certificateFactory({
             enrollmentId: enrollment2.id,
@@ -104,6 +122,7 @@ describe('Certificate Integration Tests', () => {
                 },
             };
         });
+        s3.send.mockResolvedValue({});
     });
 
     afterEach(async () => {
@@ -508,6 +527,69 @@ describe('Certificate Integration Tests', () => {
                 .send('title=New Certificate Title');
 
             expect(response.status).toBe(415);
+        });
+    });
+
+    describe('DELETE /api/v1/certificates/:certificateId', () => {
+        it('should return 200 and delete the certificate successfully', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/certificates/${certificates[0].id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe(
+                'Successfully deleted a certificate.',
+            );
+            expect(s3.send).toHaveBeenCalledTimes(1);
+        });
+
+        it('should return 200 even if the certificate has no documentUrl', async () => {
+            const certWithoutDoc = await certificateFactory({
+                enrollmentId: certificates[0].enrollmentId,
+                userId: certificates[0].userId,
+                documentUrl: null,
+            });
+
+            const response = await request(server)
+                .delete(`/api/v1/certificates/${certWithoutDoc.id}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(s3.send).not.toHaveBeenCalled();
+        });
+
+        it('should return 400 for an invalid certificate ID', async () => {
+            const response = await request(server)
+                .delete('/api/v1/certificates/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 401 for an unauthenticated request', async () => {
+            const response = await request(server).delete(
+                `/api/v1/certificates/${certificates[0].id}`,
+            );
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 for a non-admin user', async () => {
+            const response = await request(server)
+                .delete(`/api/v1/certificates/${certificates[0].id}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(403);
+        });
+
+        it('should return 404 if the certificate does not exist', async () => {
+            const response = await request(server)
+                .delete('/api/v1/certificates/99999')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
         });
     });
 });

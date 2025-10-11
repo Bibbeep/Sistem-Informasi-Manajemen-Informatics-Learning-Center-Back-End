@@ -415,7 +415,6 @@ class CertificateService {
 
         if (certificate.documentUrl) {
             const oldKey = certificate.documentUrl.split('/').pop();
-            console.log(oldKey);
 
             await s3.send(
                 new DeleteObjectCommand({
