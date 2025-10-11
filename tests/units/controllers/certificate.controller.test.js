@@ -6,6 +6,7 @@ const CertificateController = require('../../../src/controllers/certificate.cont
 const CertificateService = require('../../../src/services/certificate.service');
 const {
     validateCertificateQuery,
+    validateCertificate,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -13,7 +14,7 @@ describe('Certificate Controller Unit Tests', () => {
     let req, res, next;
 
     beforeEach(() => {
-        req = { query: {}, params: {} };
+        req = { query: {}, params: {}, body: {} };
         res = {
             status: jest.fn().mockReturnThis(),
             json: jest.fn(),
@@ -114,6 +115,64 @@ describe('Certificate Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(mockServiceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('create', () => {
+        it('should return 201 and the created certificate', async () => {
+            const mockRequestBody = { enrollmentId: 1 };
+            const mockCertificate = { id: 1, title: 'Test Certificate' };
+            validateCertificate.mockReturnValue({
+                error: null,
+                value: mockRequestBody,
+            });
+            CertificateService.create.mockResolvedValue(mockCertificate);
+
+            await CertificateController.create(req, res, next);
+
+            expect(validateCertificate).toHaveBeenCalledWith(req.body);
+            expect(CertificateService.create).toHaveBeenCalledWith(
+                mockRequestBody,
+            );
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a certificate.',
+                data: {
+                    certificate: mockCertificate,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error', async () => {
+            const validationError = new ValidationError('Validation failed');
+            validateCertificate.mockReturnValue({ error: validationError });
+
+            await CertificateController.create(req, res, next);
+
+            expect(validateCertificate).toHaveBeenCalledWith(req.body);
+            expect(CertificateService.create).not.toHaveBeenCalled();
+            expect(next).toHaveBeenCalledWith(validationError);
+        });
+
+        it('should forward service errors to next', async () => {
+            const mockRequestBody = { enrollmentId: 1 };
+            const serviceError = new Error('Service error');
+            validateCertificate.mockReturnValue({
+                error: null,
+                value: mockRequestBody,
+            });
+            CertificateService.create.mockRejectedValue(serviceError);
+
+            await CertificateController.create(req, res, next);
+
+            expect(CertificateService.create).toHaveBeenCalledWith(
+                mockRequestBody,
+            );
+            expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
 });
