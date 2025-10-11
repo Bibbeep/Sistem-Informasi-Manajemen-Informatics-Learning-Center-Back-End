@@ -43,5 +43,12 @@ router.patch(
     authorize({ rules: ['admin'] }),
     CertificateController.updateById,
 );
+router.delete(
+    '/:certificateId',
+    authenticate,
+    validatePathParameterId('certificateId'),
+    authorize({ rules: ['admin'] }),
+    CertificateController.deleteById,
+);
 
 module.exports = router;

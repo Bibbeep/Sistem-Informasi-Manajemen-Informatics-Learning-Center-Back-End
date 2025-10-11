@@ -1,4 +1,5 @@
 const { Upload } = require('@aws-sdk/lib-storage');
+const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const { Certificate, Enrollment, Program, User } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 const printPdf = require('../utils/printPdf');
@@ -395,6 +396,36 @@ class CertificateService {
             programType: certificate.enrollment?.program?.type,
             programThumbnailUrl: certificate.enrollment?.program?.thumbnailUrl,
         };
+    }
+
+    static async deleteOne(certificateId) {
+        const certificate = await Certificate.findByPk(certificateId);
+
+        if (!certificate) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Certificate with "certificateId" does not exist',
+                    context: {
+                        key: 'certificateId',
+                        value: certificateId,
+                    },
+                },
+            ]);
+        }
+
+        if (certificate.documentUrl) {
+            const oldKey = certificate.documentUrl.split('/').pop();
+            console.log(oldKey);
+
+            await s3.send(
+                new DeleteObjectCommand({
+                    Bucket: process.env.S3_BUCKET_NAME,
+                    Key: `documents/certificates/${oldKey}`,
+                }),
+            );
+        }
+
+        await Certificate.destroy({ where: { id: certificateId } });
     }
 }
 

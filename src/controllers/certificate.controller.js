@@ -99,4 +99,21 @@ module.exports = {
             next(err);
         }
     },
+    deleteById: async (req, res, next) => {
+        try {
+            await CertificateService.deleteOne(
+                parseInt(req.params.certificateId, 10),
+            );
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a certificate.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
