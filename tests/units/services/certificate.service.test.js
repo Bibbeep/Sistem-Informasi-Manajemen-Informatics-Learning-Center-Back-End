@@ -1,8 +1,13 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models');
-const { Certificate } = require('../../../src/db/models');
+jest.mock('../../../src/utils/printPdf');
+jest.mock('@aws-sdk/lib-storage');
+const { Certificate, Enrollment } = require('../../../src/db/models');
 const CertificateService = require('../../../src/services/certificate.service');
 const HTTPError = require('../../../src/utils/httpError');
+const printPdf = require('../../../src/utils/printPdf');
+const { Upload } = require('@aws-sdk/lib-storage');
+const { fakerID_ID: faker } = require('@faker-js/faker');
 
 describe('Certificate Service Unit Tests', () => {
     afterEach(() => {
@@ -410,6 +415,208 @@ describe('Certificate Service Unit Tests', () => {
                 expect.any(Object),
             );
             expect(result).toEqual(null);
+        });
+    });
+
+    describe('create', () => {
+        const mockEnrollment = {
+            id: 1,
+            userId: 1,
+            status: 'Completed',
+            program: {
+                id: 1,
+                title: 'Test Program',
+                type: 'Course',
+            },
+            user: {
+                id: 1,
+                fullName: 'John Doe',
+            },
+            certificate: null,
+        };
+
+        const mockPdfBuffer = Buffer.from('test-pdf');
+
+        beforeEach(() => {
+            printPdf.mockResolvedValue(mockPdfBuffer);
+            Upload.mockImplementation(() => {
+                return {
+                    done: () => {
+                        return Promise.resolve({
+                            Location:
+                                'https://s3.amazonaws.com/bucket/test.pdf',
+                        });
+                    },
+                };
+            });
+            Certificate.create.mockResolvedValue({
+                toJSON: () => {
+                    return { id: 1, title: 'Test Certificate' };
+                },
+            });
+        });
+
+        it('should create a certificate successfully', async () => {
+            Enrollment.findByPk.mockResolvedValue(mockEnrollment);
+
+            const result = await CertificateService.create({
+                enrollmentId: 1,
+                issuedAt: faker.date.soon(),
+            });
+
+            expect(Enrollment.findByPk).toHaveBeenCalledWith(
+                1,
+                expect.any(Object),
+            );
+            expect(printPdf).toHaveBeenCalled();
+            expect(Upload).toHaveBeenCalled();
+            expect(Certificate.create).toHaveBeenCalled();
+            expect(result).toBeDefined();
+        });
+
+        it('should create a certificate successfully over an expired existing certificate', async () => {
+            const expiredAt = faker.date.past();
+            Enrollment.findByPk.mockResolvedValue({
+                ...mockEnrollment,
+                certificate: {
+                    expiredAt,
+                },
+            });
+
+            const result = await CertificateService.create({
+                enrollmentId: 1,
+                issuedAt: faker.date.past({ refDate: expiredAt }),
+            });
+
+            expect(Enrollment.findByPk).toHaveBeenCalledWith(
+                1,
+                expect.any(Object),
+            );
+            expect(printPdf).toHaveBeenCalled();
+            expect(Upload).toHaveBeenCalled();
+            expect(Certificate.create).toHaveBeenCalled();
+            expect(result).toBeDefined();
+        });
+
+        it('should throw 404 if enrollment not found', async () => {
+            Enrollment.findByPk.mockResolvedValue(null);
+
+            await expect(
+                CertificateService.create({
+                    enrollmentId: 999,
+                    issuedAt: faker.date.soon(),
+                }),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Enrollment with "enrollmentId" does not exist',
+                        context: { key: 'enrollmentId', value: 999 },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw 409 if an active certificate already exists', async () => {
+            Enrollment.findByPk.mockResolvedValue({
+                ...mockEnrollment,
+                certificate: { expiredAt: null },
+            });
+
+            await expect(
+                CertificateService.create({
+                    enrollmentId: 1,
+                    issuedAt: faker.date.soon(),
+                }),
+            ).rejects.toThrow(
+                new HTTPError(409, 'Resource conflict.', [
+                    {
+                        message:
+                            'Enrollment with "enrollmentId" already has an active certificate',
+                        context: { key: 'enrollmentId', value: 1 },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw 400 if enrollment is not completed', async () => {
+            Enrollment.findByPk.mockResolvedValue({
+                ...mockEnrollment,
+                status: 'In Progress',
+            });
+
+            await expect(
+                CertificateService.create({
+                    enrollmentId: 1,
+                    issuedAt: faker.date.soon(),
+                }),
+            ).rejects.toThrow(
+                new HTTPError(400, 'Validation error.', [
+                    {
+                        message: 'Enrollment "status" must be "Completed"',
+                        context: { key: 'status', value: 'In Progress' },
+                    },
+                ]),
+            );
+        });
+
+        it('should create a certificate with a custom title', async () => {
+            Enrollment.findByPk.mockResolvedValue(mockEnrollment);
+            const customTitle = 'Custom Certificate Title';
+
+            await CertificateService.create({
+                enrollmentId: 1,
+                title: customTitle,
+                issuedAt: faker.date.soon(),
+            });
+
+            expect(Certificate.create).toHaveBeenCalledWith(
+                expect.objectContaining({ title: customTitle }),
+            );
+        });
+
+        it('should handle different program types for credential prefix', async () => {
+            const programTypes = ['Seminar', 'Competition', 'Workshop'];
+            const credentialPrefixes = ['SMN', 'CMP', 'WRS'];
+
+            for (let i = 0; i < programTypes.length; i++) {
+                Enrollment.findByPk.mockResolvedValue({
+                    ...mockEnrollment,
+                    program: {
+                        ...mockEnrollment.program,
+                        type: programTypes[i],
+                    },
+                });
+
+                await CertificateService.create({
+                    enrollmentId: 1,
+                    issuedAt: faker.date.soon(),
+                });
+
+                expect(Certificate.create).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        credential: expect.stringContaining(
+                            credentialPrefixes[i],
+                        ),
+                    }),
+                );
+            }
+        });
+
+        it('should create a certificate with an expiry date', async () => {
+            Enrollment.findByPk.mockResolvedValue(mockEnrollment);
+            const issuedAt = faker.date.soon();
+            const expiredAt = faker.date.future({ refDate: issuedAt });
+
+            await CertificateService.create({
+                enrollmentId: 1,
+                issuedAt,
+                expiredAt,
+            });
+
+            expect(Certificate.create).toHaveBeenCalledWith(
+                expect.objectContaining({ expiredAt }),
+            );
         });
     });
 });
