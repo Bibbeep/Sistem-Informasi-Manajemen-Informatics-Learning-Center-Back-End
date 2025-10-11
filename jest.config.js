@@ -29,6 +29,7 @@ module.exports = {
     collectCoverage: true,
     collectCoverageFrom: [
         'src/**/*.js',
+        '!src/apis/**',
         '!src/configs/**',
         '!src/db/**',
         '!src/server.js',
