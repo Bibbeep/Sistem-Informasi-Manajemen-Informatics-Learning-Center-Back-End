@@ -2,12 +2,16 @@
 jest.mock('../../../src/db/models');
 jest.mock('../../../src/utils/printPdf');
 jest.mock('@aws-sdk/lib-storage');
+jest.mock('@aws-sdk/client-s3');
+jest.mock('../../../src/configs/s3');
 const { Certificate, Enrollment } = require('../../../src/db/models');
 const CertificateService = require('../../../src/services/certificate.service');
 const HTTPError = require('../../../src/utils/httpError');
 const printPdf = require('../../../src/utils/printPdf');
 const { Upload } = require('@aws-sdk/lib-storage');
-const { fakerID_ID: faker } = require('@faker-js/faker');
+const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { s3 } = require('../../../src/configs/s3');
+const { faker } = require('@faker-js/faker');
 
 describe('Certificate Service Unit Tests', () => {
     afterEach(() => {
@@ -789,6 +793,66 @@ describe('Certificate Service Unit Tests', () => {
                 expect.any(Array),
             );
             expect(result.expiredAt).toBe('2027-01-01T00:00:00.000Z');
+        });
+    });
+
+    describe('deleteOne', () => {
+        it('should delete a certificate and its document from S3', async () => {
+            const mockCertificate = {
+                id: 1,
+                documentUrl:
+                    'https://s3.amazonaws.com/bucket/documents/certificates/CERT-123.pdf',
+            };
+            Certificate.findByPk.mockResolvedValue(mockCertificate);
+            Certificate.destroy.mockResolvedValue(1);
+
+            await CertificateService.deleteOne(1);
+
+            expect(Certificate.findByPk).toHaveBeenCalledWith(1);
+            expect(s3.send).toHaveBeenCalledWith(
+                expect.any(DeleteObjectCommand),
+            );
+            expect(DeleteObjectCommand).toHaveBeenCalledWith({
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: 'documents/certificates/CERT-123.pdf',
+            });
+            expect(Certificate.destroy).toHaveBeenCalledWith({
+                where: { id: 1 },
+            });
+        });
+
+        it('should delete a certificate without a documentUrl', async () => {
+            const mockCertificate = {
+                id: 2,
+                documentUrl: null,
+            };
+            Certificate.findByPk.mockResolvedValue(mockCertificate);
+            Certificate.destroy.mockResolvedValue(1);
+
+            await CertificateService.deleteOne(2);
+
+            expect(Certificate.findByPk).toHaveBeenCalledWith(2);
+            expect(s3.send).not.toHaveBeenCalled();
+            expect(Certificate.destroy).toHaveBeenCalledWith({
+                where: { id: 2 },
+            });
+        });
+
+        it('should throw a 404 error if the certificate does not exist', async () => {
+            Certificate.findByPk.mockResolvedValue(null);
+
+            await expect(CertificateService.deleteOne(999)).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Certificate with "certificateId" does not exist',
+                        context: { key: 'certificateId', value: 999 },
+                    },
+                ]),
+            );
+
+            expect(Certificate.findByPk).toHaveBeenCalledWith(999);
+            expect(Certificate.destroy).not.toHaveBeenCalled();
         });
     });
 });
