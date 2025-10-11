@@ -637,6 +637,9 @@ describe('Enrollment Service Unit Tests', () => {
                     },
                 },
                 completedModules: [],
+                user: {
+                    fullName: 'John Doe',
+                },
             };
             Enrollment.findByPk.mockResolvedValue(mockEnrollment);
             CompletedModule.create.mockResolvedValue({ id: 1, ...mockData });
