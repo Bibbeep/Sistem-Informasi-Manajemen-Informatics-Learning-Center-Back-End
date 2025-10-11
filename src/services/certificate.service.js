@@ -1,11 +1,5 @@
 const { Upload } = require('@aws-sdk/lib-storage');
-const {
-    Certificate,
-    Enrollment,
-    Program,
-    User,
-    sequelize,
-} = require('../db/models');
+const { Certificate, Enrollment, Program, User } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 const printPdf = require('../utils/printPdf');
 const { s3 } = require('../configs/s3');

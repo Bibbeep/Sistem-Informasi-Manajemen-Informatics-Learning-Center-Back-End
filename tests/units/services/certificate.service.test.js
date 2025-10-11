@@ -619,4 +619,176 @@ describe('Certificate Service Unit Tests', () => {
             );
         });
     });
+
+    describe('updateOne', () => {
+        const mockPdfBuffer = Buffer.from('updated-pdf-content');
+        const mockCertificate = {
+            id: 1,
+            title: 'Old Title',
+            issuedAt: '2025-01-01T00:00:00.000Z',
+            credential: 'CRS0001-U0001',
+            enrollment: {
+                user: { fullName: 'John Doe' },
+                program: { title: 'Test Program', type: 'Course' },
+            },
+        };
+
+        beforeEach(() => {
+            printPdf.mockResolvedValue(mockPdfBuffer);
+            Upload.mockImplementation(() => {
+                return {
+                    done: () => {
+                        return Promise.resolve({
+                            Location:
+                                'https://s3.amazonaws.com/bucket/updated.pdf',
+                        });
+                    },
+                };
+            });
+            Certificate.update.mockResolvedValue([
+                1,
+                [
+                    {
+                        toJSON: () => {
+                            return {
+                                id: 1,
+                                title: 'New Title',
+                                expiredAt: '2026-01-01T00:00:00.000Z',
+                            };
+                        },
+                    },
+                ],
+            ]);
+        });
+
+        it('should update a certificate title and expiredAt successfully', async () => {
+            Certificate.findByPk.mockResolvedValue(mockCertificate);
+            const updateData = {
+                title: 'New Title',
+                expiredAt: '2026-01-01T00:00:00.000Z',
+            };
+
+            const result = await CertificateService.updateOne({
+                certificateId: 1,
+                updateData,
+            });
+
+            expect(Certificate.findByPk).toHaveBeenCalledWith(
+                1,
+                expect.any(Object),
+            );
+            expect(printPdf).toHaveBeenCalled();
+            expect(Upload).toHaveBeenCalled();
+            expect(Certificate.update).toHaveBeenCalled();
+            expect(result.title).toBe('New Title');
+            expect(result.expiredAt).toBe('2026-01-01T00:00:00.000Z');
+        });
+
+        it('should throw 404 if certificate is not found', async () => {
+            Certificate.findByPk.mockResolvedValue(null);
+
+            await expect(
+                CertificateService.updateOne({
+                    certificateId: 999,
+                    updateData: { title: 'New Title' },
+                }),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Certificate with "certificateId" does not exist',
+                        context: { key: 'certificateId', value: 999 },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw 400 if expiredAt is earlier than issuedAt', async () => {
+            Certificate.findByPk.mockResolvedValue(mockCertificate);
+            const updateData = {
+                expiredAt: '2024-12-31T00:00:00.000Z',
+            };
+
+            await expect(
+                CertificateService.updateOne({
+                    certificateId: 1,
+                    updateData,
+                }),
+            ).rejects.toThrow(
+                new HTTPError(400, 'Validation error.', [
+                    {
+                        message:
+                            'Certificate "expiredAt" cannot be earlier than "issuedAt"',
+                        context: {
+                            key: 'expiredAt',
+                            value: updateData.expiredAt,
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should handle updates with only a title', async () => {
+            Certificate.findByPk.mockResolvedValue(mockCertificate);
+            const updateData = { title: 'Only Title Updated' };
+            Certificate.update.mockResolvedValue([
+                1,
+                [
+                    {
+                        toJSON: () => {
+                            return {
+                                id: 1,
+                                title: 'Only Title Updated',
+                            };
+                        },
+                    },
+                ],
+            ]);
+
+            const result = await CertificateService.updateOne({
+                certificateId: 1,
+                updateData,
+            });
+
+            expect(printPdf).toHaveBeenCalledWith(
+                expect.objectContaining({ title: 'Only Title Updated' }),
+                expect.any(Array),
+            );
+            expect(result.title).toBe('Only Title Updated');
+        });
+
+        it('should handle updates with only an expiredAt date', async () => {
+            Certificate.findByPk.mockResolvedValue({
+                ...mockCertificate,
+                expiredAt: null,
+            });
+            const updateData = { expiredAt: '2027-01-01T00:00:00.000Z' };
+            Certificate.update.mockResolvedValue([
+                1,
+                [
+                    {
+                        toJSON: () => {
+                            return {
+                                id: 1,
+                                expiredAt: '2027-01-01T00:00:00.000Z',
+                            };
+                        },
+                    },
+                ],
+            ]);
+
+            const result = await CertificateService.updateOne({
+                certificateId: 1,
+                updateData,
+            });
+
+            expect(printPdf).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    expiredAt: expect.stringContaining('2027'),
+                }),
+                expect.any(Array),
+            );
+            expect(result.expiredAt).toBe('2027-01-01T00:00:00.000Z');
+        });
+    });
 });
