@@ -35,5 +35,13 @@ router.post(
     }),
     CertificateController.create,
 );
+router.patch(
+    '/:certificateId',
+    authenticate,
+    validatePathParameterId('certificateId'),
+    requireJsonContent,
+    authorize({ rules: ['admin'] }),
+    CertificateController.updateById,
+);
 
 module.exports = router;

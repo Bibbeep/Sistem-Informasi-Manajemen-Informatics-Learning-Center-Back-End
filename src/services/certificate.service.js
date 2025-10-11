@@ -1,5 +1,11 @@
 const { Upload } = require('@aws-sdk/lib-storage');
-const { Certificate, Enrollment, Program, User } = require('../db/models');
+const {
+    Certificate,
+    Enrollment,
+    Program,
+    User,
+    sequelize,
+} = require('../db/models');
 const HTTPError = require('../utils/httpError');
 const printPdf = require('../utils/printPdf');
 const { s3 } = require('../configs/s3');
@@ -238,6 +244,7 @@ class CertificateService {
 
         const fileBuffer = await printPdf(
             {
+                title,
                 userFullName: enrollment.user.fullName,
                 programTitle: enrollment.program.title,
                 programType: enrollment.program.type,
@@ -286,6 +293,113 @@ class CertificateService {
             programTitle: enrollment.program.title,
             programType: enrollment.program.type,
             programThumbnailUrl: enrollment.program.thumbnailUrl,
+        };
+    }
+
+    static async updateOne(data) {
+        const { certificateId, updateData } = data;
+
+        const certificate = await Certificate.findByPk(certificateId, {
+            include: [
+                {
+                    model: Enrollment,
+                    as: 'enrollment',
+                    attributes: ['programId'],
+                    include: [
+                        {
+                            model: Program,
+                            as: 'program',
+                            attributes: ['title', 'type', 'thumbnailUrl'],
+                        },
+                        {
+                            model: User,
+                            as: 'user',
+                            attributes: ['fullName'],
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!certificate) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Certificate with "certificateId" does not exist',
+                    context: {
+                        key: 'certificateId',
+                        value: certificateId,
+                    },
+                },
+            ]);
+        }
+
+        if (
+            updateData.expiredAt &&
+            new Date(updateData.expiredAt) <= new Date(certificate.issuedAt)
+        ) {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message:
+                        'Certificate "expiredAt" cannot be earlier than "issuedAt"',
+                    context: {
+                        key: 'expiredAt',
+                        value: updateData.expiredAt,
+                    },
+                },
+            ]);
+        }
+
+        const fileBuffer = await printPdf(
+            {
+                title: updateData.title || certificate.title,
+                userFullName: certificate.enrollment.user.fullName,
+                programTitle: certificate.enrollment.program.title,
+                programType: certificate.enrollment.program.type,
+                credential: certificate.credential,
+                issuedAt: new Intl.DateTimeFormat('en-US', {
+                    dateStyle: 'long',
+                }).format(new Date(certificate.issuedAt)),
+                expiredAt: updateData.expiredAt
+                    ? new Intl.DateTimeFormat('en-US', {
+                          dateStyle: 'long',
+                      }).format(new Date(updateData.expiredAt))
+                    : certificate.expiredAt,
+            },
+            ['..', 'templates', 'documents', 'certificate.hbs'],
+        );
+
+        const fileName = `documents/certificates/${certificate.credential}-${Date.now().toString()}.pdf`;
+
+        const client = new Upload({
+            client: s3,
+            params: {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: fileBuffer,
+                ContentType: 'application/pdf',
+                ACL: 'public-read',
+            },
+        });
+
+        const { Location } = await client.done();
+
+        // eslint-disable-next-line no-unused-vars
+        const [count, rows] = await Certificate.update(
+            { ...updateData, documentUrl: Location },
+            {
+                where: {
+                    id: certificateId,
+                },
+                returning: true,
+            },
+        );
+
+        return {
+            ...rows[0].toJSON(),
+            programId: certificate.enrollment?.programId,
+            programTitle: certificate.enrollment?.program?.title,
+            programType: certificate.enrollment?.program?.type,
+            programThumbnailUrl: certificate.enrollment?.program?.thumbnailUrl,
         };
     }
 }

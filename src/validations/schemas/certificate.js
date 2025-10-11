@@ -15,6 +15,7 @@ const certificateQueryParam = Joi.object({
         .default('all'),
 });
 
+// Request body for POST /api/v1/certificates
 const certificatePayload = Joi.object({
     enrollmentId: Joi.number().integer().positive().required(),
     title: Joi.string(),
@@ -22,7 +23,16 @@ const certificatePayload = Joi.object({
     expiredAt: Joi.date().iso().greater(Joi.ref('issuedAt')).optional(),
 });
 
+// Request body for PATCH /api/v1/certificates/:certificateId
+const certificateUpdate = Joi.object({
+    title: Joi.string(),
+    expiredAt: Joi.date().iso().greater(new Date()),
+})
+    .min(1)
+    .unknown(false);
+
 module.exports = {
     certificateQueryParam,
     certificatePayload,
+    certificateUpdate,
 };

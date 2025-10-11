@@ -30,6 +30,7 @@ const { invoiceQueryParam } = require('./schemas/invoice');
 const {
     certificateQueryParam,
     certificatePayload,
+    certificateUpdate,
 } = require('./schemas/certificate');
 
 // Any auto-increment integer id
@@ -66,4 +67,5 @@ module.exports = {
     validateInvoiceQuery: validator(invoiceQueryParam),
     validateCertificateQuery: validator(certificateQueryParam),
     validateCertificate: validator(certificatePayload),
+    validateUpdateCertificateData: validator(certificateUpdate),
 };

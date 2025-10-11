@@ -53,11 +53,21 @@
 
             .main-content {
                 flex: 1;
-                padding: 15mm 25mm;
+                padding: 10mm 25mm 15mm 25mm;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
                 text-align: center;
+            }
+
+            .certificate-title {
+                font-family: 'Merriweather', serif;
+                font-size: 18pt;
+                font-weight: 600;
+                color: #004aad;
+                text-transform: uppercase;
+                letter-spacing: 1.5px;
+                margin-bottom: 12pt;
             }
 
             .presented-to {
@@ -163,6 +173,7 @@
             </div>
 
             <div class='main-content'>
+                <h2 class='certificate-title'>{{title}}</h2>
                 <p class='presented-to'>Certificate of Completion</p>
                 <h2 class='user-name'>{{userFullName}}</h2>
                 <p class='completion-text'>
