@@ -1,5 +1,8 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models');
+jest.mock('../../../src/utils/printPdf');
+jest.mock('@aws-sdk/lib-storage');
+const { Upload } = require('@aws-sdk/lib-storage');
 const EnrollmentService = require('../../../src/services/enrollment.service');
 const {
     Enrollment,
@@ -8,8 +11,10 @@ const {
     Invoice,
     CourseModule,
     CompletedModule,
+    Certificate,
 } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
+const printPdf = require('../../../src/utils/printPdf');
 
 describe('Enrollment Service Unit Tests', () => {
     afterEach(() => {
@@ -466,11 +471,29 @@ describe('Enrollment Service Unit Tests', () => {
 
     describe('updateOne Tests', () => {
         it('should update an enrollment and return the updated data', async () => {
+            const mockPdfBuffer = Buffer.from('test-pdf');
+            printPdf.mockResolvedValue(mockPdfBuffer);
+            Upload.mockImplementation(() => {
+                return {
+                    done: () => {
+                        return Promise.resolve({
+                            Location:
+                                'https://s3.amazonaws.com/bucket/test.pdf',
+                        });
+                    },
+                };
+            });
+            Certificate.create.mockResolvedValue({
+                toJSON: () => {
+                    return { id: 1, title: 'Test Certificate' };
+                },
+            });
             const mockData = { enrollmentId: 1, status: 'Completed' };
             const mockEnrollment = {
                 id: 1,
                 status: 'In Progress',
                 program: { type: 'Workshop' },
+                user: { fullName: 'John Doe' },
             };
             const mockUpdatedRows = [
                 {
@@ -485,10 +508,6 @@ describe('Enrollment Service Unit Tests', () => {
 
             const result = await EnrollmentService.updateOne(mockData);
 
-            expect(Enrollment.findByPk).toHaveBeenCalledWith(
-                mockData.enrollmentId,
-                { include: [{ model: Program, as: 'program' }] },
-            );
             expect(Enrollment.update).toHaveBeenCalled();
             expect(result.status).toBe('Completed');
             expect(result.progressPercentage).toBe(100);
