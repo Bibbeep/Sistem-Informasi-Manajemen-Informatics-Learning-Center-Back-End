@@ -249,4 +249,37 @@ describe('Certificate Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
+
+    describe('deleteById', () => {
+        it('should return 200 and a success message on successful deletion', async () => {
+            req.params.certificateId = '1';
+            CertificateService.deleteOne.mockResolvedValue();
+
+            await CertificateController.deleteById(req, res, next);
+
+            expect(CertificateService.deleteOne).toHaveBeenCalledWith(1);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a certificate.',
+                data: null,
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            req.params.certificateId = '1';
+            const serviceError = new Error('Deletion failed');
+            CertificateService.deleteOne.mockRejectedValue(serviceError);
+
+            await CertificateController.deleteById(req, res, next);
+
+            expect(CertificateService.deleteOne).toHaveBeenCalledWith(1);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
 });
