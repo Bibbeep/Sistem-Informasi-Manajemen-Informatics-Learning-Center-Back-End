@@ -4802,6 +4802,808 @@
                     }
                 }
             }
+        },
+        "/api/v1/certificates": {
+            "get": {
+                "summary": "Retrieves a list of all certificates",
+                "tags": ["Certificate Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        },
+                        "description": "The page number to retrieve."
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "description": "The number of certificates per page."
+                    },
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "-id",
+                                "issuedAt",
+                                "-issuedAt",
+                                "expiredAt",
+                                "-expiredAt",
+                                "updatedAt",
+                                "-updatedAt"
+                            ],
+                            "default": "id"
+                        },
+                        "description": "The field to sort by. Use a '-' prefix for descending order (e.g., -issuedAt)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "userId",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter certificates by user ID. Required for non-admin users."
+                    },
+                    {
+                        "in": "query",
+                        "name": "programId",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter certificates by program ID."
+                    },
+                    {
+                        "in": "query",
+                        "name": "credential",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Filter certificates by a specific credential ID."
+                    },
+                    {
+                        "in": "query",
+                        "name": "type",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "course",
+                                "seminar",
+                                "workshop",
+                                "competition",
+                                "all"
+                            ],
+                            "default": "all"
+                        },
+                        "description": "Filter certificates by the type of program."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the list of certificates.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CertificateListSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid query parameters.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access. Non-admin users must provide their own `userId` and cannot view others' certificates.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Creates a new certificate for a completed enrollment",
+                "tags": ["Certificate Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CertificateCreateRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully created a certificate.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CertificateCreateSuccessResponse201"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or business logic violation (e.g., enrollment not completed).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    },
+                                    "EnrollmentNotCompleted": {
+                                        "summary": "Enrollment Not Completed",
+                                        "value": {
+                                            "success": false,
+                                            "statusCode": 400,
+                                            "data": null,
+                                            "message": "Validation error.",
+                                            "errors": [
+                                                {
+                                                    "message": "Enrollment \"status\" must be \"Completed\"",
+                                                    "context": {
+                                                        "key": "status",
+                                                        "value": "In Progress"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access. User is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Enrollment with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "summary": "Enrollment Not Found",
+                                        "value": {
+                                            "success": false,
+                                            "statusCode": 404,
+                                            "data": null,
+                                            "message": "Resource not found.",
+                                            "errors": [
+                                                {
+                                                    "message": "Enrollment with \"enrollmentId\" does not exist",
+                                                    "context": {
+                                                        "key": "enrollmentId",
+                                                        "value": 9999
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict. An active certificate already exists for this enrollment.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Conflict": {
+                                        "summary": "Active Certificate Exists",
+                                        "value": {
+                                            "success": false,
+                                            "statusCode": 409,
+                                            "data": null,
+                                            "message": "Resource conflict.",
+                                            "errors": [
+                                                {
+                                                    "message": "Enrollment with \"enrollmentId\" already has an active certificate",
+                                                    "context": {
+                                                        "key": "enrollmentId",
+                                                        "value": 1
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway. An error occurred with an external service (e.g., PDF generation).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadGateway": {
+                                        "summary": "External Service Error",
+                                        "value": {
+                                            "success": false,
+                                            "statusCode": 502,
+                                            "data": null,
+                                            "message": "Bad Gateway.",
+                                            "errors": [
+                                                {
+                                                    "message": "There is an error with external calls",
+                                                    "context": {
+                                                        "key": "external-service",
+                                                        "value": "DocRaptor"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/certificates/{certificateId}": {
+            "get": {
+                "summary": "Retrieves the details of a specific certificate",
+                "tags": ["Certificate Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "certificateId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the certificate to retrieve."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved the certificate details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CertificateDetailsSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid certificate ID format.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access. User is not an admin or the owner of the certificate.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Certificate with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "$ref": "#/components/examples/NotFound"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Updates a specific certificate by ID (Admin only)",
+                "tags": ["Certificate Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "certificateId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the certificate to update."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CertificateUpdateRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated the certificate.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CertificateUpdateSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request body or business logic violation (e.g., expiredAt is before issuedAt).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    },
+                                    "InvalidExpiryDate": {
+                                        "summary": "Expiry Date Before Issue Date",
+                                        "value": {
+                                            "success": false,
+                                            "statusCode": 400,
+                                            "data": null,
+                                            "message": "Validation error.",
+                                            "errors": [
+                                                {
+                                                    "message": "Certificate \"expiredAt\" cannot be earlier than \"issuedAt\"",
+                                                    "context": {
+                                                        "key": "expiredAt",
+                                                        "value": "2024-12-31T00:00:00.000Z"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access. User is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Certificate with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "summary": "Certificate Not Found",
+                                        "value": {
+                                            "success": false,
+                                            "statusCode": 404,
+                                            "data": null,
+                                            "message": "Resource not found.",
+                                            "errors": [
+                                                {
+                                                    "message": "Certificate with \"certificateId\" does not exist",
+                                                    "context": {
+                                                        "key": "certificateId",
+                                                        "value": 9999
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "415": {
+                        "description": "Unsupported media type.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "UnsupportedMediaType": {
+                                        "$ref": "#/components/examples/UnsupportedMediaType"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway. An error occurred with an external service (e.g., PDF generation).",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadGateway": {
+                                        "summary": "External Service Error",
+                                        "value": {
+                                            "success": false,
+                                            "statusCode": 502,
+                                            "data": null,
+                                            "message": "Bad Gateway.",
+                                            "errors": [
+                                                {
+                                                    "message": "There is an error with external calls",
+                                                    "context": {
+                                                        "key": "external-service",
+                                                        "value": "DocRaptor"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes a specific certificate by its ID (Admin only)",
+                "tags": ["Certificate Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "certificateId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the certificate to delete."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted the certificate.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CertificateDeleteSuccessResponse200"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid certificate ID format.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "BadRequest": {
+                                        "$ref": "#/components/examples/BadRequest"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access, token is missing or invalid.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Unauthorized": {
+                                        "$ref": "#/components/examples/Unauthorized"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access. User is not an admin.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "Forbidden": {
+                                        "$ref": "#/components/examples/Forbidden"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Certificate with the given ID not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "NotFound": {
+                                        "summary": "Certificate Not Found",
+                                        "value": {
+                                            "success": false,
+                                            "statusCode": 404,
+                                            "data": null,
+                                            "message": "Resource not found.",
+                                            "errors": [
+                                                {
+                                                    "message": "Certificate with \"certificateId\" does not exist",
+                                                    "context": {
+                                                        "key": "certificateId",
+                                                        "value": 9999
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -5219,6 +6021,62 @@
                     }
                 ]
             },
+            "Certificate": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "userId": {
+                        "type": "integer"
+                    },
+                    "enrollmentId": {
+                        "type": "integer"
+                    },
+                    "programId": {
+                        "type": "integer"
+                    },
+                    "programTitle": {
+                        "type": "string"
+                    },
+                    "programType": {
+                        "type": "string"
+                    },
+                    "programThumbnailUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "title": {
+                        "type": "string"
+                    },
+                    "credential": {
+                        "type": "string"
+                    },
+                    "documentUrl": {
+                        "type": "string",
+                        "format": "uri",
+                        "nullable": true
+                    },
+                    "issuedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "expiredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "nullable": true
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
             "RegisterRequestBody": {
                 "type": "object",
                 "properties": {
@@ -5501,6 +6359,55 @@
                 "required": ["courseModuleId"],
                 "example": {
                     "courseModuleId": 1
+                }
+            },
+            "CertificateCreateRequestBody": {
+                "type": "object",
+                "properties": {
+                    "enrollmentId": {
+                        "type": "integer",
+                        "description": "The ID of the completed enrollment."
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "A custom title for the certificate. If not provided, a default will be generated."
+                    },
+                    "issuedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The date the certificate is issued. Defaults to the current date if not provided."
+                    },
+                    "expiredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "The optional date the certificate expires. Must be after issuedAt."
+                    }
+                },
+                "required": ["enrollmentId"],
+                "example": {
+                    "enrollmentId": 1,
+                    "title": "Certificate of Advanced Web Development",
+                    "issuedAt": "2025-12-25T00:00:00.000Z",
+                    "expiredAt": "2027-12-25T00:00:00.000Z"
+                }
+            },
+            "CertificateUpdateRequestBody": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "A new title for the certificate."
+                    },
+                    "expiredAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "A new expiration date for the certificate. Must be after the original issue date."
+                    }
+                },
+                "minProperties": 1,
+                "example": {
+                    "title": "Certificate of Expertise in Advanced Backend Development",
+                    "expiredAt": "2028-12-31T00:00:00.000Z"
                 }
             },
             "CompletedModuleSuccessResponse201": {
@@ -6976,6 +7883,233 @@
                             "updatedAt": "2025-10-06T11:30:00.000Z"
                         }
                     },
+                    "errors": null
+                }
+            },
+            "CertificateListSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "certificates": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Certificate"
+                                }
+                            }
+                        }
+                    },
+                    "pagination": {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved all certificates.",
+                    "data": {
+                        "certificates": [
+                            {
+                                "id": 1,
+                                "userId": 1,
+                                "enrollmentId": 1,
+                                "programId": 1,
+                                "programTitle": "Introduction to Backend Development",
+                                "programType": "Course",
+                                "programThumbnailUrl": "https://example.com/thumb.jpg",
+                                "title": "Introduction to Backend Development Certificate of Completion",
+                                "credential": "CRS0001-U0001",
+                                "documentUrl": "https://example.com/certificate.pdf",
+                                "issuedAt": "2025-10-10T10:00:00.000Z",
+                                "expiredAt": null,
+                                "createdAt": "2025-10-10T10:00:00.000Z",
+                                "updatedAt": "2025-10-10T10:00:00.000Z"
+                            }
+                        ]
+                    },
+                    "pagination": {
+                        "currentRecords": 1,
+                        "totalRecords": 1,
+                        "currentPage": 1,
+                        "totalPages": 1,
+                        "nextPage": null,
+                        "prevPage": null
+                    },
+                    "errors": null
+                }
+            },
+            "CertificateDetailsSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "certificate": {
+                                "$ref": "#/components/schemas/Certificate"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully retrieved a certificate.",
+                    "data": {
+                        "certificate": {
+                            "id": 1,
+                            "userId": 1,
+                            "enrollmentId": 1,
+                            "programId": 1,
+                            "programTitle": "Introduction to Backend Development",
+                            "programType": "Course",
+                            "programThumbnailUrl": "https://example.com/thumb.jpg",
+                            "title": "Introduction to Backend Development Certificate of Completion",
+                            "credential": "CRS0001-U0001",
+                            "documentUrl": "https://example.com/certificate.pdf",
+                            "issuedAt": "2025-10-10T10:00:00.000Z",
+                            "expiredAt": null,
+                            "createdAt": "2025-10-10T10:00:00.000Z",
+                            "updatedAt": "2025-10-10T10:00:00.000Z"
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "CertificateCreateSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "certificate": {
+                                "$ref": "#/components/schemas/Certificate"
+                            }
+                        }
+                    },
+                    "errors": { "type": "object", "nullable": true }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 201,
+                    "message": "Successfully created a certificate.",
+                    "data": {
+                        "certificate": {
+                            "id": 1,
+                            "enrollmentId": 1,
+                            "userId": 1,
+                            "title": "Introduction to Backend Development Certificate of Completion",
+                            "credential": "CRS0001-U0001",
+                            "documentUrl": "https://fake-s3.com/new-cert.pdf",
+                            "issuedAt": "2025-10-10T10:00:00.000Z",
+                            "expiredAt": null,
+                            "updatedAt": "2025-10-10T10:00:00.000Z",
+                            "createdAt": "2025-10-10T10:00:00.000Z",
+                            "programId": 1,
+                            "programTitle": "Introduction to Backend Development",
+                            "programType": "Course",
+                            "programThumbnailUrl": "https://example.com/thumb.jpg"
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "CertificateUpdateSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "certificate": {
+                                "$ref": "#/components/schemas/Certificate"
+                            }
+                        }
+                    },
+                    "errors": { "type": "object", "nullable": true }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully updated a certificate.",
+                    "data": {
+                        "certificate": {
+                            "id": 1,
+                            "userId": 1,
+                            "enrollmentId": 1,
+                            "title": "Certificate of Expertise in Advanced Backend Development",
+                            "credential": "CRS0001-U0001",
+                            "documentUrl": "https://fake-s3.com/updated-cert.pdf",
+                            "issuedAt": "2025-10-10T10:00:00.000Z",
+                            "expiredAt": "2028-12-31T00:00:00.000Z",
+                            "createdAt": "2025-10-10T10:00:00.000Z",
+                            "updatedAt": "2025-10-11T10:00:00.000Z",
+                            "programId": 1,
+                            "programTitle": "Introduction to Backend Development",
+                            "programType": "Course",
+                            "programThumbnailUrl": "https://example.com/thumb.jpg"
+                        }
+                    },
+                    "errors": null
+                }
+            },
+            "CertificateDeleteSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
+                },
+                "example": {
+                    "success": true,
+                    "statusCode": 200,
+                    "message": "Successfully deleted a certificate.",
+                    "data": null,
                     "errors": null
                 }
             }
