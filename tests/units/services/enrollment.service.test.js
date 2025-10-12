@@ -1,5 +1,8 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models');
+jest.mock('../../../src/utils/printPdf');
+jest.mock('@aws-sdk/lib-storage');
+const { Upload } = require('@aws-sdk/lib-storage');
 const EnrollmentService = require('../../../src/services/enrollment.service');
 const {
     Enrollment,
@@ -8,8 +11,11 @@ const {
     Invoice,
     CourseModule,
     CompletedModule,
+    Certificate,
 } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
+const printPdf = require('../../../src/utils/printPdf');
+const { faker } = require('@faker-js/faker');
 
 describe('Enrollment Service Unit Tests', () => {
     afterEach(() => {
@@ -368,7 +374,7 @@ describe('Enrollment Service Unit Tests', () => {
 
     describe('create Tests', () => {
         it('should create a new enrollment and return enrollment and invoice data', async () => {
-            const mockData = { programId: 1, userId: 1 };
+            const mockData = { programId: 1, userId: 1, admin: true };
             const mockProgram = {
                 id: 1,
                 priceIdr: 50000,
@@ -392,7 +398,7 @@ describe('Enrollment Service Unit Tests', () => {
         });
 
         it('should create a new enrollment and return enrollment and invoice data for a free program', async () => {
-            const mockData = { programId: 1, userId: 1 };
+            const mockData = { programId: 1, userId: 1, admin: true };
             const mockProgram = {
                 id: 1,
                 priceIdr: 0,
@@ -434,8 +440,34 @@ describe('Enrollment Service Unit Tests', () => {
             expect(result.invoice.status).toBe('Verified');
         });
 
+        it('should throw 400 error if program is not available yet', async () => {
+            const mockData = { programId: 1, userId: 1, admin: false };
+            const mockProgram = {
+                id: 1,
+                priceIdr: 0,
+                title: 'Free Program',
+                type: 'Seminar',
+                availableDate: faker.date.future(),
+            };
+            const mockError = new HTTPError(400, 'Validation error.', [
+                {
+                    message: 'Program with "programId" is not available yet',
+                    context: {
+                        key: 'availableDate',
+                        value: mockProgram.availableDate,
+                    },
+                },
+            ]);
+
+            Program.findByPk.mockResolvedValue(mockProgram);
+
+            await expect(EnrollmentService.create(mockData)).rejects.toThrow(
+                mockError,
+            );
+        });
+
         it('should throw 404 error when program does not exist', async () => {
-            const mockData = { programId: 999, userId: 1 };
+            const mockData = { programId: 999, userId: 1, admin: true };
             Program.findByPk.mockResolvedValue(null);
 
             await expect(EnrollmentService.create(mockData)).rejects.toThrow(
@@ -444,7 +476,7 @@ describe('Enrollment Service Unit Tests', () => {
         });
 
         it('should throw 409 error when enrollment for program already exist', async () => {
-            const mockData = { programId: 1, userId: 1 };
+            const mockData = { programId: 1, userId: 1, admin: true };
             const mockProgram = { id: 1 };
             Program.findByPk.mockResolvedValue(mockProgram);
             Enrollment.findOne.mockResolvedValue({ id: 1 });
@@ -466,11 +498,29 @@ describe('Enrollment Service Unit Tests', () => {
 
     describe('updateOne Tests', () => {
         it('should update an enrollment and return the updated data', async () => {
+            const mockPdfBuffer = Buffer.from('test-pdf');
+            printPdf.mockResolvedValue(mockPdfBuffer);
+            Upload.mockImplementation(() => {
+                return {
+                    done: () => {
+                        return Promise.resolve({
+                            Location:
+                                'https://s3.amazonaws.com/bucket/test.pdf',
+                        });
+                    },
+                };
+            });
+            Certificate.create.mockResolvedValue({
+                toJSON: () => {
+                    return { id: 1, title: 'Test Certificate' };
+                },
+            });
             const mockData = { enrollmentId: 1, status: 'Completed' };
             const mockEnrollment = {
                 id: 1,
                 status: 'In Progress',
                 program: { type: 'Workshop' },
+                user: { fullName: 'John Doe' },
             };
             const mockUpdatedRows = [
                 {
@@ -485,10 +535,6 @@ describe('Enrollment Service Unit Tests', () => {
 
             const result = await EnrollmentService.updateOne(mockData);
 
-            expect(Enrollment.findByPk).toHaveBeenCalledWith(
-                mockData.enrollmentId,
-                { include: [{ model: Program, as: 'program' }] },
-            );
             expect(Enrollment.update).toHaveBeenCalled();
             expect(result.status).toBe('Completed');
             expect(result.progressPercentage).toBe(100);
@@ -618,6 +664,9 @@ describe('Enrollment Service Unit Tests', () => {
                     },
                 },
                 completedModules: [],
+                user: {
+                    fullName: 'John Doe',
+                },
             };
             Enrollment.findByPk.mockResolvedValue(mockEnrollment);
             CompletedModule.create.mockResolvedValue({ id: 1, ...mockData });

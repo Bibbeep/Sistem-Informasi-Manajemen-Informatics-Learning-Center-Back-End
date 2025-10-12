@@ -165,6 +165,13 @@ describe('Program Management Integration Tests', () => {
             );
         });
 
+        it('should return 200 and fetches a program with id query param', async () => {
+            const response = await request(server).get('/api/v1/programs?id=1');
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.programs.length).toBe(1);
+        });
+
         it('should return 200 and fetches empty programs with out of bound page number', async () => {
             const response = await request(server).get(
                 '/api/v1/programs?page=100',

@@ -195,7 +195,7 @@ class UserService {
             .webp({ quality: 40 })
             .toBuffer();
 
-        const fileName = `images/${data.userId}-photo-${Date.now().toString()}.webp`;
+        const fileName = `images/users/${data.userId}-photo-${Date.now().toString()}.webp`;
 
         const client = new Upload({
             client: s3,
@@ -216,7 +216,7 @@ class UserService {
             await s3.send(
                 new DeleteObjectCommand({
                     Bucket: process.env.S3_BUCKET_NAME,
-                    Key: `images/${oldKey}`,
+                    Key: `images/users/${oldKey}`,
                 }),
             );
         }

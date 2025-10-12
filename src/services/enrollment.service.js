@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const { Upload } = require('@aws-sdk/lib-storage');
 const {
     Enrollment,
     Program,
@@ -7,9 +8,13 @@ const {
     Invoice,
     Course,
     CourseModule,
+    User,
+    Certificate,
     Sequelize,
 } = require('../db/models');
 const HTTPError = require('../utils/httpError');
+const printPdf = require('../utils/printPdf');
+const { s3 } = require('../configs/s3');
 
 class EnrollmentService {
     static async getMany(data) {
@@ -147,8 +152,7 @@ class EnrollmentService {
     }
 
     static async create(data) {
-        const { programId, userId } = data;
-
+        const { programId, userId, admin: isAdmin } = data;
         const program = await Program.findByPk(programId);
 
         if (!program) {
@@ -158,6 +162,18 @@ class EnrollmentService {
                     context: {
                         key: 'programId',
                         value: programId,
+                    },
+                },
+            ]);
+        }
+
+        if (program.availableDate > new Date() && !isAdmin) {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: 'Program with "programId" is not available yet',
+                    context: {
+                        key: 'availableDate',
+                        value: program.availableDate,
                     },
                 },
             ]);
@@ -281,6 +297,12 @@ class EnrollmentService {
                 {
                     model: Program,
                     as: 'program',
+                    attributes: ['id', 'title', 'type', 'thumbnailUrl'],
+                },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['fullName'],
                 },
             ],
         });
@@ -321,34 +343,92 @@ class EnrollmentService {
             ]);
         }
 
-        // eslint-disable-next-line no-unused-vars
-        const [updatedCount, updatedRows] = await Enrollment.update(
+        const credentialPrefix = {
+            Seminar: 'SMN',
+            Competition: 'CMP',
+            Workshop: 'WRS',
+        };
+
+        const title = `${enrollment.program.title} Certificate of Completion`;
+        const credential = `${credentialPrefix[enrollment.program.type]}${String(
+            enrollment.program.id,
+        ).padStart(4, '0')}-U${String(enrollment.userId).padStart(4, '0')}`;
+
+        const fileBuffer = await printPdf(
             {
-                status,
-                progressPercentage: 100,
-                completedAt: new Date(Date.now()),
+                title,
+                userFullName: enrollment.user.fullName,
+                programTitle: enrollment.program.title,
+                programType: enrollment.program.type,
+                credential,
+                issuedAt: new Intl.DateTimeFormat('en-US', {
+                    dateStyle: 'long',
+                }).format(new Date()),
+                expiredAt: null,
             },
-            {
-                where: {
-                    id: enrollmentId,
-                },
-                returning: true,
-            },
+            ['..', 'templates', 'documents', 'certificate.hbs'],
         );
 
+        const fileName = `documents/certificates/${credential}-${Date.now().toString()}.pdf`;
+
+        const client = new Upload({
+            client: s3,
+            params: {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: fileBuffer,
+                ContentType: 'application/pdf',
+                ACL: 'public-read',
+            },
+        });
+
+        const { Location } = await client.done();
+        const payload = {
+            enrollmentId,
+            userId: enrollment.userId,
+            title,
+            credential,
+            documentUrl: Location,
+            issuedAt: new Date(),
+        };
+
+        const updatedEnrollment = await sequelize.transaction(async (t) => {
+            await Certificate.create(payload, {
+                transation: t,
+            });
+
+            // eslint-disable-next-line no-unused-vars
+            const [updatedCount, updatedRows] = await Enrollment.update(
+                {
+                    status,
+                    progressPercentage: 100,
+                    completedAt: new Date(Date.now()),
+                },
+                {
+                    where: {
+                        id: enrollmentId,
+                    },
+                    transaction: t,
+                    returning: true,
+                },
+            );
+
+            return updatedRows[0];
+        });
+
         return {
-            id: updatedRows[0].id,
-            userId: updatedRows[0].userId,
-            programId: updatedRows[0].programId,
+            id: updatedEnrollment.id,
+            userId: updatedEnrollment.userId,
+            programId: updatedEnrollment.programId,
             programTitle: enrollment.program.title,
             programType: enrollment.program.type,
             programThumbnailUrl: enrollment.program.thumbnailUrl,
-            progressPercentage: updatedRows[0].progressPercentage,
-            status: updatedRows[0].status,
-            completedAt: updatedRows[0].completedAt,
-            createdAt: updatedRows[0].createdAt,
-            updatedAt: updatedRows[0].updatedAt,
-            deletedAt: updatedRows[0].deletedAt,
+            progressPercentage: updatedEnrollment.progressPercentage,
+            status: updatedEnrollment.status,
+            completedAt: updatedEnrollment.completedAt,
+            createdAt: updatedEnrollment.createdAt,
+            updatedAt: updatedEnrollment.updatedAt,
+            deletedAt: updatedEnrollment.deletedAt,
         };
     }
 
@@ -415,6 +495,11 @@ class EnrollmentService {
                     as: 'completedModules',
                     required: false,
                 },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['fullName'],
+                },
             ],
         });
 
@@ -470,36 +555,108 @@ class EnrollmentService {
             ]);
         }
 
-        const completedModule = await CompletedModule.create({
-            enrollmentId,
-            courseModuleId,
-            completedAt: new Date(Date.now()),
-        });
+        const { progressPercentage, completedModule } =
+            await sequelize.transaction(async (t) => {
+                const completedModule = await CompletedModule.create(
+                    {
+                        enrollmentId,
+                        courseModuleId,
+                        completedAt: new Date(Date.now()),
+                    },
+                    {
+                        transaction: t,
+                    },
+                );
 
-        const progressPercentage = (
-            ((enrollment.completedModules.length + 1) /
-                Number(enrollment.program.course.toJSON().totalModules)) *
-            100
-        ).toFixed(2);
+                const progressPercentage = (
+                    ((enrollment.completedModules.length + 1) /
+                        Number(
+                            enrollment.program.course.toJSON().totalModules,
+                        )) *
+                    100
+                ).toFixed(2);
 
-        await Enrollment.update(
-            {
-                status:
-                    progressPercentage === '100.00'
-                        ? 'Completed'
-                        : 'In Progress',
-                progressPercentage,
-                completedAt:
-                    progressPercentage === '100.00'
-                        ? new Date(Date.now())
-                        : null,
-            },
-            {
-                where: {
-                    id: enrollmentId,
-                },
-            },
-        );
+                await Enrollment.update(
+                    {
+                        status:
+                            progressPercentage === '100.00'
+                                ? 'Completed'
+                                : 'In Progress',
+                        progressPercentage,
+                        completedAt:
+                            progressPercentage === '100.00'
+                                ? new Date(Date.now())
+                                : null,
+                    },
+                    {
+                        where: {
+                            id: enrollmentId,
+                        },
+                        transaction: t,
+                    },
+                );
+
+                if (progressPercentage === '100.00') {
+                    const title = `${enrollment.program.title} Certificate of Completion`;
+                    const credential = `CRS${String(
+                        enrollment.program.id,
+                    ).padStart(
+                        4,
+                        '0',
+                    )}-U${String(enrollment.userId).padStart(4, '0')}`;
+                    const now = new Date();
+
+                    const fileBuffer = await printPdf(
+                        {
+                            title,
+                            userFullName: enrollment.user.fullName,
+                            programTitle: enrollment.program.title,
+                            programType: enrollment.program.type,
+                            credential,
+                            issuedAt: new Intl.DateTimeFormat('en-US', {
+                                dateStyle: 'long',
+                            }).format(now),
+                            expiredAt: new Intl.DateTimeFormat('en-US', {
+                                dateStyle: 'long',
+                            }).format(new Date(now).getFullYear() + 3),
+                        },
+                        ['..', 'templates', 'documents', 'certificate.hbs'],
+                    );
+
+                    const fileName = `documents/certificates/${credential}-${Date.now().toString()}.pdf`;
+
+                    const client = new Upload({
+                        client: s3,
+                        params: {
+                            Bucket: process.env.S3_BUCKET_NAME,
+                            Key: fileName,
+                            Body: fileBuffer,
+                            ContentType: 'application/pdf',
+                            ACL: 'public-read',
+                        },
+                    });
+
+                    const { Location } = await client.done();
+                    const payload = {
+                        enrollmentId,
+                        userId: enrollment.userId,
+                        title,
+                        credential,
+                        documentUrl: Location,
+                        issuedAt: now,
+                        expiredAt: new Date(now).getFullYear() + 3,
+                    };
+
+                    await Certificate.create(payload, {
+                        transaction: t,
+                    });
+                }
+
+                return {
+                    progressPercentage,
+                    completedModule,
+                };
+            });
 
         return {
             progressPercentage,

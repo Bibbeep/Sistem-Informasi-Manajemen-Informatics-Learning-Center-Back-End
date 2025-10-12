@@ -14,6 +14,7 @@ const programQueryParam = Joi.object({
             return value;
         })
         .default('id'),
+    id: Joi.number().integer().positive(),
     type: Joi.string()
         .valid('course', 'seminar', 'workshop', 'competition', 'all')
         .default('all'),
