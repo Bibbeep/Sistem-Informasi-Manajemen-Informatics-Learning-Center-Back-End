@@ -6,12 +6,15 @@ if (process.env.NODE_ENV !== 'production') {
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
+const helmet = require('helmet');
 const morganMiddleware = require('./configs/morgan');
 const routes = require('./routes/index.route');
 const errorHandler = require('./middlewares/errorHandler.middleware');
 
 const app = express();
 
+app.disable('x-powered-by');
+app.use(helmet());
 app.use(compression());
 app.use(
     cors({
