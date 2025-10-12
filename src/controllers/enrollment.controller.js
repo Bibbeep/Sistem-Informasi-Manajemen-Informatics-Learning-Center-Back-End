@@ -62,6 +62,7 @@ module.exports = {
             const { enrollment, invoice } = await EnrollmentService.create({
                 ...value,
                 userId: req.tokenPayload.sub,
+                admin: req.tokenPayload.admin,
             });
 
             return res.status(201).json({

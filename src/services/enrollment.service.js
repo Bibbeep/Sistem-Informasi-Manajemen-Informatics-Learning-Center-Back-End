@@ -152,8 +152,7 @@ class EnrollmentService {
     }
 
     static async create(data) {
-        const { programId, userId } = data;
-
+        const { programId, userId, admin: isAdmin } = data;
         const program = await Program.findByPk(programId);
 
         if (!program) {
@@ -163,6 +162,18 @@ class EnrollmentService {
                     context: {
                         key: 'programId',
                         value: programId,
+                    },
+                },
+            ]);
+        }
+
+        if (program.availableDate > new Date() && !isAdmin) {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: 'Program with "programId" is not available yet',
+                    context: {
+                        key: 'availableDate',
+                        value: program.availableDate,
                     },
                 },
             ]);
