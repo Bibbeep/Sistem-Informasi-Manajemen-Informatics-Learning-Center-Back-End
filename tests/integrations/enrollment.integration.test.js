@@ -19,6 +19,7 @@ const {
 const courseFactory = require('../../src/db/seeders/factories/course');
 const printPdf = require('../../src/utils/printPdf');
 const { Upload } = require('@aws-sdk/lib-storage');
+const { faker } = require('@faker-js/faker');
 
 describe('Enrollment Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -50,18 +51,27 @@ describe('Enrollment Integration Tests', () => {
             another: anotherUser,
         };
 
-        const courseProgram = await programFactory({ type: 'Course' });
+        const courseProgram = await programFactory({
+            type: 'Course',
+            availableDate: faker.date.past(),
+        });
+        const courseProgramUnavailable = await programFactory({
+            type: 'Course',
+            availableDate: faker.date.future(),
+        });
         const workshopProgram = await programFactory({ type: 'Workshop' });
         const seminarProgram = await programFactory({ type: 'Seminar' });
         const freeProgram = await programFactory({
             type: 'Course',
             priceIdr: 0,
+            availableDate: faker.date.past(),
         });
 
         await courseFactory({ programId: courseProgram.id });
 
         programs = {
             course: courseProgram,
+            courseUnavailable: courseProgramUnavailable,
             workshop: workshopProgram,
             seminar: seminarProgram,
             free: freeProgram,
@@ -324,6 +334,15 @@ describe('Enrollment Integration Tests', () => {
             expect(response.body.data.invoice).toBeDefined();
             expect(response.body.data.enrollment.status).toBe('In Progress');
             expect(response.body.data.invoice.status).toBe('Verified');
+        });
+
+        it('should return 400 when program is not available', async () => {
+            const response = await request(server)
+                .post('/api/v1/enrollments')
+                .set('Authorization', `Bearer ${tokens.another}`)
+                .send({ programId: programs.courseUnavailable.id });
+
+            expect(response.status).toBe(400);
         });
 
         it('should return 400 when invalid request body', async () => {
