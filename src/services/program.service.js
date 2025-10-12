@@ -33,6 +33,10 @@ class ProgramService {
 
         where.priceIdr = priceFilter;
 
+        if (data.id) {
+            where.id = data.id;
+        }
+
         const { count, rows } = await Program.findAndCountAll({
             where,
             limit,
