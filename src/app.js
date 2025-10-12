@@ -7,13 +7,16 @@ const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
 const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const morganMiddleware = require('./configs/morgan');
 const routes = require('./routes/index.route');
 const errorHandler = require('./middlewares/errorHandler.middleware');
+const rateLimitConfig = require('./configs/rateLimiter');
 
 const app = express();
 
 app.disable('x-powered-by');
+app.use(rateLimit(rateLimitConfig));
 app.use(helmet());
 app.use(compression());
 app.use(
