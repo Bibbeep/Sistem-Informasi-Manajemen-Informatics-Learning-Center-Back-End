@@ -326,6 +326,41 @@ describe('Program Service Unit Tests', () => {
             });
             expect(returnValue).toStrictEqual(mockReturnValue);
         });
+
+        it('should return program and with id query param', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                type: 'all',
+                id: 1,
+            };
+            const mockCount = 1;
+            const mockRows = new Array(1);
+            const mockReturnValue = {
+                pagination: {
+                    currentRecords: 1,
+                    totalRecords: 1,
+                    currentPage: 1,
+                    totalPages: 1,
+                    nextPage: null,
+                    prevPage: null,
+                },
+                programs: mockRows,
+            };
+
+            Program.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const returnValue = await ProgramService.getMany(mockParams);
+
+            expect(Program.findAndCountAll).toHaveBeenCalledWith(
+                expect.any(Object),
+            );
+            expect(returnValue).toStrictEqual(mockReturnValue);
+        });
     });
 
     describe('getOne Tests', () => {
