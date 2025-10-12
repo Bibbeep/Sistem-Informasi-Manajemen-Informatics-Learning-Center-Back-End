@@ -1,4 +1,6 @@
 /* eslint-disable no-undef */
+jest.mock('../../src/utils/printPdf');
+jest.mock('@aws-sdk/lib-storage');
 const request = require('supertest');
 const { server } = require('../../src/server');
 const truncate = require('../../scripts/db/truncate');
@@ -15,6 +17,8 @@ const {
     Enrollment,
 } = require('../../src/db/models');
 const courseFactory = require('../../src/db/seeders/factories/course');
+const printPdf = require('../../src/utils/printPdf');
+const { Upload } = require('@aws-sdk/lib-storage');
 
 describe('Enrollment Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -131,6 +135,17 @@ describe('Enrollment Integration Tests', () => {
                 })
             ).accessToken,
         };
+
+        printPdf.mockResolvedValue(Buffer.from('mock-pdf-content'));
+        Upload.mockImplementation(() => {
+            return {
+                done: () => {
+                    return Promise.resolve({
+                        Location: 'https://fake-s3.com/new-cert.pdf',
+                    });
+                },
+            };
+        });
     });
 
     afterEach(async () => {
