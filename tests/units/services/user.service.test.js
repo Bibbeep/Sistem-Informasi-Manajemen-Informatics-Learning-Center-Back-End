@@ -286,6 +286,43 @@ describe('User Service Unit Tests', () => {
                 }),
             );
         });
+
+        it('should return a user data with email query param', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                role: 'all',
+                level: 'all',
+                email: 'email@email.com',
+            };
+            const mockFetchCount = 1;
+            const mockFetchRows = new Array(1);
+
+            User.findAndCountAll.mockResolvedValue({
+                count: mockFetchCount,
+                rows: mockFetchRows,
+            });
+
+            const result = await UserService.getMany(mockParams);
+
+            expect(User.findAndCountAll).toHaveBeenCalledWith(
+                expect.any(Object),
+            );
+            expect(result).toEqual(
+                expect.objectContaining({
+                    pagination: {
+                        currentRecords: 1,
+                        totalRecords: 1,
+                        currentPage: 1,
+                        totalPages: 1,
+                        nextPage: null,
+                        prevPage: null,
+                    },
+                    users: mockFetchRows,
+                }),
+            );
+        });
     });
 
     describe('getOne Tests', () => {
