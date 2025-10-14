@@ -216,18 +216,6 @@
                         "bearerAuth": []
                     }
                 ],
-                "parameters": [
-                    {
-                        "in": "header",
-                        "name": "Authorization",
-                        "description": "Bearer JWT access token",
-                        "schema": {
-                            "type": "string",
-                            "format": "JWT"
-                        },
-                        "required": true
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "User logged out successfully",

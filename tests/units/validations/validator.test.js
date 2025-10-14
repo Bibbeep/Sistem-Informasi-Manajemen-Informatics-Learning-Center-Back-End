@@ -12,7 +12,10 @@ const {
 const { ValidationError } = require('joi');
 
 describe('Authentication Validation Unit Tests', () => {
+    const originalEnv = process.env;
+
     beforeAll(() => {
+        process.env.CORS_ORIGIN = '*';
         jest.useFakeTimers().setSystemTime(
             new Date('2025-12-12T00:00:00.000Z'),
         );
@@ -20,6 +23,7 @@ describe('Authentication Validation Unit Tests', () => {
 
     afterAll(() => {
         jest.useRealTimers();
+        process.env = originalEnv;
     });
 
     describe('validateRegister Tests', () => {

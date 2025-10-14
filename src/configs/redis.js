@@ -13,6 +13,7 @@ const redisClient = createClient({
     socket: {
         host: process.env.REDIS_HOST || 'localhost',
         port: process.env.REDIS_PORT || '6379',
+        tls: process.env.NODE_ENV === 'production' ? true : false,
     },
 });
 

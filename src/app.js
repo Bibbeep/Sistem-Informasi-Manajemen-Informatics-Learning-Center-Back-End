@@ -15,6 +15,7 @@ const rateLimitConfig = require('./configs/rateLimiter');
 
 const app = express();
 
+app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(rateLimit(rateLimitConfig));
 app.use(helmet());
@@ -35,6 +36,14 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 app.use('/api/v1', routes);
+/* istanbul ignore next */
+app.get('/health', (req, res) => {
+    return res.send('OK');
+});
+/* istanbul ignore next */
+app.use((req, res) => {
+    res.redirect(302, '/api/v1/docs');
+});
 app.use(errorHandler);
 
 module.exports = { app };

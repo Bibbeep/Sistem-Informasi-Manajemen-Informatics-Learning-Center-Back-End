@@ -22,6 +22,10 @@ class UserService {
             where.memberLevel = level === 'basic' ? 'Basic' : 'Premium';
         }
 
+        if (data.email) {
+            where.email = data.email;
+        }
+
         const { count, rows } = await User.findAndCountAll({
             where,
             limit,
