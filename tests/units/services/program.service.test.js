@@ -361,6 +361,78 @@ describe('Program Service Unit Tests', () => {
             );
             expect(returnValue).toStrictEqual(mockReturnValue);
         });
+
+        it('should return available programs and with isAvailable query param', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                type: 'all',
+                id: 1,
+                isAvailable: true,
+            };
+            const mockCount = 15;
+            const mockRows = new Array(10);
+            const mockReturnValue = {
+                pagination: {
+                    currentRecords: 10,
+                    totalRecords: 15,
+                    currentPage: 1,
+                    totalPages: 2,
+                    nextPage: 2,
+                    prevPage: null,
+                },
+                programs: mockRows,
+            };
+
+            Program.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const returnValue = await ProgramService.getMany(mockParams);
+
+            expect(Program.findAndCountAll).toHaveBeenCalledWith(
+                expect.any(Object),
+            );
+            expect(returnValue).toStrictEqual(mockReturnValue);
+        });
+
+        it('should return unavailable programs and with isAvailable query param', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                type: 'all',
+                id: 1,
+                isAvailable: false,
+            };
+            const mockCount = 5;
+            const mockRows = new Array(5);
+            const mockReturnValue = {
+                pagination: {
+                    currentRecords: 5,
+                    totalRecords: 5,
+                    currentPage: 1,
+                    totalPages: 1,
+                    nextPage: null,
+                    prevPage: null,
+                },
+                programs: mockRows,
+            };
+
+            Program.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const returnValue = await ProgramService.getMany(mockParams);
+
+            expect(Program.findAndCountAll).toHaveBeenCalledWith(
+                expect.any(Object),
+            );
+            expect(returnValue).toStrictEqual(mockReturnValue);
+        });
     });
 
     describe('getOne Tests', () => {
