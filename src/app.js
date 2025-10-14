@@ -36,6 +36,12 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 app.use('/api/v1', routes);
+app.get('/health', (req, res) => {
+    return res.send('OK');
+});
+app.use((req, res) => {
+    res.redirect(302, '/api/v1/docs');
+});
 app.use(errorHandler);
 
 module.exports = { app };

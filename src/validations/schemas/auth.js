@@ -23,6 +23,7 @@ const tokenPayload = Joi.object({
         .uuid({ version: ['uuidv4'] })
         .required(),
     aud: Joi.string()
+        .allow(process.env.CORS_ORIGIN)
         .uri({ scheme: ['http', 'https'] })
         .required(),
     iss: Joi.string()

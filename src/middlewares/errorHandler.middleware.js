@@ -62,13 +62,31 @@ module.exports = (err, req, res, next) => {
                   })
                 : null,
         });
+    } else if (err instanceof SyntaxError) {
+        return res.status(err.statusCode).json({
+            success: false,
+            statusCode: err.statusCode,
+            data: null,
+            message: 'Validation error.',
+            errors: err.body
+                ? [
+                      {
+                          message: err.message,
+                          context: {
+                              key: 'body',
+                              value: err.body,
+                          },
+                      },
+                  ]
+                : null,
+        });
     } else {
         /* istanbul ignore next */
         if (process.env.NODE_ENV === 'development') {
             console.error(err);
         }
 
-        // console.log('500 Error ==>', err);
+        console.log('500 Error ==>', err);
         return res.status(500).json({
             success: false,
             statusCode: 500,
