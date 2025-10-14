@@ -1,3 +1,8 @@
+/* istanbul ignore next */
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 const Joi = require('joi');
 
 // Request body of POST /api/v1/auth/register

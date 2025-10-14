@@ -82,11 +82,10 @@ module.exports = (err, req, res, next) => {
         });
     } else {
         /* istanbul ignore next */
-        if (process.env.NODE_ENV === 'development') {
+        if (process.env.NODE_ENV !== 'test') {
             console.error(err);
         }
 
-        console.log('500 Error ==>', err);
         return res.status(500).json({
             success: false,
             statusCode: 500,
