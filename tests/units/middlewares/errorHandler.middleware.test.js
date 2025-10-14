@@ -126,6 +126,40 @@ describe('Error Handling Middleware Unit Tests', () => {
         });
     });
 
+    it('should handles SyntaxError with 400 error code', () => {
+        const mockError = new SyntaxError('ERROR');
+        mockError.statusCode = 400;
+
+        errorHandler(mockError, req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            success: false,
+            statusCode: 400,
+            data: null,
+            message: 'Validation error.',
+            errors: null,
+        });
+    });
+
+    it('should handles SyntaxError with 400 error code and has error body', () => {
+        const mockError = new SyntaxError('ERROR');
+        mockError.statusCode = 400;
+        mockError.message = 'NO!';
+        mockError.body = 'HEYAHYEA';
+
+        errorHandler(mockError, req, res, next);
+
+        expect(res.status).toHaveBeenCalledWith(400);
+        expect(res.json).toHaveBeenCalledWith({
+            success: false,
+            statusCode: 400,
+            data: null,
+            message: 'Validation error.',
+            errors: expect.any(Array),
+        });
+    });
+
     it('should handles generic Error with 500 and generic message', () => {
         const err = new Error('Unexpected failure');
 
