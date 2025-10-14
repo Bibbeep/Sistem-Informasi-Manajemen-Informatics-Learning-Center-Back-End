@@ -27,7 +27,7 @@ const programQueryParam = Joi.object({
 const program = Joi.object({
     title: Joi.string().required(),
     description: Joi.string().required(),
-    availableDate: Joi.date().iso().greater('now').required(),
+    availableDate: Joi.date().iso(),
     type: Joi.string()
         .valid('Course', 'Seminar', 'Workshop', 'Competition')
         .required(),
