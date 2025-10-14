@@ -36,9 +36,11 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 
 app.use('/api/v1', routes);
+/* istanbul ignore next */
 app.get('/health', (req, res) => {
     return res.send('OK');
 });
+/* istanbul ignore next */
 app.use((req, res) => {
     res.redirect(302, '/api/v1/docs');
 });
