@@ -9,6 +9,7 @@ const userQueryParam = Joi.object({
         .default('id'),
     role: Joi.string().valid('user', 'admin', 'all').default('all'),
     level: Joi.string().valid('basic', 'premium', 'all').default('all'),
+    email: Joi.string().email(),
 });
 
 // Request body of PATCH /api/v1/users/:userId
