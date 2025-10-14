@@ -1,2 +1,0 @@
-npm run -s lint
-npm run -s test:clean
