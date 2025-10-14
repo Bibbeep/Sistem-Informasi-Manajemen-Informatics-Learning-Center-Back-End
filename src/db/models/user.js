@@ -53,16 +53,9 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.DATE,
                 field: 'updated_at',
             },
-            deletedAt: {
-                allowNull: true,
-                type: DataTypes.DATE,
-                field: 'deleted_at',
-            },
         },
         {
             tableName: 'users',
-            paranoid: true,
-            deletedAt: 'deletedAt',
         },
     );
 
@@ -70,6 +63,12 @@ module.exports = (sequelize, DataTypes) => {
         User.hasMany(models.FeedbackResponse, {
             foreignKey: 'adminUserId',
             as: 'feedbackResponses',
+        });
+
+        User.hasMany(models.Enrollment, {
+            foreignKey: 'userId',
+            as: 'enrollments',
+            onDelete: 'CASCADE',
         });
     };
 
