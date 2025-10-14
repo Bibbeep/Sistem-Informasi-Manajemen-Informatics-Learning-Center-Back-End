@@ -15,6 +15,7 @@ const rateLimitConfig = require('./configs/rateLimiter');
 
 const app = express();
 
+app.set('trust proxy', 1);
 app.disable('x-powered-by');
 app.use(rateLimit(rateLimitConfig));
 app.use(helmet());

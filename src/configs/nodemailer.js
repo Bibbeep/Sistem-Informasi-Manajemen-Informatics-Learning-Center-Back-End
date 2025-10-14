@@ -5,24 +5,14 @@ if (process.env.NODE_ENV !== 'production') {
 const nodemailer = require('nodemailer');
 const chalk = require('chalk');
 
-const transportConfig =
-    process.env.NODE_ENV === 'production'
-        ? {
-              service: process.env.NODEMAILER_SERVICE,
-              auth: {
-                  user: process.env.NODEMAILER_USER,
-                  pass: process.env.NODEMAILER_PASS,
-              },
-          }
-        : {
-              host: process.env.NODEMAILER_HOST,
-              port: process.env.NODEMAILER_PORT,
-              secure: false,
-              auth: {
-                  user: process.env.NODEMAILER_USER,
-                  pass: process.env.NODEMAILER_PASS,
-              },
-          };
+const transportConfig = {
+    host: process.env.NODEMAILER_HOST,
+    port: process.env.NODEMAILER_PORT,
+    auth: {
+        user: process.env.NODEMAILER_USER,
+        pass: process.env.NODEMAILER_PASS,
+    },
+};
 
 const transporter = nodemailer.createTransport(transportConfig);
 
