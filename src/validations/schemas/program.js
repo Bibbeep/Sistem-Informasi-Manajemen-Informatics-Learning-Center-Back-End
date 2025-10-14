@@ -15,6 +15,7 @@ const programQueryParam = Joi.object({
         })
         .default('id'),
     id: Joi.number().integer().positive(),
+    isAvailable: Joi.boolean(),
     type: Joi.string()
         .valid('course', 'seminar', 'workshop', 'competition', 'all')
         .default('all'),
@@ -26,7 +27,7 @@ const programQueryParam = Joi.object({
 const program = Joi.object({
     title: Joi.string().required(),
     description: Joi.string().required(),
-    availableDate: Joi.date().iso().greater('now').required(),
+    availableDate: Joi.date().iso().default(new Date()),
     type: Joi.string()
         .valid('Course', 'Seminar', 'Workshop', 'Competition')
         .required(),

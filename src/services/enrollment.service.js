@@ -392,29 +392,35 @@ class EnrollmentService {
             issuedAt: new Date(),
         };
 
-        const updatedEnrollment = await sequelize.transaction(async (t) => {
-            await Certificate.create(payload, {
-                transation: t,
-            });
-
-            // eslint-disable-next-line no-unused-vars
-            const [updatedCount, updatedRows] = await Enrollment.update(
-                {
-                    status,
-                    progressPercentage: 100,
-                    completedAt: new Date(Date.now()),
-                },
-                {
-                    where: {
-                        id: enrollmentId,
-                    },
-                    transaction: t,
+        const { updatedEnrollment, certificate } = await sequelize.transaction(
+            async (t) => {
+                const certificate = await Certificate.create(payload, {
                     returning: true,
-                },
-            );
+                    transation: t,
+                });
 
-            return updatedRows[0];
-        });
+                // eslint-disable-next-line no-unused-vars
+                const [updatedCount, updatedRows] = await Enrollment.update(
+                    {
+                        status,
+                        progressPercentage: 100,
+                        completedAt: new Date(Date.now()),
+                    },
+                    {
+                        where: {
+                            id: enrollmentId,
+                        },
+                        transaction: t,
+                        returning: true,
+                    },
+                );
+
+                return {
+                    updatedEnrollment: updatedRows[0],
+                    certificate,
+                };
+            },
+        );
 
         return {
             id: updatedEnrollment.id,
@@ -426,6 +432,14 @@ class EnrollmentService {
             progressPercentage: updatedEnrollment.progressPercentage,
             status: updatedEnrollment.status,
             completedAt: updatedEnrollment.completedAt,
+            certificate: {
+                id: certificate.id,
+                title: certificate.title,
+                credential: certificate.credential,
+                documentUrl: certificate.documentUrl,
+                issuedAt: certificate.issuedAt,
+                expiredAt: certificate.expiredAt,
+            },
             createdAt: updatedEnrollment.createdAt,
             updatedAt: updatedEnrollment.updatedAt,
             deletedAt: updatedEnrollment.deletedAt,
