@@ -37,6 +37,18 @@ class ProgramService {
             where.id = data.id;
         }
 
+        if (typeof data.isAvailable === 'boolean') {
+            if (data.isAvailable) {
+                where.availableDate = {
+                    [Op.lte]: new Date(),
+                };
+            } else {
+                where.availableDate = {
+                    [Op.gt]: new Date(),
+                };
+            }
+        }
+
         const { count, rows } = await Program.findAndCountAll({
             where,
             limit,
