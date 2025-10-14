@@ -10,7 +10,6 @@ module.exports = async (to, subject, text, html) => {
             html,
         });
     } catch (err) {
-        console.log('Nodemailer ==>', err);
         return err;
     }
 };

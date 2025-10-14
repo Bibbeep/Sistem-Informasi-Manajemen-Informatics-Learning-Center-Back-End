@@ -8,7 +8,7 @@ describe('Mailer Utility Unit Tests', () => {
 
     beforeEach(() => {
         jest.resetModules();
-        process.env.NODEMAILER_USER = 'admin@similc.ac.id';
+        process.env.NODEMAILER_SENDER = 'admin@similc.ac.id';
     });
 
     afterEach(() => {
@@ -34,7 +34,7 @@ describe('Mailer Utility Unit Tests', () => {
 
         expect(transporter.sendMail).toHaveBeenCalledWith({
             ...mockData,
-            from: `"Informatics Learning Center Team" <${process.env.NODEMAILER_USER}>`,
+            from: process.env.NODEMAILER_SENDER,
         });
         expect(mailer).not.toThrow();
     });
@@ -58,7 +58,7 @@ describe('Mailer Utility Unit Tests', () => {
 
         expect(transporter.sendMail).toHaveBeenCalledWith({
             ...mockData,
-            from: `"Informatics Learning Center Team" <${process.env.NODEMAILER_USER}>`,
+            from: process.env.NODEMAILER_SENDER,
         });
         expect(result).toBe(mockError);
     });
