@@ -6,13 +6,8 @@ const { createClient } = require('redis');
 const chalk = require('chalk');
 
 const redisClient = createClient({
-    username: process.env.REDIS_USER || 'default',
-    password: process.env.REDIS_PASSWORD || null,
-    database:
-        process.env.NODE_ENV == 'test' ? '15' : process.env.REDIS_DB || '0',
+    url: process.env.REDIS_URL,
     socket: {
-        host: process.env.REDIS_HOST || 'localhost',
-        port: process.env.REDIS_PORT || '6379',
         tls: process.env.NODE_ENV === 'production' ? true : false,
     },
 });

@@ -1,0 +1,42 @@
+# Exported from Render on 2025-10-14T16:24:13Z
+version: '1'
+services:
+    - type: web
+      name: sim-ilc-minio-staging
+      runtime: image
+      image:
+          url: docker.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
+      plan: free
+      envVars:
+          - key: PORT
+            sync: false
+          - key: HOST
+            sync: false
+          - key: S3_BUCKET_NAME
+            sync: false
+          - key: MINIO_ROOT_PASSWORD
+            sync: false
+          - key: MINIO_ROOT_USER
+            sync: false
+          - key: MINIO_BROWSER
+            value: 'off'
+      region: singapore
+      dockerCommand:
+          /bin/bash -c minio server /data --address "$HOST:$PORT" & sleep 5; until mc alias set local http://localhost:$PORT "$MINIO_ROOT_USER" "$MINIO_ROOT_PASSWORD"; do sleep 1; done; mc ls local/"$S3_BUCKET_NAME" >/dev/null 2>&1 || mc mb local/"$S3_BUCKET_NAME"; mc anonymous set download local/"$S3_BUCKET_NAME"; wait
+      autoDeployTrigger: "off"
+
+    - type: keyvalue
+      name: sim-ilc-redis-staging
+      plan: free
+      region: singapore
+      maxmemoryPolicy: allkeys-lru
+      ipAllowList: []
+
+databases:
+    - name: sim-ilc-db-staging
+      databaseName: sim_ilc_5829
+      user: sim_ilc_admin
+      plan: free
+      region: singapore
+      ipAllowList: []
+      postgresMajorVersion: '17'

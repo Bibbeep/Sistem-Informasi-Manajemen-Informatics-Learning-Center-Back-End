@@ -1,0 +1,8 @@
+npm run -s test:clean
+
+if [ $? -ne 0 ]; then
+    echo "Tests failed. Aborting merge commit."
+    exit 1
+fi
+
+echo "Tests passed. Proceeding with merge commit."
