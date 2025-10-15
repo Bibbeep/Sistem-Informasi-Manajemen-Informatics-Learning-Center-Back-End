@@ -7,12 +7,13 @@ const {
     validatePathParameterId,
 } = require('../middlewares/auth.middleware');
 const { requireJsonContent } = require('../middlewares/contentType.middleware');
+const asyncHandler = require('../utils/asyncHandler');
 
 router.get(
     '/',
     authenticate,
     authorize({ rules: ['self', 'admin'], ownerQueryParam: 'required' }),
-    CertificateController.getAll,
+    asyncHandler(CertificateController.getAll),
 );
 router.get(
     '/:certificateId',
@@ -24,7 +25,7 @@ router.get(
         param: 'certificateId',
         ownerQueryParam: 'prohibited',
     }),
-    CertificateController.getById,
+    asyncHandler(CertificateController.getById),
 );
 router.post(
     '/',
@@ -33,7 +34,7 @@ router.post(
     authorize({
         rules: ['admin'],
     }),
-    CertificateController.create,
+    asyncHandler(CertificateController.create),
 );
 router.patch(
     '/:certificateId',
@@ -41,14 +42,14 @@ router.patch(
     validatePathParameterId('certificateId'),
     requireJsonContent,
     authorize({ rules: ['admin'] }),
-    CertificateController.updateById,
+    asyncHandler(CertificateController.updateById),
 );
 router.delete(
     '/:certificateId',
     authenticate,
     validatePathParameterId('certificateId'),
     authorize({ rules: ['admin'] }),
-    CertificateController.deleteById,
+    asyncHandler(CertificateController.deleteById),
 );
 
 module.exports = router;

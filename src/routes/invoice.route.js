@@ -6,12 +6,13 @@ const {
     validatePathParameterId,
 } = require('../middlewares/auth.middleware');
 const InvoiceService = require('../services/invoice.service');
+const asyncHandler = require('../utils/asyncHandler');
 
 router.get(
     '/',
     authenticate,
     authorize({ rules: ['self', 'admin'], ownerQueryParam: 'required' }),
-    InvoiceController.getAll,
+    asyncHandler(InvoiceController.getAll),
 );
 router.get(
     '/:invoiceId',
@@ -23,14 +24,14 @@ router.get(
         param: 'invoiceId',
         ownerQueryParam: 'prohibited',
     }),
-    InvoiceController.getById,
+    asyncHandler(InvoiceController.getById),
 );
 router.delete(
     '/:invoiceId',
     authenticate,
     validatePathParameterId('invoiceId'),
     authorize({ rules: ['admin'] }),
-    InvoiceController.deleteById,
+    asyncHandler(InvoiceController.deleteById),
 );
 router.post(
     '/:invoiceId/payments',
@@ -42,7 +43,7 @@ router.post(
         param: 'invoiceId',
         ownerQueryParam: 'prohibited',
     }),
-    InvoiceController.createPayment,
+    asyncHandler(InvoiceController.createPayment),
 );
 
 module.exports = router;

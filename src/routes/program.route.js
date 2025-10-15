@@ -10,8 +10,9 @@ const {
 const { requireJsonContent } = require('../middlewares/contentType.middleware');
 const { upload } = require('../middlewares/multer.middleware.js');
 const { image, document } = require('../utils/fileType.js');
+const asyncHandler = require('../utils/asyncHandler');
 
-router.get('/', ProgramController.getAll);
+router.get('/', asyncHandler(ProgramController.getAll));
 router.get(
     '/:programId',
     authenticate,
@@ -23,14 +24,14 @@ router.get(
         param: 'enrollmentId',
         ownerForeignKey: 'userId',
     }),
-    ProgramController.getById,
+    asyncHandler(ProgramController.getById),
 );
 router.post(
     '/',
     authenticate,
     requireJsonContent,
     authorize({ rules: ['admin'] }),
-    ProgramController.create,
+    asyncHandler(ProgramController.create),
 );
 router.patch(
     '/:programId',
@@ -38,14 +39,14 @@ router.patch(
     validatePathParameterId('programId'),
     requireJsonContent,
     authorize({ rules: ['admin'] }),
-    ProgramController.updateById,
+    asyncHandler(ProgramController.updateById),
 );
 router.delete(
     '/:programId',
     authenticate,
     validatePathParameterId('programId'),
     authorize({ rules: ['admin'] }),
-    ProgramController.deleteById,
+    asyncHandler(ProgramController.deleteById),
 );
 router.put(
     '/:programId/thumbnails',
@@ -53,7 +54,7 @@ router.put(
     validatePathParameterId('programId'),
     authorize({ rules: ['admin'] }),
     upload(image).single('thumbnail'),
-    ProgramController.uploadThumbnail,
+    asyncHandler(ProgramController.uploadThumbnail),
 );
 router.get(
     '/:programId/modules',
@@ -66,7 +67,7 @@ router.get(
         param: 'enrollmentId',
         ownerForeignKey: 'userId',
     }),
-    ProgramController.getAllModules,
+    asyncHandler(ProgramController.getAllModules),
 );
 router.get(
     '/:programId/modules/:moduleId',
@@ -80,7 +81,7 @@ router.get(
         param: 'enrollmentId',
         ownerForeignKey: 'userId',
     }),
-    ProgramController.getModuleById,
+    asyncHandler(ProgramController.getModuleById),
 );
 router.post(
     '/:programId/modules',
@@ -88,7 +89,7 @@ router.post(
     validatePathParameterId('programId'),
     requireJsonContent,
     authorize({ rules: ['admin'] }),
-    ProgramController.createModule,
+    asyncHandler(ProgramController.createModule),
 );
 router.patch(
     '/:programId/modules/:moduleId',
@@ -97,7 +98,7 @@ router.patch(
     validatePathParameterId('moduleId'),
     requireJsonContent,
     authorize({ rules: ['admin'] }),
-    ProgramController.updateModuleById,
+    asyncHandler(ProgramController.updateModuleById),
 );
 router.delete(
     '/:programId/modules/:moduleId',
@@ -105,7 +106,7 @@ router.delete(
     validatePathParameterId('programId'),
     validatePathParameterId('moduleId'),
     authorize({ rules: ['admin'] }),
-    ProgramController.deleteModuleById,
+    asyncHandler(ProgramController.deleteModuleById),
 );
 router.put(
     '/:programId/modules/:moduleId/materials',
@@ -114,7 +115,7 @@ router.put(
     validatePathParameterId('moduleId'),
     authorize({ rules: ['admin'] }),
     upload(document, 25).single('material'),
-    ProgramController.uploadMaterial,
+    asyncHandler(ProgramController.uploadMaterial),
 );
 
 module.exports = router;
