@@ -31,7 +31,6 @@ async function createPrograms() {
                 to: new Date(),
             }),
         };
-        console.log(program.price_idr);
 
         programs.push(program);
     }

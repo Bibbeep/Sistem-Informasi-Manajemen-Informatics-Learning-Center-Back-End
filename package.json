@@ -23,7 +23,7 @@
     "db:seed:all": "npx sequelize-cli db:seed:all",
     "db:restart:dev": "NODE_ENV=development npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all",
     "db:setup:prod": "NODE_ENV=production npx sequelize-cli db:create --env production && npx sequelize-cli db:migrate --env production && npx sequelize-cli db:seed:all --env production",
-    "pretest": "NODE_ENV=test npx sequelize db:drop && npm run db:create && npm run db:migrate",
+    "pretest": "NODE_ENV=test npx sequelize db:migrate:undo:all && npm run db:migrate",
     "pretest:silent": "NODE_ENV=test npm run db:drop:silent && npm run db:create:silent && npm run db:migrate:silent",
     "test": "npm run pretest && NODE_ENV=test jest --detectOpenHandles --silent --coverage --verbose",
     "test:clean": "npm run pretest:silent && NODE_ENV=test jest --detectOpenHandles --silent --coverage",
