@@ -4,6 +4,7 @@ const { redisClient } = require('../configs/redis');
 const { validateId } = require('../validations/validator');
 const { Enrollment } = require('../db/models');
 const { Op } = require('sequelize');
+const asyncHandler = require('../utils/asyncHandler');
 
 module.exports = {
     /**
@@ -12,7 +13,7 @@ module.exports = {
      * @param {import('express').NextFunction} next
      * @description Middleware to authenticate user by validating JWT token.
      */
-    authenticate: async (req, res, next) => {
+    authenticate: asyncHandler(async (req, res, next) => {
         try {
             const token = req.headers.authorization?.includes('Bearer ')
                 ? req.headers.authorization.split(' ')[1]
@@ -40,7 +41,7 @@ module.exports = {
         } catch (err) {
             next(err);
         }
-    },
+    }),
     /**
      * @param {Object} options
      * @param {Array<'admin'|'self'>} options.rules - The authorization rules to apply.
@@ -62,7 +63,7 @@ module.exports = {
             ownerService,
         } = options;
 
-        return async (req, res, next) => {
+        return asyncHandler(async (req, res, next) => {
             try {
                 const { sub: loggedInUserId, admin: isAdmin } =
                     req.tokenPayload;
@@ -166,7 +167,7 @@ module.exports = {
             } catch (err) {
                 next(err);
             }
-        };
+        });
     },
     /**
      * @param {string} paramName - The name of the path parameter to validate.
@@ -194,7 +195,7 @@ module.exports = {
      * @param {import('express').NextFunction} next
      * @description Middleware to authorize access to program details.
      */
-    authorizeProgramDetails: async (req, res, next) => {
+    authorizeProgramDetails: asyncHandler(async (req, res, next) => {
         try {
             if (req.tokenPayload.admin) {
                 return next();
@@ -239,5 +240,5 @@ module.exports = {
         } catch (err) {
             next(err);
         }
-    },
+    }),
 };
