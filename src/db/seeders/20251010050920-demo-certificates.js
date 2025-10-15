@@ -41,7 +41,7 @@ module.exports = {
                 user_id: enrollment.userId,
                 title: `${enrollment.program.title} Certificate of Completion`,
                 credential,
-                document_url: faker.internet.url(),
+                document_url: `${faker.internet.url({ appendSlash: true })}${faker.system.commonFileName('pdf')}`,
                 issued_at: issuedAt,
                 expired_at:
                     programType === 'Course'

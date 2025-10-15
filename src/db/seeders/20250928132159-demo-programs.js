@@ -8,9 +8,9 @@ async function createPrograms() {
     for (let i = 0; i < 100; i++) {
         const createdAt = faker.date.past();
         const program = {
-            title: faker.word.words({ count: { min: 3, max: 10 } }),
+            title: faker.book.title(),
             description: faker.lorem.text(),
-            thumbnail_url: faker.internet.url(),
+            thumbnail_url: `${faker.internet.url({ appendSlash: true })}${faker.system.commonFileName(faker.helpers.arrayElement(['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg']))}`,
             available_date: faker.date.between({
                 from: createdAt,
                 to: faker.date.future(),
@@ -21,13 +21,17 @@ async function createPrograms() {
                 'Workshop',
                 'Competition',
             ]),
-            price_idr: faker.number.int({ max: 5000000 }),
+            price_idr: faker.number.int({
+                max: 10_000_000,
+                multipleOf: 10000,
+            }),
             created_at: createdAt,
             updated_at: faker.date.between({
                 from: createdAt,
                 to: new Date(),
             }),
         };
+        console.log(program.price_idr);
 
         programs.push(program);
     }
