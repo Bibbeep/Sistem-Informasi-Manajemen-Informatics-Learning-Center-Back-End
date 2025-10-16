@@ -102,4 +102,21 @@ module.exports = {
             next(err);
         }
     },
+    deleteById: async (req, res, next) => {
+        try {
+            await DiscussionService.deleteOne(
+                parseInt(req.params.discussionId, 10),
+            );
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a discussion forum.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

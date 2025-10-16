@@ -38,5 +38,14 @@ router.patch(
     }),
     asyncHandler(DiscussionController.updateById),
 );
+router.delete(
+    '/:discussionId',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    authorize({
+        rules: ['admin'],
+    }),
+    asyncHandler(DiscussionController.deleteById),
+);
 
 module.exports = router;

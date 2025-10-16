@@ -117,6 +117,24 @@ class DiscussionService {
             updatedAt: rows[0].updatedAt,
         };
     }
+
+    static async deleteOne(discussionId) {
+        const discussion = await Discussion.findByPk(discussionId);
+
+        if (!discussion) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: discussionId,
+                    },
+                },
+            ]);
+        }
+
+        await Discussion.destroy({ where: { id: discussionId } });
+    }
 }
 
 module.exports = DiscussionService;
