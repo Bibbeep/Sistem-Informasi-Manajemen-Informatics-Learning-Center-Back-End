@@ -206,4 +206,63 @@ describe('Discussion Service Unit Tests', () => {
             });
         });
     });
+
+    describe('updateOne Tests', () => {
+        it('should update a discussion and return it', async () => {
+            const mockDiscussionId = 1;
+            const mockUpdateData = { title: 'Updated Title' };
+            const mockDiscussion = { id: mockDiscussionId, title: 'Old Title' };
+            const mockUpdatedDiscussion = {
+                id: mockDiscussionId,
+                title: 'Updated Title',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            Discussion.update.mockResolvedValue([1, [mockUpdatedDiscussion]]);
+
+            const result = await DiscussionService.updateOne({
+                discussionId: mockDiscussionId,
+                ...mockUpdateData,
+            });
+
+            expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
+            expect(Discussion.update).toHaveBeenCalledWith(
+                { title: 'Updated Title' },
+                { where: { id: mockDiscussionId }, returning: true },
+            );
+            expect(result).toEqual({
+                id: mockUpdatedDiscussion.id,
+                title: mockUpdatedDiscussion.title,
+                createdAt: mockUpdatedDiscussion.createdAt,
+                updatedAt: mockUpdatedDiscussion.updatedAt,
+            });
+        });
+
+        it('should throw HTTPError 404 if discussion is not found', async () => {
+            const mockDiscussionId = 999;
+            Discussion.findByPk.mockResolvedValue(null);
+
+            await expect(
+                DiscussionService.updateOne({
+                    discussionId: mockDiscussionId,
+                    title: 'New Title',
+                }),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Discussion with "discussionId" does not exist',
+                        context: {
+                            key: 'discussionId',
+                            value: mockDiscussionId,
+                        },
+                    },
+                ]),
+            );
+            expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
+            expect(Discussion.update).not.toHaveBeenCalled();
+        });
+    });
 });

@@ -192,4 +192,81 @@ describe('Discussion Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
+
+    describe('updateById Tests', () => {
+        it('should return 200 with updated discussion on success', async () => {
+            req.params.discussionId = '1';
+            req.body = { title: 'Updated Title' };
+            const mockValue = { title: 'Updated Title' };
+            const mockUpdatedDiscussion = { id: 1, title: 'Updated Title' };
+            validateUpdateDiscussionData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            DiscussionService.updateOne.mockResolvedValue(
+                mockUpdatedDiscussion,
+            );
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateDiscussionData).toHaveBeenCalledWith(
+                req.body,
+            );
+            expect(DiscussionService.updateOne).toHaveBeenCalledWith({
+                ...mockValue,
+                discussionId: 1,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully updated a discussion forum.',
+                data: {
+                    discussion: mockUpdatedDiscussion,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error if body is invalid', async () => {
+            req.params.discussionId = '1';
+            req.body = { title: '' };
+            const validationError = new ValidationError('Validation failed');
+            validateUpdateDiscussionData.mockReturnValue({
+                error: validationError,
+            });
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateDiscussionData).toHaveBeenCalledWith(
+                req.body,
+            );
+            expect(DiscussionService.updateOne).not.toHaveBeenCalled();
+            expect(next).toHaveBeenCalledWith(validationError);
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            req.params.discussionId = '1';
+            req.body = { title: 'Updated Title' };
+            const mockValue = { title: 'Updated Title' };
+            const serviceError = new Error('Service error');
+            validateUpdateDiscussionData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            DiscussionService.updateOne.mockRejectedValue(serviceError);
+
+            await updateById(req, res, next);
+
+            expect(validateUpdateDiscussionData).toHaveBeenCalledWith(
+                req.body,
+            );
+            expect(DiscussionService.updateOne).toHaveBeenCalledWith({
+                ...mockValue,
+                discussionId: 1,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
+        });
+    });
 });
