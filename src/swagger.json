@@ -4,7 +4,6 @@
             "post": {
                 "summary": "Registers a new user account",
                 "tags": ["User Authentication"],
-                "produces": ["application/json"],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -101,7 +100,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for user authentication — POST /api/v1/auth/register"
             }
         },
         "/api/v1/auth/login": {
@@ -204,7 +204,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for user authentication — POST /api/v1/auth/login"
             }
         },
         "/api/v1/auth/logout": {
@@ -216,6 +217,7 @@
                         "bearerAuth": []
                     }
                 ],
+                "description": "API for user authentication — POST /api/v1/auth/logout",
                 "responses": {
                     "200": {
                         "description": "User logged out successfully",
@@ -360,7 +362,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for user authentication — POST /api/v1/auth/forgot-password"
             }
         },
         "/api/v1/auth/reset-password": {
@@ -463,7 +466,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for user authentication — POST /api/v1/auth/reset-password"
             }
         },
         "/api/v1/users": {
@@ -475,6 +479,7 @@
                         "bearerAuth": []
                     }
                 ],
+                "description": "API for user management — GET /api/v1/users",
                 "parameters": [
                     {
                         "in": "query",
@@ -482,8 +487,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 1
-                        },
-                        "description": "The page number to retrieve."
+                        }
                     },
                     {
                         "in": "query",
@@ -491,8 +495,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
-                        },
-                        "description": "The number of users per page."
+                        }
                     },
                     {
                         "in": "query",
@@ -508,8 +511,7 @@
                                 "-createdAt"
                             ],
                             "default": "id"
-                        },
-                        "description": "The field to sort by. Use a '-' prefix for descending order (e.g., -fullName)."
+                        }
                     },
                     {
                         "in": "query",
@@ -518,8 +520,7 @@
                             "type": "string",
                             "enum": ["user", "admin", "all"],
                             "default": "all"
-                        },
-                        "description": "Filter users by their role."
+                        }
                     },
                     {
                         "in": "query",
@@ -528,8 +529,16 @@
                             "type": "string",
                             "enum": ["basic", "premium", "all"],
                             "default": "all"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "email",
+                        "schema": {
+                            "type": "string",
+                            "format": "email"
                         },
-                        "description": "Filter users by their member level."
+                        "description": "Filter users by email."
                     }
                 ],
                 "responses": {
@@ -742,7 +751,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for user management — GET /api/v1/users/{userId}"
             },
             "patch": {
                 "summary": "Updates a specific user by their ID",
@@ -912,7 +922,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for user management — PATCH /api/v1/users/{userId}"
             },
             "delete": {
                 "summary": "Deletes a specific user by their ID",
@@ -1034,7 +1045,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for user management — DELETE /api/v1/users/{userId}"
             }
         },
         "/api/v1/users/{userId}/profilePhotos": {
@@ -1191,7 +1203,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for user management — PUT /api/v1/users/{userId}/profilePhotos"
             }
         },
         "/api/v1/feedbacks": {
@@ -1210,8 +1223,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 1
-                        },
-                        "description": "The page number to retrieve."
+                        }
                     },
                     {
                         "in": "query",
@@ -1219,8 +1231,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
-                        },
-                        "description": "The number of feedbacks per page."
+                        }
                     },
                     {
                         "in": "query",
@@ -1229,8 +1240,7 @@
                             "type": "string",
                             "enum": ["id", "-id", "createdAt", "-createdAt"],
                             "default": "id"
-                        },
-                        "description": "The field to sort by. Use a '-' prefix for descending order (e.g., -createdAt)."
+                        }
                     },
                     {
                         "in": "query",
@@ -1239,7 +1249,8 @@
                             "type": "string",
                             "format": "email"
                         },
-                        "description": "Filter feedbacks by email."
+                        "description": "Filter feedbacks by email. Accepts null.",
+                        "nullable": true
                     }
                 ],
                 "responses": {
@@ -1328,12 +1339,12 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for feedback management — GET /api/v1/feedbacks"
             },
             "post": {
                 "summary": "Sends a feedback",
                 "tags": ["Feedback Management"],
-                "produces": ["application/json"],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -1415,7 +1426,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for feedback management — POST /api/v1/feedbacks"
             }
         },
         "/api/v1/feedbacks/{feedbackId}": {
@@ -1539,7 +1551,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for feedback management — GET /api/v1/feedbacks/{feedbackId}"
             }
         },
         "/api/v1/feedbacks/{feedbackId}/responses": {
@@ -1688,7 +1701,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for feedback management — POST /api/v1/feedbacks/{feedbackId}/responses"
             }
         },
         "/api/v1/programs": {
@@ -1703,7 +1717,7 @@
                             "type": "integer",
                             "default": 1
                         },
-                        "description": "The page number to retrieve."
+                        "description": "Page number to retrieve."
                     },
                     {
                         "in": "query",
@@ -1712,7 +1726,7 @@
                             "type": "integer",
                             "default": 10
                         },
-                        "description": "The number of programs per page."
+                        "description": "Number of items per page."
                     },
                     {
                         "in": "query",
@@ -1731,7 +1745,23 @@
                             ],
                             "default": "id"
                         },
-                        "description": "The field to sort by. Use a '-' prefix for descending order (e.g., -price)."
+                        "description": "Sort field. Prefix with '-' for descending."
+                    },
+                    {
+                        "in": "query",
+                        "name": "id",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter by program id."
+                    },
+                    {
+                        "in": "query",
+                        "name": "isAvailable",
+                        "schema": {
+                            "type": "boolean"
+                        },
+                        "description": "Filter by availability (true/false)."
                     },
                     {
                         "in": "query",
@@ -1747,26 +1777,26 @@
                             ],
                             "default": "all"
                         },
-                        "description": "Filter programs by type."
+                        "description": "Filter by program type."
                     },
                     {
                         "in": "query",
                         "name": "price.gte",
                         "schema": {
                             "type": "integer",
-                            "minimum": 0,
-                            "default": 0
+                            "default": 0,
+                            "minimum": 0
                         },
-                        "description": "Filter programs with a price greater than or equal to the given value."
+                        "description": "Minimum price (IDR)."
                     },
                     {
                         "in": "query",
                         "name": "price.lte",
                         "schema": {
                             "type": "integer",
-                            "positive": true
+                            "minimum": 1
                         },
-                        "description": "Filter programs with a price less than or equal to the given value."
+                        "description": "Maximum price (IDR)."
                     }
                 ],
                 "responses": {
@@ -1825,7 +1855,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — GET /api/v1/programs"
             },
             "post": {
                 "summary": "Creates a new program",
@@ -1946,7 +1977,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — POST /api/v1/programs"
             }
         },
         "/api/v1/programs/{programId}": {
@@ -2070,7 +2102,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — GET /api/v1/programs/{programId}"
             },
             "patch": {
                 "summary": "Updates a specific program",
@@ -2217,7 +2250,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — PATCH /api/v1/programs/{programId}"
             },
             "delete": {
                 "summary": "Deletes a specific program",
@@ -2339,7 +2373,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — DELETE /api/v1/programs/{programId}"
             }
         },
         "/api/v1/programs/{programId}/thumbnails": {
@@ -2496,7 +2531,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — PUT /api/v1/programs/{programId}/thumbnails"
             }
         },
         "/api/v1/programs/{programId}/modules": {
@@ -2524,8 +2560,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 1
-                        },
-                        "description": "The page number to retrieve."
+                        }
                     },
                     {
                         "in": "query",
@@ -2533,8 +2568,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
-                        },
-                        "description": "The number of modules per page."
+                        }
                     },
                     {
                         "in": "query",
@@ -2543,8 +2577,7 @@
                             "type": "string",
                             "enum": ["id", "-id", "createdAt", "-createdAt"],
                             "default": "id"
-                        },
-                        "description": "The field to sort by. Use a '-' prefix for descending order."
+                        }
                     }
                 ],
                 "responses": {
@@ -2648,7 +2681,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — GET /api/v1/programs/{programId}/modules"
             },
             "post": {
                 "summary": "Creates a new module for a course program",
@@ -2795,7 +2829,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — POST /api/v1/programs/{programId}/modules"
             }
         },
         "/api/v1/programs/{programId}/modules/{moduleId}": {
@@ -2928,7 +2963,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — GET /api/v1/programs/{programId}/modules/{moduleId}"
             },
             "patch": {
                 "summary": "Updates a specific module for a course program",
@@ -3084,7 +3120,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — PATCH /api/v1/programs/{programId}/modules/{moduleId}"
             },
             "delete": {
                 "summary": "Deletes a specific module from a course program",
@@ -3215,7 +3252,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — DELETE /api/v1/programs/{programId}/modules/{moduleId}"
             }
         },
         "/api/v1/programs/{programId}/modules/{moduleId}/materials": {
@@ -3273,9 +3311,15 @@
                                 "schema": {
                                     "type": "object",
                                     "properties": {
-                                        "success": { "type": "boolean" },
-                                        "statusCode": { "type": "integer" },
-                                        "message": { "type": "string" },
+                                        "success": {
+                                            "type": "boolean"
+                                        },
+                                        "statusCode": {
+                                            "type": "integer"
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
                                         "data": {
                                             "type": "object",
                                             "properties": {
@@ -3408,13 +3452,15 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for program management — PUT /api/v1/programs/{programId}/modules/{moduleId}/materials"
             }
         },
         "/api/v1/enrollments": {
             "get": {
                 "summary": "Retrieves a list of all program enrollments",
                 "tags": ["Enrollment Management"],
+                "description": "API for enrollment management — GET /api/v1/enrollments",
                 "security": [
                     {
                         "bearerAuth": []
@@ -3427,8 +3473,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 1
-                        },
-                        "description": "The page number to retrieve."
+                        }
                     },
                     {
                         "in": "query",
@@ -3436,8 +3481,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
-                        },
-                        "description": "The number of enrollments per page."
+                        }
                     },
                     {
                         "in": "query",
@@ -3447,18 +3491,17 @@
                             "enum": [
                                 "id",
                                 "-id",
+                                "progress",
+                                "-progress",
                                 "createdAt",
                                 "-createdAt",
                                 "updatedAt",
                                 "-updatedAt",
                                 "completedAt",
-                                "-completedAt",
-                                "progress",
-                                "-progress"
+                                "-completedAt"
                             ],
                             "default": "id"
-                        },
-                        "description": "The field to sort by. Use a '-' prefix for descending order."
+                        }
                     },
                     {
                         "in": "query",
@@ -3466,7 +3509,7 @@
                         "schema": {
                             "type": "integer"
                         },
-                        "description": "Filter enrollments by user ID. Required for non-admin users."
+                        "description": "Filter enrollments by userId (required for non-admins)."
                     },
                     {
                         "in": "query",
@@ -3474,7 +3517,7 @@
                         "schema": {
                             "type": "integer"
                         },
-                        "description": "Filter enrollments by program ID."
+                        "description": "Filter enrollments by programId."
                     },
                     {
                         "in": "query",
@@ -3489,8 +3532,7 @@
                                 "all"
                             ],
                             "default": "all"
-                        },
-                        "description": "Filter enrollments by program type."
+                        }
                     },
                     {
                         "in": "query",
@@ -3501,11 +3543,11 @@
                                 "unpaid",
                                 "in progress",
                                 "completed",
+                                "expired",
                                 "all"
                             ],
                             "default": "all"
-                        },
-                        "description": "Filter enrollments by status."
+                        }
                     }
                 ],
                 "responses": {
@@ -3730,7 +3772,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for enrollment management — POST /api/v1/enrollments"
             }
         },
         "/api/v1/enrollments/{enrollmentId}": {
@@ -3854,7 +3897,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for enrollment management — GET /api/v1/enrollments/{enrollmentId}"
             },
             "patch": {
                 "summary": "Updates a specific program enrollment",
@@ -4001,7 +4045,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for enrollment management — PATCH /api/v1/enrollments/{enrollmentId}"
             },
             "delete": {
                 "summary": "Deletes a specific program enrollment",
@@ -4123,7 +4168,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for enrollment management — DELETE /api/v1/enrollments/{enrollmentId}"
             }
         },
         "/api/v1/enrollments/{enrollmentId}/completed-modules": {
@@ -4287,13 +4333,15 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for enrollment management — POST /api/v1/enrollments/{enrollmentId}/completed-modules"
             }
         },
         "/api/v1/invoices": {
             "get": {
                 "summary": "Retrieves a list of all invoices",
                 "tags": ["Invoice Management"],
+                "description": "API for invoice management — GET /api/v1/invoices",
                 "security": [
                     {
                         "bearerAuth": []
@@ -4306,8 +4354,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 1
-                        },
-                        "description": "The page number to retrieve."
+                        }
                     },
                     {
                         "in": "query",
@@ -4315,8 +4362,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
-                        },
-                        "description": "The number of invoices per page."
+                        }
                     },
                     {
                         "in": "query",
@@ -4334,8 +4380,7 @@
                                 "-updatedAt"
                             ],
                             "default": "id"
-                        },
-                        "description": "The field to sort by. Use a '-' prefix for descending order."
+                        }
                     },
                     {
                         "in": "query",
@@ -4343,7 +4388,7 @@
                         "schema": {
                             "type": "integer"
                         },
-                        "description": "Filter invoices by user ID. Required for non-admin users."
+                        "description": "Filter invoices by userId (required for non-admins)."
                     },
                     {
                         "in": "query",
@@ -4357,8 +4402,7 @@
                                 "all"
                             ],
                             "default": "all"
-                        },
-                        "description": "Filter invoices by their payment status."
+                        }
                     },
                     {
                         "in": "query",
@@ -4373,8 +4417,7 @@
                                 "all"
                             ],
                             "default": "all"
-                        },
-                        "description": "Filter invoices by the type of program."
+                        }
                     }
                 ],
                 "responses": {
@@ -4557,7 +4600,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for invoice management — GET /api/v1/invoices/{invoiceId}"
             },
             "delete": {
                 "summary": "Deletes a specific invoice by its ID",
@@ -4664,7 +4708,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for invoice management — DELETE /api/v1/invoices/{invoiceId}"
             }
         },
         "/api/v1/invoices/{invoiceId}/payments": {
@@ -4788,13 +4833,15 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for invoice management — POST /api/v1/invoices/{invoiceId}/payments"
             }
         },
         "/api/v1/certificates": {
             "get": {
                 "summary": "Retrieves a list of all certificates",
                 "tags": ["Certificate Management"],
+                "description": "API for certificate management — GET /api/v1/certificates",
                 "security": [
                     {
                         "bearerAuth": []
@@ -4807,8 +4854,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 1
-                        },
-                        "description": "The page number to retrieve."
+                        }
                     },
                     {
                         "in": "query",
@@ -4816,8 +4862,7 @@
                         "schema": {
                             "type": "integer",
                             "default": 10
-                        },
-                        "description": "The number of certificates per page."
+                        }
                     },
                     {
                         "in": "query",
@@ -4835,8 +4880,7 @@
                                 "-updatedAt"
                             ],
                             "default": "id"
-                        },
-                        "description": "The field to sort by. Use a '-' prefix for descending order (e.g., -issuedAt)."
+                        }
                     },
                     {
                         "in": "query",
@@ -4844,7 +4888,7 @@
                         "schema": {
                             "type": "integer"
                         },
-                        "description": "Filter certificates by user ID. Required for non-admin users."
+                        "description": "Filter certificates by userId."
                     },
                     {
                         "in": "query",
@@ -4852,7 +4896,7 @@
                         "schema": {
                             "type": "integer"
                         },
-                        "description": "Filter certificates by program ID."
+                        "description": "Filter certificates by programId."
                     },
                     {
                         "in": "query",
@@ -4860,7 +4904,7 @@
                         "schema": {
                             "type": "string"
                         },
-                        "description": "Filter certificates by a specific credential ID."
+                        "description": "Filter by credential pattern (e.g., CRS0001-U0001)."
                     },
                     {
                         "in": "query",
@@ -4875,8 +4919,7 @@
                                 "all"
                             ],
                             "default": "all"
-                        },
-                        "description": "Filter certificates by the type of program."
+                        }
                     }
                 ],
                 "responses": {
@@ -5119,6 +5162,21 @@
                             }
                         }
                     },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "502": {
                         "description": "Bad Gateway. An error occurred with an external service (e.g., PDF generation).",
                         "content": {
@@ -5148,23 +5206,9 @@
                                 }
                             }
                         }
-                    },
-                    "500": {
-                        "description": "Internal server error.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "InternalServerError": {
-                                        "$ref": "#/components/examples/InternalServerError"
-                                    }
-                                }
-                            }
-                        }
                     }
-                }
+                },
+                "description": "API for certificate management — POST /api/v1/certificates"
             }
         },
         "/api/v1/certificates/{certificateId}": {
@@ -5273,7 +5317,8 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for certificate management — GET /api/v1/certificates/{certificateId}"
             },
             "patch": {
                 "summary": "Updates a specific certificate by ID (Admin only)",
@@ -5423,6 +5468,21 @@
                             }
                         }
                     },
+                    "500": {
+                        "description": "Internal server error.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "examples": {
+                                    "InternalServerError": {
+                                        "$ref": "#/components/examples/InternalServerError"
+                                    }
+                                }
+                            }
+                        }
+                    },
                     "502": {
                         "description": "Bad Gateway. An error occurred with an external service (e.g., PDF generation).",
                         "content": {
@@ -5452,23 +5512,9 @@
                                 }
                             }
                         }
-                    },
-                    "500": {
-                        "description": "Internal server error.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "examples": {
-                                    "InternalServerError": {
-                                        "$ref": "#/components/examples/InternalServerError"
-                                    }
-                                }
-                            }
-                        }
                     }
-                }
+                },
+                "description": "API for certificate management — PATCH /api/v1/certificates/{certificateId}"
             },
             "delete": {
                 "summary": "Deletes a specific certificate by its ID (Admin only)",
@@ -5590,26 +5636,35 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for certificate management — DELETE /api/v1/certificates/{certificateId}"
             }
         },
         "/api/v1/discussions": {
             "get": {
                 "summary": "Retrieves a list of all discussion forums",
                 "tags": ["Discussion Management"],
-                "security": [{ "bearerAuth": [] }],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "in": "query",
                         "name": "page",
-                        "schema": { "type": "integer", "default": 1 },
-                        "description": "The page number to retrieve."
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
                     },
                     {
                         "in": "query",
                         "name": "limit",
-                        "schema": { "type": "integer", "default": 10 },
-                        "description": "The number of discussions per page."
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
                     },
                     {
                         "in": "query",
@@ -5625,13 +5680,14 @@
                                 "-updatedAt"
                             ],
                             "default": "id"
-                        },
-                        "description": "The field to sort by. Use a '-' prefix for descending order."
+                        }
                     },
                     {
                         "in": "query",
                         "name": "title",
-                        "schema": { "type": "string" },
+                        "schema": {
+                            "type": "string"
+                        },
                         "description": "Filter discussions by title (case-insensitive)."
                     }
                 ],
@@ -5702,12 +5758,17 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for discussion management — GET /api/v1/discussions"
             },
             "post": {
                 "summary": "Creates a new discussion forum (Admin only)",
                 "tags": ["Discussion Management"],
-                "security": [{ "bearerAuth": [] }],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "requestBody": {
                     "required": true,
                     "content": {
@@ -5818,20 +5879,27 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for discussion management — POST /api/v1/discussions"
             }
         },
         "/api/v1/discussions/{discussionId}": {
             "get": {
                 "summary": "Retrieves a specific discussion forum by its ID",
                 "tags": ["Discussion Management"],
-                "security": [{ "bearerAuth": [] }],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "in": "path",
                         "name": "discussionId",
                         "required": true,
-                        "schema": { "type": "integer" },
+                        "schema": {
+                            "type": "integer"
+                        },
                         "description": "The ID of the discussion to retrieve."
                     }
                 ],
@@ -5886,18 +5954,25 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for discussion management — GET /api/v1/discussions/{discussionId}"
             },
             "patch": {
                 "summary": "Updates a specific discussion forum by its ID (Admin only)",
                 "tags": ["Discussion Management"],
-                "security": [{ "bearerAuth": [] }],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "in": "path",
                         "name": "discussionId",
                         "required": true,
-                        "schema": { "type": "integer" },
+                        "schema": {
+                            "type": "integer"
+                        },
                         "description": "The ID of the discussion to update."
                     }
                 ],
@@ -5961,18 +6036,25 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for discussion management — PATCH /api/v1/discussions/{discussionId}"
             },
             "delete": {
                 "summary": "Deletes a specific discussion forum by its ID (Admin only)",
                 "tags": ["Discussion Management"],
-                "security": [{ "bearerAuth": [] }],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
                 "parameters": [
                     {
                         "in": "path",
                         "name": "discussionId",
                         "required": true,
-                        "schema": { "type": "integer" },
+                        "schema": {
+                            "type": "integer"
+                        },
                         "description": "The ID of the discussion to delete."
                     }
                 ],
@@ -6019,11 +6101,20 @@
                             }
                         }
                     }
-                }
+                },
+                "description": "API for discussion management — DELETE /api/v1/discussions/{discussionId}"
             }
         }
     },
     "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "bearerFormat": "JWT",
+                "description": "JWT based authentication. Send token in Authorization header: Bearer <token>."
+            }
+        },
         "schemas": {
             "User": {
                 "type": "object",
@@ -6177,7 +6268,9 @@
             },
             "ProgramDetails": {
                 "allOf": [
-                    { "$ref": "#/components/schemas/Program" },
+                    {
+                        "$ref": "#/components/schemas/Program"
+                    },
                     {
                         "type": "object",
                         "properties": {
@@ -6204,45 +6297,63 @@
             "CourseDetails": {
                 "type": "object",
                 "properties": {
-                    "totalModules": { "type": "integer" }
+                    "totalModules": {
+                        "type": "integer"
+                    }
                 }
             },
             "WorkshopDetails": {
                 "type": "object",
                 "properties": {
-                    "isOnline": { "type": "boolean" },
+                    "isOnline": {
+                        "type": "boolean"
+                    },
                     "videoConferenceUrl": {
                         "type": "string",
                         "format": "uri",
                         "nullable": true
                     },
-                    "locationAddress": { "type": "string", "nullable": true },
+                    "locationAddress": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "facilitatorNames": {
                         "type": "array",
-                        "items": { "type": "string" }
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },
             "SeminarDetails": {
                 "type": "object",
                 "properties": {
-                    "isOnline": { "type": "boolean" },
+                    "isOnline": {
+                        "type": "boolean"
+                    },
                     "videoConferenceUrl": {
                         "type": "string",
                         "format": "uri",
                         "nullable": true
                     },
-                    "locationAddress": { "type": "string", "nullable": true },
+                    "locationAddress": {
+                        "type": "string",
+                        "nullable": true
+                    },
                     "speakerNames": {
                         "type": "array",
-                        "items": { "type": "string" }
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },
             "CompetitionDetails": {
                 "type": "object",
                 "properties": {
-                    "isOnline": { "type": "boolean" },
+                    "isOnline": {
+                        "type": "boolean"
+                    },
                     "videoConferenceUrl": {
                         "type": "string",
                         "format": "uri",
@@ -6253,24 +6364,44 @@
                         "format": "uri",
                         "nullable": true
                     },
-                    "locationAddress": { "type": "string", "nullable": true },
-                    "hostName": { "type": "string" },
-                    "totalPrize": { "type": "integer" }
+                    "locationAddress": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "hostName": {
+                        "type": "string"
+                    },
+                    "totalPrize": {
+                        "type": "integer"
+                    }
                 }
             },
             "Module": {
                 "type": "object",
                 "properties": {
-                    "id": { "type": "integer" },
-                    "numberCode": { "type": "integer" },
+                    "id": {
+                        "type": "integer"
+                    },
+                    "numberCode": {
+                        "type": "integer"
+                    },
                     "materialUrl": {
                         "type": "string",
                         "format": "uri",
                         "nullable": true
                     },
-                    "youtubeUrl": { "type": "string", "format": "uri" },
-                    "createdAt": { "type": "string", "format": "date-time" },
-                    "updatedAt": { "type": "string", "format": "date-time" }
+                    "youtubeUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
                 }
             },
             "Enrollment": {
@@ -6497,8 +6628,14 @@
             "Discussion": {
                 "type": "object",
                 "properties": {
-                    "id": { "type": "integer", "example": 1 },
-                    "adminUserId": { "type": "integer", "example": 1 },
+                    "id": {
+                        "type": "integer",
+                        "example": 1
+                    },
+                    "adminUserId": {
+                        "type": "integer",
+                        "example": 1
+                    },
                     "title": {
                         "type": "string",
                         "example": "General Discussion about Web Development"
@@ -6647,8 +6784,12 @@
             "ProgramCreateRequestBody": {
                 "type": "object",
                 "properties": {
-                    "title": { "type": "string" },
-                    "description": { "type": "string" },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
                     "availableDate": {
                         "type": "string",
                         "format": "date-time"
@@ -6657,26 +6798,47 @@
                         "type": "string",
                         "enum": ["Course", "Seminar", "Workshop", "Competition"]
                     },
-                    "priceIdr": { "type": "integer", "minimum": 0 },
-                    "isOnline": { "type": "boolean" },
+                    "priceIdr": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "isOnline": {
+                        "type": "boolean"
+                    },
                     "videoConferenceUrl": {
                         "type": "string",
                         "format": "uri"
                     },
-                    "locationAddress": { "type": "string" },
-                    "contestRoomUrl": { "type": "string", "format": "uri" },
+                    "locationAddress": {
+                        "type": "string"
+                    },
+                    "contestRoomUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
                     "speakerNames": {
                         "type": "array",
-                        "items": { "type": "string", "maxLength": 60 },
+                        "items": {
+                            "type": "string",
+                            "maxLength": 60
+                        },
                         "maxItems": 10
                     },
                     "facilitatorNames": {
                         "type": "array",
-                        "items": { "type": "string", "maxLength": 60 },
+                        "items": {
+                            "type": "string",
+                            "maxLength": 60
+                        },
                         "maxItems": 10
                     },
-                    "hostName": { "type": "string" },
-                    "totalPrize": { "type": "integer", "minimum": 0 }
+                    "hostName": {
+                        "type": "string"
+                    },
+                    "totalPrize": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
                 },
                 "example": {
                     "title": "New Workshop Program",
@@ -6692,8 +6854,12 @@
             "ProgramUpdateRequestBody": {
                 "type": "object",
                 "properties": {
-                    "title": { "type": "string" },
-                    "description": { "type": "string" },
+                    "title": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
                     "availableDate": {
                         "type": "string",
                         "format": "date-time"
@@ -6702,26 +6868,47 @@
                         "type": "string",
                         "enum": ["Course", "Seminar", "Workshop", "Competition"]
                     },
-                    "priceIdr": { "type": "integer", "minimum": 0 },
-                    "isOnline": { "type": "boolean" },
+                    "priceIdr": {
+                        "type": "integer",
+                        "minimum": 0
+                    },
+                    "isOnline": {
+                        "type": "boolean"
+                    },
                     "videoConferenceUrl": {
                         "type": "string",
                         "format": "uri"
                     },
-                    "locationAddress": { "type": "string" },
-                    "contestRoomUrl": { "type": "string", "format": "uri" },
+                    "locationAddress": {
+                        "type": "string"
+                    },
+                    "contestRoomUrl": {
+                        "type": "string",
+                        "format": "uri"
+                    },
                     "speakerNames": {
                         "type": "array",
-                        "items": { "type": "string", "maxLength": 60 },
+                        "items": {
+                            "type": "string",
+                            "maxLength": 60
+                        },
                         "maxItems": 10
                     },
                     "facilitatorNames": {
                         "type": "array",
-                        "items": { "type": "string", "maxLength": 60 },
+                        "items": {
+                            "type": "string",
+                            "maxLength": 60
+                        },
                         "maxItems": 10
                     },
-                    "hostName": { "type": "string" },
-                    "totalPrize": { "type": "integer", "minimum": 0 }
+                    "hostName": {
+                        "type": "string"
+                    },
+                    "totalPrize": {
+                        "type": "integer",
+                        "minimum": 0
+                    }
                 },
                 "example": {
                     "type": "Seminar",
@@ -6851,7 +7038,9 @@
             "DiscussionCreateRequestBody": {
                 "type": "object",
                 "properties": {
-                    "title": { "type": "string" }
+                    "title": {
+                        "type": "string"
+                    }
                 },
                 "required": ["title"],
                 "example": {
@@ -6861,7 +7050,9 @@
             "DiscussionUpdateRequestBody": {
                 "type": "object",
                 "properties": {
-                    "title": { "type": "string" }
+                    "title": {
+                        "type": "string"
+                    }
                 },
                 "required": ["title"],
                 "example": {
@@ -6949,10 +7140,16 @@
                                             "type": "string"
                                         },
                                         "value": {
-                                            "type": [
-                                                "string",
-                                                "integer",
-                                                "object"
+                                            "oneOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "integer"
+                                                },
+                                                {
+                                                    "type": "object"
+                                                }
                                             ],
                                             "nullable": true
                                         }
@@ -7265,9 +7462,15 @@
             "ProfilePhotoUploadSuccessResponse201": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -7277,7 +7480,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "array", "nullable": true }
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -7555,9 +7761,15 @@
             "ProgramDetailsSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -7566,7 +7778,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "array", "nullable": true }
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -7594,9 +7809,15 @@
             "ProgramCreateSuccessResponse201": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -7605,7 +7826,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "array", "nullable": true }
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -7628,9 +7852,15 @@
             "ProgramUpdateSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -7639,7 +7869,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "array", "nullable": true }
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -7693,9 +7926,15 @@
             "ProgramThumbnailUploadSuccessResponse201": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -7705,7 +7944,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "array", "nullable": true }
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -7720,9 +7962,15 @@
             "ModuleListSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -7737,7 +7985,10 @@
                     "pagination": {
                         "$ref": "#/components/schemas/Pagination"
                     },
-                    "errors": { "type": "array", "nullable": true }
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -7769,9 +8020,15 @@
             "ModuleSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -7780,7 +8037,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "array", "nullable": true }
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -7802,9 +8062,15 @@
             "ModuleCreateSuccessResponse201": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -7813,7 +8079,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "array", "nullable": true }
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -7836,9 +8105,15 @@
             "ModuleUpdateSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -7847,7 +8122,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "array", "nullable": true }
+                    "errors": {
+                        "type": "array",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -8463,9 +8741,15 @@
             "CertificateCreateSuccessResponse201": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -8474,7 +8758,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "object", "nullable": true }
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -8504,9 +8791,15 @@
             "CertificateUpdateSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -8515,7 +8808,10 @@
                             }
                         }
                     },
-                    "errors": { "type": "object", "nullable": true }
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
                 },
                 "example": {
                     "success": true,
@@ -8574,9 +8870,15 @@
             "DiscussionListSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -8588,16 +8890,27 @@
                             }
                         }
                     },
-                    "pagination": { "$ref": "#/components/schemas/Pagination" },
-                    "errors": { "type": "object", "nullable": true }
+                    "pagination": {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
                 }
             },
             "DiscussionSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -8606,15 +8919,24 @@
                             }
                         }
                     },
-                    "errors": { "type": "object", "nullable": true }
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
                 }
             },
             "DiscussionCreateSuccessResponse201": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -8623,15 +8945,24 @@
                             }
                         }
                     },
-                    "errors": { "type": "object", "nullable": true }
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
                 }
             },
             "DiscussionUpdateSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
                     "data": {
                         "type": "object",
                         "properties": {
@@ -8640,17 +8971,32 @@
                             }
                         }
                     },
-                    "errors": { "type": "object", "nullable": true }
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
                 }
             },
             "DiscussionDeleteSuccessResponse200": {
                 "type": "object",
                 "properties": {
-                    "success": { "type": "boolean" },
-                    "statusCode": { "type": "integer" },
-                    "message": { "type": "string" },
-                    "data": { "type": "object", "nullable": true },
-                    "errors": { "type": "object", "nullable": true }
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
                 }
             }
         },
