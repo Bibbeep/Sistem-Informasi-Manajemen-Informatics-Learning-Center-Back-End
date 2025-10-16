@@ -241,4 +241,84 @@ describe('Discussion Integration Tests', () => {
             expect(response.status).toBe(415);
         });
     });
+
+    describe('PATCH /api/v1/discussions/:discussionId', () => {
+        it('should return 200 and update the discussion for an admin user', async () => {
+            const discussionId = discussions[0].id;
+            const updateData = {
+                title: 'Updated Discussion Title',
+            };
+            const response = await request(server)
+                .patch(`/api/v1/discussions/${discussionId}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.discussion.title).toBe(updateData.title);
+            expect(response.body.message).toBe(
+                'Successfully updated a discussion forum.',
+            );
+        });
+
+        it('should return 400 for an invalid discussionId', async () => {
+            const response = await request(server)
+                .patch('/api/v1/discussions/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ title: 'New Title' });
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for invalid request body', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .patch(`/api/v1/discussions/${discussionId}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ title: '' });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 401 for an unauthenticated request', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .patch(`/api/v1/discussions/${discussionId}`)
+                .send({ title: 'New Title' });
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 for a regular user trying to update a discussion', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .patch(`/api/v1/discussions/${discussionId}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ title: 'Forbidden Update' });
+
+            expect(response.status).toBe(403);
+            expect(response.body.message).toBe('Forbidden.');
+        });
+
+        it('should return 404 when trying to update a non-existent discussion', async () => {
+            const response = await request(server)
+                .patch('/api/v1/discussions/99999')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ title: 'New Title' });
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+        });
+
+        it('should return 415 for incorrect content type', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .patch(`/api/v1/discussions/${discussionId}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .set('Content-Type', 'text/plain')
+                .send('title=some new title');
+
+            expect(response.status).toBe(415);
+        });
+    });
 });
