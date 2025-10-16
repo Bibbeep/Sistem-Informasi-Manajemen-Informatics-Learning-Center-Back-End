@@ -68,6 +68,17 @@ class DiscussionService {
             updatedAt: discussion.updatedAt,
         };
     }
+
+    static async create(data) {
+        const discussion = await Discussion.create(data);
+
+        return {
+            id: discussion.id,
+            title: discussion.title,
+            createdAt: discussion.createdAt,
+            updatedAt: discussion.updatedAt,
+        };
+    }
 }
 
 module.exports = DiscussionService;

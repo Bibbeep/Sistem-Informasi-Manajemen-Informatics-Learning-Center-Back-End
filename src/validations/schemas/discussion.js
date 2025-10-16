@@ -10,6 +10,12 @@ const discussionQueryParam = Joi.object({
     title: Joi.string(),
 });
 
+// Request body for POST /api/v1/discussions
+const discussionPayload = Joi.object({
+    title: Joi.string().required(),
+}).unknown(false);
+
 module.exports = {
     discussionQueryParam,
+    discussionPayload,
 };

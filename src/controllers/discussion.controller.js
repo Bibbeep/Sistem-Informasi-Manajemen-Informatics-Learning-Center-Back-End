@@ -1,5 +1,8 @@
 const DiscussionService = require('../services/discussion.service');
-const { validateDiscussionQuery } = require('../validations/validator');
+const {
+    validateDiscussionQuery,
+    validateDiscussion,
+} = require('../validations/validator');
 
 module.exports = {
     getAll: async (req, res, next) => {
@@ -37,6 +40,32 @@ module.exports = {
                 success: true,
                 statusCode: 200,
                 message: 'Successfully retrieved discussion forum details.',
+                data: {
+                    discussion,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    create: async (req, res, next) => {
+        try {
+            const { error, value } = validateDiscussion(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const discussion = await DiscussionService.create({
+                ...value,
+                adminUserId: parseInt(req.tokenPayload.sub),
+            });
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a discussion forum.',
                 data: {
                     discussion,
                 },
