@@ -44,7 +44,7 @@ jobs:
           MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
           MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
         volumes:
-          - ${{ github.workspace }}/data:/data
+          - ./data:/data
         options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
 
     steps:
@@ -70,7 +70,7 @@ jobs:
 
       - name: Ensure data directory is deletable
         run: |
-          pwd
+          mkdir -p data
           sudo chown -R $USER:$USER data/
 
       - name: Checkout repository
@@ -88,12 +88,10 @@ jobs:
         env:
           NODE_ENV: test
           PORT: ${{ secrets.PORT }}
-          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
           RATE_LIMITER_WINDOW_SEC: ${{ vars.RATE_LIMITER_WINDOW_SEC }}
           RATE_LIMITER_MAX_REQ: ${{ vars.RATE_LIMITER_MAX_REQ }}
           DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ vars.POSTGRES_DB }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          JWT_EXP: ${{ vars.JWT_EXP }}
           REDIS_URL: redis://@localhost:6379/0
           NODEMAILER_SENDER: ${{ secrets.NODEMAILER_SENDER }}
           NODEMAILER_USER: ${{ secrets.NODEMAILER_USER }}
