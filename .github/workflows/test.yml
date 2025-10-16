@@ -103,4 +103,4 @@ jobs:
           S3_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
           S3_TEST_BUCKET_NAME: ${{ vars.S3_TEST_BUCKET_NAME }}
           S3_REGION: ${{ vars.S3_REGION }}
-        run: npm run test:clean
+        run: npm run test
