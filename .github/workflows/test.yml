@@ -65,6 +65,9 @@ jobs:
 
           minio.make_bucket('${{ vars.S3_TEST_BUCKET_NAME }}')
           EOF
+      
+      - name: Ensure data directory is deletable
+        run: sudo chown -R $USER:$USER data/ && sudo chmod -R 777 /home/runner/work/${{ github.event.repository.name }}/data
 
       - name: Checkout repository
         uses: actions/checkout@v5
