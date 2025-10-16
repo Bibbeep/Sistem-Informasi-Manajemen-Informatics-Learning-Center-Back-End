@@ -37,7 +37,7 @@ jobs:
           - 6379:6379
 
       minio:
-        image: lazybit/minio
+        image: bitnami/minio
         ports:
           - 9000:9000
         env:
