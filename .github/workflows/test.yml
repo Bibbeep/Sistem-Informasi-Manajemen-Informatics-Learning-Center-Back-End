@@ -67,7 +67,9 @@ jobs:
           EOF
       
       - name: Ensure data directory is deletable
-        run: sudo chown -R $USER:$USER data/ && sudo chmod -R 777 /home/runner/work/${{ github.event.repository.name }}/data
+        run: |
+          pwd
+          sudo chown -R $USER:$USER data/
 
       - name: Checkout repository
         uses: actions/checkout@v5
