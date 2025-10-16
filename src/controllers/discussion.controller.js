@@ -27,4 +27,23 @@ module.exports = {
             next(err);
         }
     },
+    getById: async (req, res, next) => {
+        try {
+            const discussion = await DiscussionService.getOne(
+                parseInt(req.params.discussionId, 10),
+            );
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved discussion forum details.',
+                data: {
+                    discussion,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

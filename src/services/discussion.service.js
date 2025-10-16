@@ -1,4 +1,5 @@
 const { Discussion } = require('../db/models');
+const HTTPError = require('../utils/httpError');
 
 class DiscussionService {
     static async getMany(data) {
@@ -42,6 +43,29 @@ class DiscussionService {
                     page > totalPages + 1 ? null : page > 1 ? page - 1 : null,
             },
             discussions: rows,
+        };
+    }
+
+    static async getOne(discussionId) {
+        const discussion = await Discussion.findByPk(discussionId);
+
+        if (!discussion) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: discussionId,
+                    },
+                },
+            ]);
+        }
+
+        return {
+            id: discussion.id,
+            title: discussion.title,
+            createdAt: discussion.createdAt,
+            updatedAt: discussion.updatedAt,
         };
     }
 }

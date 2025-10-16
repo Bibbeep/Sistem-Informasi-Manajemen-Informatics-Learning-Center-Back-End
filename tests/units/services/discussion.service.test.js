@@ -3,6 +3,7 @@ jest.mock('../../../src/db/models');
 
 const DiscussionService = require('../../../src/services/discussion.service');
 const { Discussion } = require('../../../src/db/models');
+const HTTPError = require('../../../src/utils/httpError');
 
 describe('Discussion Service Unit Tests', () => {
     afterEach(() => {
@@ -143,6 +144,40 @@ describe('Discussion Service Unit Tests', () => {
 
             expect(result.pagination).toEqual(expectedPagination);
             expect(result.discussions).toEqual([]);
+        });
+    });
+
+    describe('getOne Tests', () => {
+        it('should return a single discussion forum by id', async () => {
+            const mockDiscussion = {
+                id: 1,
+                title: 'Test Discussion',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+
+            const result = await DiscussionService.getOne(1);
+
+            expect(Discussion.findByPk).toHaveBeenCalledWith(1);
+            expect(result).toEqual(mockDiscussion);
+        });
+
+        it('should throw HTTPError 404 if discussion is not found', async () => {
+            Discussion.findByPk.mockResolvedValue(null);
+
+            await expect(DiscussionService.getOne(999)).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Discussion with "discussionId" does not exist',
+                        context: {
+                            key: 'discussionId',
+                            value: 999,
+                        },
+                    },
+                ]),
+            );
         });
     });
 });

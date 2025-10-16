@@ -21,7 +21,7 @@
     "db:create:silent": "npx sequelize-cli db:create --env test >/dev/null 2>&1",
     "db:drop:silent": "npx sequelize-cli db:drop --env test --config src/configs/sequelize.js >/dev/null 2>&1",
     "db:seed:all": "npx sequelize-cli db:seed:all",
-    "db:restart:dev": "NODE_ENV=development npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all",
+    "db:restart:dev": "NODE_ENV=development npx sequelize-cli db:migrate:undo:all && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all",
     "db:setup:prod": "NODE_ENV=production npx sequelize-cli db:create --env production && npx sequelize-cli db:migrate --env production && npx sequelize-cli db:seed:all --env production",
     "pretest": "NODE_ENV=test npx sequelize db:migrate:undo:all && npm run db:migrate",
     "pretest:silent": "NODE_ENV=test npx sequelize db:migrate:undo:all >/dev/null 2>&1 && npm run db:migrate:silent",
