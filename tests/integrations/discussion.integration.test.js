@@ -180,4 +180,65 @@ describe('Discussion Integration Tests', () => {
             expect(response.body.message).toBe('Resource not found.');
         });
     });
+
+    describe('POST /api/v1/discussions', () => {
+        it('should return 201 and create a new discussion for an admin user', async () => {
+            const newDiscussion = {
+                title: 'New Discussion by Admin',
+            };
+            const response = await request(server)
+                .post('/api/v1/discussions')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(newDiscussion);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.discussion.title).toBe(
+                newDiscussion.title,
+            );
+            expect(response.body.message).toBe(
+                'Successfully created a discussion forum.',
+            );
+        });
+
+        it('should return 400 for invalid request body', async () => {
+            const response = await request(server)
+                .post('/api/v1/discussions')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send({ title: '' });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 401 for unauthenticated requests', async () => {
+            const response = await request(server)
+                .post('/api/v1/discussions')
+                .send({ title: 'Unauthorized Discussion' });
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 for a regular user trying to create a discussion', async () => {
+            const newDiscussion = {
+                title: 'Forbidden Discussion',
+            };
+            const response = await request(server)
+                .post('/api/v1/discussions')
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(newDiscussion);
+
+            expect(response.status).toBe(403);
+            expect(response.body.message).toBe('Forbidden.');
+        });
+
+        it('should return 415 for incorrect content type', async () => {
+            const response = await request(server)
+                .post('/api/v1/discussions')
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .set('Content-Type', 'text/plain')
+                .send('title=some title');
+
+            expect(response.status).toBe(415);
+        });
+    });
 });
