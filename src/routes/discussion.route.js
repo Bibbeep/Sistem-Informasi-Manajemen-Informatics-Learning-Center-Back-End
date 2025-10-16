@@ -1,6 +1,5 @@
 /**
  * @todo [15-10-2025]:
- *  @post       /api/v1/discussions                     [authN] [authR: admin]
  *  @patch      /api/v1/discussions/:discussionId       [authN] [authR: admin]
  *  @delete     /api/v1/discussions/:discussionId       [authN] [authR: admin]
  */
@@ -29,6 +28,16 @@ router.post(
         rules: ['admin'],
     }),
     asyncHandler(DiscussionController.create),
+);
+router.patch(
+    '/:discussionId',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    requireJsonContent,
+    authorize({
+        rules: ['admin'],
+    }),
+    asyncHandler(DiscussionController.updateById),
 );
 
 module.exports = router;

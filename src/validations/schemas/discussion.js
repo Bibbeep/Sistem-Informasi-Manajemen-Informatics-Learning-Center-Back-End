@@ -15,7 +15,13 @@ const discussionPayload = Joi.object({
     title: Joi.string().required(),
 }).unknown(false);
 
+// Request body for PATCH /api/v1/discussions/:discussionId
+const discussionUpdate = Joi.object({
+    title: Joi.string().required(),
+}).unknown(false);
+
 module.exports = {
     discussionQueryParam,
     discussionPayload,
+    discussionUpdate,
 };

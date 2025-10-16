@@ -2,6 +2,7 @@ const DiscussionService = require('../services/discussion.service');
 const {
     validateDiscussionQuery,
     validateDiscussion,
+    validateUpdateDiscussionData,
 } = require('../validations/validator');
 
 module.exports = {
@@ -66,6 +67,32 @@ module.exports = {
                 success: true,
                 statusCode: 201,
                 message: 'Successfully created a discussion forum.',
+                data: {
+                    discussion,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    updateById: async (req, res, next) => {
+        try {
+            const { error, value } = validateUpdateDiscussionData(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const discussion = await DiscussionService.updateOne({
+                ...value,
+                discussionId: parseInt(req.params.discussionId, 10),
+            });
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully updated a discussion forum.',
                 data: {
                     discussion,
                 },

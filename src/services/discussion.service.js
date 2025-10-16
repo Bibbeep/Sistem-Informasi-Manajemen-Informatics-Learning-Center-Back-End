@@ -79,6 +79,44 @@ class DiscussionService {
             updatedAt: discussion.updatedAt,
         };
     }
+
+    static async updateOne(data) {
+        const { discussionId, title } = data;
+
+        const discussion = await Discussion.findByPk(discussionId);
+
+        if (!discussion) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: discussionId,
+                    },
+                },
+            ]);
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const [count, rows] = await Discussion.update(
+            {
+                title,
+            },
+            {
+                where: {
+                    id: discussionId,
+                },
+                returning: true,
+            },
+        );
+
+        return {
+            id: rows[0].id,
+            title: rows[0].title,
+            createdAt: rows[0].createdAt,
+            updatedAt: rows[0].updatedAt,
+        };
+    }
 }
 
 module.exports = DiscussionService;
