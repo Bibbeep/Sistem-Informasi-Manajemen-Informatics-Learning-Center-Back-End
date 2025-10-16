@@ -265,4 +265,47 @@ describe('Discussion Service Unit Tests', () => {
             expect(Discussion.update).not.toHaveBeenCalled();
         });
     });
+
+    describe('deleteOne Tests', () => {
+        it('should delete a discussion successfully', async () => {
+            const mockDiscussionId = 1;
+            const mockDiscussion = {
+                id: mockDiscussionId,
+                title: 'To be deleted',
+            };
+
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            Discussion.destroy.mockResolvedValue(1);
+
+            await DiscussionService.deleteOne(mockDiscussionId);
+
+            expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
+            expect(Discussion.destroy).toHaveBeenCalledWith({
+                where: { id: mockDiscussionId },
+            });
+        });
+
+        it('should throw HTTPError 404 if discussion to delete is not found', async () => {
+            const mockDiscussionId = 999;
+            Discussion.findByPk.mockResolvedValue(null);
+
+            await expect(
+                DiscussionService.deleteOne(mockDiscussionId),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Discussion with "discussionId" does not exist',
+                        context: {
+                            key: 'discussionId',
+                            value: mockDiscussionId,
+                        },
+                    },
+                ]),
+            );
+
+            expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
+            expect(Discussion.destroy).not.toHaveBeenCalled();
+        });
+    });
 });

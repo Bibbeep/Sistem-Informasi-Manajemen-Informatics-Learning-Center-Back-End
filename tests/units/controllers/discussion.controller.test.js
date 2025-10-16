@@ -265,4 +265,35 @@ describe('Discussion Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
+
+    describe('deleteById Tests', () => {
+        it('should return 200 on successful deletion', async () => {
+            req.params.discussionId = '1';
+            DiscussionService.deleteOne.mockResolvedValue();
+
+            await deleteById(req, res, next);
+
+            expect(DiscussionService.deleteOne).toHaveBeenCalledWith(1);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a discussion forum.',
+                data: null,
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            req.params.discussionId = '999';
+            const serviceError = new Error('Service error');
+            DiscussionService.deleteOne.mockRejectedValue(serviceError);
+
+            await deleteById(req, res, next);
+
+            expect(DiscussionService.deleteOne).toHaveBeenCalledWith(999);
+            expect(next).toHaveBeenCalledWith(serviceError);
+        });
+    });
 });
