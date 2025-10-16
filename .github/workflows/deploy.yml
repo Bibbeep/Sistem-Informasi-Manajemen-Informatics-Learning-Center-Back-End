@@ -63,6 +63,8 @@ jobs:
 
             git fetch origin
             git reset --hard origin/${{ github.ref_name }}
+            pwd
+            ls
 
             npm ci --omit=dev
 
