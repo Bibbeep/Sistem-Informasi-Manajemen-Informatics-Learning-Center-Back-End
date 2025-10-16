@@ -10,7 +10,7 @@ const { redisClient } = require('../../src/configs/redis');
 
 describe('Discussion Integration Tests', () => {
     const mockUserPassword = 'password123';
-    let users, tokens;
+    let users, tokens, discussions;
 
     afterAll(async () => {
         server.close();
@@ -33,11 +33,13 @@ describe('Discussion Integration Tests', () => {
             regular: regularUser,
         };
 
+        discussions = [];
         for (let i = 0; i < 25; i++) {
-            await discussionFactory({
+            const discussion = await discussionFactory({
                 adminUserId: users.admin.id,
                 title: `Discussion about ${i % 2 === 0 ? 'Technology' : 'Development'}`,
             });
+            discussions.push(discussion);
         }
 
         tokens = {
@@ -122,6 +124,60 @@ describe('Discussion Integration Tests', () => {
 
             expect(response.status).toBe(401);
             expect(response.body.message).toBe('Unauthorized.');
+        });
+    });
+
+    describe('GET /api/v1/discussions/:discussionId', () => {
+        it('should return 200 and fetch discussion details for an admin user', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(`/api/v1/discussions/${discussionId}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+            expect(response.body.data.discussion.id).toBe(discussionId);
+            expect(response.body.message).toBe(
+                'Successfully retrieved discussion forum details.',
+            );
+        });
+
+        it('should return 200 and fetch discussion details for a regular user', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(`/api/v1/discussions/${discussionId}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.discussion.id).toBe(discussionId);
+        });
+
+        it('should return 400 for an invalid discussionId', async () => {
+            const response = await request(server)
+                .get('/api/v1/discussions/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 401 for an unauthenticated request', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server).get(
+                `/api/v1/discussions/${discussionId}`,
+            );
+
+            expect(response.status).toBe(401);
+            expect(response.body.message).toBe('Unauthorized.');
+        });
+
+        it('should return 404 when the discussion does not exist', async () => {
+            const response = await request(server)
+                .get('/api/v1/discussions/99999')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
         });
     });
 });
