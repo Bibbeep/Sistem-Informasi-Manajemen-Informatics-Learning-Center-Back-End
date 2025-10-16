@@ -51,7 +51,7 @@ jobs:
           pip3 install minio
           python3 - <<'EOF'
           from minio import Minio
-          from minio.error import ResponseError
+          from minio.error import S3Error
 
           try:
               minio = Minio(
