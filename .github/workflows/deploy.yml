@@ -55,8 +55,6 @@ jobs:
             DOMAIN="${{ secrets.DOMAIN }}"
             WWW_DOMAIN="${{ secrets.WWW_DOMAIN }}"
 
-            cd $APP_DIR
-
             CURRENT_COMMIT=$(git rev-parse HEAD)
             echo $CURRENT_COMMIT > ~/.last_good_commit
             echo "Saved current commit: $CURRENT_COMMIT"
@@ -70,7 +68,7 @@ jobs:
 
             pm2 stop $PM2_APP || true
             pm2 start src/server.js --name $PM2_APP -- -p $APP_PORT
-            sleep 5
+            sleep 10
 
             if ! curl -fs "http://localhost:$APP_PORT/health" > /dev/null; then
               echo "Health check failed. Rolling back..."
