@@ -1,6 +1,5 @@
 /**
  * @todo [15-10-2025]:
- *  @patch      /api/v1/discussions/:discussionId       [authN] [authR: admin]
  *  @delete     /api/v1/discussions/:discussionId       [authN] [authR: admin]
  */
 const router = require('express').Router();
