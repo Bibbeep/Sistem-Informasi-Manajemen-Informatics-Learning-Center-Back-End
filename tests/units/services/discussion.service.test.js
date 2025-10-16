@@ -180,4 +180,30 @@ describe('Discussion Service Unit Tests', () => {
             );
         });
     });
+
+    describe('create Tests', () => {
+        it('should create a new discussion and return it', async () => {
+            const mockData = {
+                title: 'New Discussion',
+                adminUserId: 1,
+            };
+            const mockCreatedDiscussion = {
+                id: 1,
+                ...mockData,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+            Discussion.create.mockResolvedValue(mockCreatedDiscussion);
+
+            const result = await DiscussionService.create(mockData);
+
+            expect(Discussion.create).toHaveBeenCalledWith(mockData);
+            expect(result).toEqual({
+                id: mockCreatedDiscussion.id,
+                title: mockCreatedDiscussion.title,
+                createdAt: mockCreatedDiscussion.createdAt,
+                updatedAt: mockCreatedDiscussion.updatedAt,
+            });
+        });
+    });
 });
