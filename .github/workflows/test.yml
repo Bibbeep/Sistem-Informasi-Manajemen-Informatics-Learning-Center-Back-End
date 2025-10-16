@@ -16,7 +16,6 @@ jobs:
         image: postgres:17-alpine
         env:
           POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ vars.POSTGRES_DB }}
         options: >-
           --health-cmd pg_isready
