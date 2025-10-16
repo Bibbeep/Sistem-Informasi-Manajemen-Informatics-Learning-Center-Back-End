@@ -1,14 +1,15 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/services/discussion.service');
 jest.mock('../../../src/validations/validator');
-
 const {
     getAll,
     getById,
+    create,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
     validateDiscussionQuery,
+    validateDiscussion,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -19,6 +20,8 @@ describe('Discussion Controller Unit Tests', () => {
         req = {
             query: {},
             params: {},
+            body: {},
+            tokenPayload: {},
         };
         res = {
             status: jest.fn().mockReturnThis(),
@@ -120,6 +123,72 @@ describe('Discussion Controller Unit Tests', () => {
             await getById(req, res, next);
 
             expect(DiscussionService.getOne).toHaveBeenCalledWith(999);
+            expect(next).toHaveBeenCalledWith(serviceError);
+        });
+    });
+
+    describe('create Tests', () => {
+        it('should return 201 with created discussion on success', async () => {
+            req.body = { title: 'New Discussion' };
+            req.tokenPayload = { sub: '1' };
+            const mockValue = { title: 'New Discussion' };
+            const mockDiscussion = { id: 1, title: 'New Discussion' };
+            validateDiscussion.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            DiscussionService.create.mockResolvedValue(mockDiscussion);
+
+            await create(req, res, next);
+
+            expect(validateDiscussion).toHaveBeenCalledWith(req.body);
+            expect(DiscussionService.create).toHaveBeenCalledWith({
+                ...mockValue,
+                adminUserId: 1,
+            });
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a discussion forum.',
+                data: {
+                    discussion: mockDiscussion,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error if body is invalid', async () => {
+            req.body = { title: '' };
+            const validationError = new ValidationError('Validation failed');
+            validateDiscussion.mockReturnValue({ error: validationError });
+
+            await create(req, res, next);
+
+            expect(validateDiscussion).toHaveBeenCalledWith(req.body);
+            expect(DiscussionService.create).not.toHaveBeenCalled();
+            expect(next).toHaveBeenCalledWith(validationError);
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            req.body = { title: 'New Discussion' };
+            req.tokenPayload = { sub: '1' };
+            const mockValue = { title: 'New Discussion' };
+            const serviceError = new Error('Service error');
+            validateDiscussion.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            DiscussionService.create.mockRejectedValue(serviceError);
+
+            await create(req, res, next);
+
+            expect(validateDiscussion).toHaveBeenCalledWith(req.body);
+            expect(DiscussionService.create).toHaveBeenCalledWith({
+                ...mockValue,
+                adminUserId: 1,
+            });
             expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
