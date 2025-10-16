@@ -103,7 +103,7 @@ jobs:
           S3_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
           S3_TEST_BUCKET_NAME: ${{ vars.S3_TEST_BUCKET_NAME }}
           S3_REGION: ${{ vars.S3_REGION }}
-        run: npm run -s test:clean
+        run: npm run test
 
   deploy:
     name: Auto Deploy to Amazon EC2
@@ -183,7 +183,7 @@ jobs:
             git reset --hard origin/${{ github.ref_name }}
 
             cd $APP_DIR
-            
+
             pwd
             ls
 
