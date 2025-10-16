@@ -17,7 +17,7 @@ async function createUsers() {
             full_name: faker.person.fullName(),
             member_level: faker.helpers.arrayElement(['Basic', 'Premium']),
             role: i % 2 === 0 ? 'User' : 'Admin',
-            picture_url: faker.internet.url(),
+            picture_url: `${faker.internet.url({ appendSlash: true })}${faker.system.commonFileName(faker.helpers.arrayElement(['jpg', 'jpeg', 'png', 'webp', 'gif', 'svg']))}`,
             created_at: createdAt,
             updated_at: faker.date.between({
                 from: createdAt,

@@ -3,27 +3,16 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('feedback_responses', {
+        await queryInterface.createTable('discussions', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            feedbackId: {
-                type: Sequelize.INTEGER,
-                allowNull: false,
-                field: 'feedback_id',
-                references: {
-                    model: 'feedbacks',
-                    key: 'id',
-                },
-                onUpdate: 'CASCADE',
-                onDelete: 'SET NULL',
-            },
             adminUserId: {
-                type: Sequelize.INTEGER,
                 allowNull: false,
+                type: Sequelize.INTEGER,
                 field: 'admin_user_id',
                 references: {
                     model: 'users',
@@ -32,9 +21,9 @@ module.exports = {
                 onUpdate: 'CASCADE',
                 onDelete: 'SET NULL',
             },
-            message: {
-                type: Sequelize.TEXT,
+            title: {
                 allowNull: false,
+                type: Sequelize.STRING,
             },
             createdAt: {
                 allowNull: false,
@@ -49,6 +38,6 @@ module.exports = {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('feedback_responses');
+        await queryInterface.dropTable('discussions');
     },
 };

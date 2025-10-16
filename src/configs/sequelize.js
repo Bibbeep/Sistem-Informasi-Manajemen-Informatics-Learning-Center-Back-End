@@ -9,7 +9,7 @@ module.exports = {
         logging: false,
     },
     test: {
-        use_env_variable: 'DATABASE_URL',
+        url: 'postgres://postgres:root@localhost:5432/sim_ilc_test',
         dialect: 'postgres',
         logging: false,
     },

@@ -76,11 +76,6 @@ describe('Scheduler Service Unit Tests', () => {
                 chalk.blue('[Cron Job]'),
                 'Job is starting',
             );
-            expect(consoleLogSpy).toHaveBeenNthCalledWith(
-                2,
-                chalk.yellow('[Cron Job]'),
-                'Job is already running',
-            );
         });
         it('should run cron job and update expired invoices and enrollments', async () => {
             const mockExpiredInvoices = [

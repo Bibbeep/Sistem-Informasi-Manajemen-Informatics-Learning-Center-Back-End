@@ -37,7 +37,7 @@ module.exports = {
                 courseModules.push({
                     course_id: course.id,
                     number_code: i,
-                    material_url: faker.internet.url(),
+                    material_url: `${faker.internet.url({ appendSlash: true })}${faker.system.commonFileName(faker.helpers.arrayElement(['pdf', 'pptx', 'docx', 'xlsx', 'mp4', 'mkv', 'mov']))}`,
                     youtube_url: `https://www.youtube.com/watch?v=${faker.string.alphanumeric(11)}`,
                     created_at: createdAt,
                     updated_at: faker.date.between({

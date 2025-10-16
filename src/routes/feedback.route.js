@@ -6,28 +6,29 @@ const {
     validatePathParameterId,
 } = require('../middlewares/auth.middleware');
 const { requireJsonContent } = require('../middlewares/contentType.middleware');
+const asyncHandler = require('../utils/asyncHandler');
 
 router.get(
     '/',
     authenticate,
     authorize({ rules: ['admin'] }),
-    FeedbackController.getAll,
+    asyncHandler(FeedbackController.getAll),
 );
 router.get(
     '/:feedbackId',
     authenticate,
     validatePathParameterId('feedbackId'),
     authorize({ rules: ['admin'] }),
-    FeedbackController.getById,
+    asyncHandler(FeedbackController.getById),
 );
-router.post('/', requireJsonContent, FeedbackController.create);
+router.post('/', requireJsonContent, asyncHandler(FeedbackController.create));
 router.post(
     '/:feedbackId/responses',
     authenticate,
     requireJsonContent,
     validatePathParameterId('feedbackId'),
     authorize({ rules: ['admin'] }),
-    FeedbackController.createResponse,
+    asyncHandler(FeedbackController.createResponse),
 );
 
 module.exports = router;

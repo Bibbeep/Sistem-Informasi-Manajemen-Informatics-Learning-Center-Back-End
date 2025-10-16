@@ -1,12 +1,10 @@
 const { spawn } = require('child-process-promise');
-const { host, port, username, password, database, dialect } =
-    require('../../src/configs/sequelize')['test'];
 
 const isSilent = process.argv.includes('--silent');
 const spawnOptions = { stdio: isSilent ? 'pipe' : 'inherit' };
 
 (async () => {
-    const url = `${dialect}://${username}:${password}@${host}:${port}/${database}`;
+    const url = 'postgres://postgres:root@localhost:5432/sim_ilc_test';
 
     try {
         await spawn(
