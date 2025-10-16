@@ -24,7 +24,7 @@
     "db:restart:dev": "NODE_ENV=development npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate && npx sequelize-cli db:seed:all",
     "db:setup:prod": "NODE_ENV=production npx sequelize-cli db:create --env production && npx sequelize-cli db:migrate --env production && npx sequelize-cli db:seed:all --env production",
     "pretest": "NODE_ENV=test npx sequelize db:migrate:undo:all && npm run db:migrate",
-    "pretest:silent": "NODE_ENV=test npm run db:drop:silent && npm run db:create:silent && npm run db:migrate:silent",
+    "pretest:silent": "NODE_ENV=test npx sequelize db:migrate:undo:all >/dev/null 2>&1 && npm run db:migrate:silent",
     "test": "npm run pretest && NODE_ENV=test jest --detectOpenHandles --silent --coverage --verbose",
     "test:clean": "npm run pretest:silent && NODE_ENV=test jest --detectOpenHandles --silent --coverage",
     "test:unit": "NODE_ENV=test jest ./tests/units/*/*.test.js --coveragePathIgnorePatterns \"/node_modules/\" \"/src/app.js\" \"/src/server.js\" \"/src/routes/\" --coverage --verbose --detectOpenHandles",

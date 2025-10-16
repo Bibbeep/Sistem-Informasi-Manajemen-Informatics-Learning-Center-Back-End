@@ -10,7 +10,14 @@ const config = require(__dirname + '/../../configs/sequelize.js')[env];
 const db = {};
 
 let sequelize;
-if (config.use_env_variable) {
+if (env === 'test') {
+    sequelize = new Sequelize(
+        'postgres://postgres:root@localhost:5432/sim_ilc_test',
+        {
+            logging: false,
+        },
+    );
+} else if (config.use_env_variable) {
     sequelize = new Sequelize(process.env[config.use_env_variable], config);
 } else {
     sequelize = new Sequelize(
