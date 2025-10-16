@@ -5592,6 +5592,435 @@
                     }
                 }
             }
+        },
+        "/api/v1/discussions": {
+            "get": {
+                "summary": "Retrieves a list of all discussion forums",
+                "tags": ["Discussion Management"],
+                "security": [{ "bearerAuth": [] }],
+                "parameters": [
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": { "type": "integer", "default": 1 },
+                        "description": "The page number to retrieve."
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": { "type": "integer", "default": 10 },
+                        "description": "The number of discussions per page."
+                    },
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "-id",
+                                "createdAt",
+                                "-createdAt",
+                                "updatedAt",
+                                "-updatedAt"
+                            ],
+                            "default": "id"
+                        },
+                        "description": "The field to sort by. Use a '-' prefix for descending order."
+                    },
+                    {
+                        "in": "query",
+                        "name": "title",
+                        "schema": { "type": "string" },
+                        "description": "Filter discussions by title (case-insensitive)."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved all discussion forums.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DiscussionListSuccessResponse200"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 200,
+                                    "message": "Successfully retrieved all discussion forums.",
+                                    "data": {
+                                        "discussions": [
+                                            {
+                                                "id": 1,
+                                                "adminUserId": 1,
+                                                "title": "General Discussion about Web Development",
+                                                "createdAt": "2025-10-16T10:00:00.000Z",
+                                                "updatedAt": "2025-10-16T10:00:00.000Z"
+                                            },
+                                            {
+                                                "id": 2,
+                                                "adminUserId": 1,
+                                                "title": "Frontend Frameworks: React vs Vue",
+                                                "createdAt": "2025-10-15T14:30:00.000Z",
+                                                "updatedAt": "2025-10-15T14:30:00.000Z"
+                                            }
+                                        ]
+                                    },
+                                    "pagination": {
+                                        "currentRecords": 2,
+                                        "totalRecords": 25,
+                                        "currentPage": 1,
+                                        "totalPages": 3,
+                                        "nextPage": 2,
+                                        "prevPage": null
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "statusCode": 401,
+                                    "message": "Unauthorized.",
+                                    "data": null,
+                                    "errors": [
+                                        {
+                                            "message": "Invalid or expired token.",
+                                            "context": {
+                                                "key": "request.headers.authorization"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Creates a new discussion forum (Admin only)",
+                "tags": ["Discussion Management"],
+                "security": [{ "bearerAuth": [] }],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DiscussionCreateRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully created a discussion forum.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DiscussionCreateSuccessResponse201"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 201,
+                                    "message": "Successfully created a discussion forum.",
+                                    "data": {
+                                        "discussion": {
+                                            "id": 26,
+                                            "title": "New Discussion on DevOps",
+                                            "adminUserId": 1,
+                                            "updatedAt": "2025-10-16T10:47:00.000Z",
+                                            "createdAt": "2025-10-16T10:47:00.000Z"
+                                        }
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Validation error for request body.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "statusCode": 400,
+                                    "message": "Validation error.",
+                                    "data": null,
+                                    "errors": [
+                                        {
+                                            "message": "\"title\" is not allowed to be empty",
+                                            "context": {
+                                                "key": "title",
+                                                "value": ""
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized access.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "statusCode": 401,
+                                    "message": "Unauthorized.",
+                                    "data": null,
+                                    "errors": [
+                                        {
+                                            "message": "Invalid or expired token.",
+                                            "context": {
+                                                "key": "request.headers.authorization"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden access for non-admin users.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "statusCode": 403,
+                                    "message": "Forbidden.",
+                                    "data": null,
+                                    "errors": [
+                                        {
+                                            "message": "You do not have the necessary permissions to access this resource.",
+                                            "context": {
+                                                "key": "role",
+                                                "value": "User"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/discussions/{discussionId}": {
+            "get": {
+                "summary": "Retrieves a specific discussion forum by its ID",
+                "tags": ["Discussion Management"],
+                "security": [{ "bearerAuth": [] }],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": { "type": "integer" },
+                        "description": "The ID of the discussion to retrieve."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved discussion forum details.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DiscussionSuccessResponse200"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 200,
+                                    "message": "Successfully retrieved discussion forum details.",
+                                    "data": {
+                                        "discussion": {
+                                            "id": 1,
+                                            "adminUserId": 1,
+                                            "title": "General Discussion about Web Development",
+                                            "createdAt": "2025-10-16T10:00:00.000Z",
+                                            "updatedAt": "2025-10-16T10:00:00.000Z"
+                                        }
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "statusCode": 404,
+                                    "message": "Resource not found.",
+                                    "data": null,
+                                    "errors": [
+                                        {
+                                            "message": "Discussion with \"discussionId\" does not exist",
+                                            "context": {
+                                                "key": "discussionId",
+                                                "value": 9999
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Updates a specific discussion forum by its ID (Admin only)",
+                "tags": ["Discussion Management"],
+                "security": [{ "bearerAuth": [] }],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": { "type": "integer" },
+                        "description": "The ID of the discussion to update."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DiscussionUpdateRequestBody"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated a discussion forum.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DiscussionUpdateSuccessResponse200"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 200,
+                                    "message": "Successfully updated a discussion forum.",
+                                    "data": {
+                                        "discussion": {
+                                            "id": 1,
+                                            "title": "Updated: Discussion on Advanced Web Topics",
+                                            "createdAt": "2025-10-16T10:00:00.000Z",
+                                            "updatedAt": "2025-10-16T10:55:00.000Z"
+                                        }
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "statusCode": 404,
+                                    "message": "Resource not found.",
+                                    "data": null,
+                                    "errors": [
+                                        {
+                                            "message": "Discussion with \"discussionId\" does not exist",
+                                            "context": {
+                                                "key": "discussionId",
+                                                "value": 9999
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes a specific discussion forum by its ID (Admin only)",
+                "tags": ["Discussion Management"],
+                "security": [{ "bearerAuth": [] }],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": { "type": "integer" },
+                        "description": "The ID of the discussion to delete."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted a discussion forum.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DiscussionDeleteSuccessResponse200"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 200,
+                                    "message": "Successfully deleted a discussion forum.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Resource not found.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/FailedResponse"
+                                },
+                                "example": {
+                                    "success": false,
+                                    "statusCode": 404,
+                                    "message": "Resource not found.",
+                                    "data": null,
+                                    "errors": [
+                                        {
+                                            "message": "Discussion with \"discussionId\" does not exist",
+                                            "context": {
+                                                "key": "discussionId",
+                                                "value": 9999
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -6065,6 +6494,27 @@
                     }
                 }
             },
+            "Discussion": {
+                "type": "object",
+                "properties": {
+                    "id": { "type": "integer", "example": 1 },
+                    "adminUserId": { "type": "integer", "example": 1 },
+                    "title": {
+                        "type": "string",
+                        "example": "General Discussion about Web Development"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-16T10:00:00.000Z"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "example": "2025-10-16T10:00:00.000Z"
+                    }
+                }
+            },
             "RegisterRequestBody": {
                 "type": "object",
                 "properties": {
@@ -6396,6 +6846,26 @@
                 "example": {
                     "title": "Certificate of Expertise in Advanced Backend Development",
                     "expiredAt": "2028-12-31T00:00:00.000Z"
+                }
+            },
+            "DiscussionCreateRequestBody": {
+                "type": "object",
+                "properties": {
+                    "title": { "type": "string" }
+                },
+                "required": ["title"],
+                "example": {
+                    "title": "New Discussion on DevOps"
+                }
+            },
+            "DiscussionUpdateRequestBody": {
+                "type": "object",
+                "properties": {
+                    "title": { "type": "string" }
+                },
+                "required": ["title"],
+                "example": {
+                    "title": "Updated: Discussion on Advanced Web Topics"
                 }
             },
             "CompletedModuleSuccessResponse201": {
@@ -8099,6 +8569,88 @@
                     "message": "Successfully deleted a certificate.",
                     "data": null,
                     "errors": null
+                }
+            },
+            "DiscussionListSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "discussions": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Discussion"
+                                }
+                            }
+                        }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" },
+                    "errors": { "type": "object", "nullable": true }
+                }
+            },
+            "DiscussionSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "discussion": {
+                                "$ref": "#/components/schemas/Discussion"
+                            }
+                        }
+                    },
+                    "errors": { "type": "object", "nullable": true }
+                }
+            },
+            "DiscussionCreateSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "discussion": {
+                                "$ref": "#/components/schemas/Discussion"
+                            }
+                        }
+                    },
+                    "errors": { "type": "object", "nullable": true }
+                }
+            },
+            "DiscussionUpdateSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "discussion": {
+                                "$ref": "#/components/schemas/Discussion"
+                            }
+                        }
+                    },
+                    "errors": { "type": "object", "nullable": true }
+                }
+            },
+            "DiscussionDeleteSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": { "type": "boolean" },
+                    "statusCode": { "type": "integer" },
+                    "message": { "type": "string" },
+                    "data": { "type": "object", "nullable": true },
+                    "errors": { "type": "object", "nullable": true }
                 }
             }
         },
