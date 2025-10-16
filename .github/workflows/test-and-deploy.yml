@@ -92,6 +92,7 @@ jobs:
           RATE_LIMITER_MAX_REQ: ${{ vars.RATE_LIMITER_MAX_REQ }}
           DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ vars.POSTGRES_DB }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
+          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
           REDIS_URL: redis://@localhost:6379/0
           NODEMAILER_SENDER: ${{ secrets.NODEMAILER_SENDER }}
           NODEMAILER_USER: ${{ secrets.NODEMAILER_USER }}
