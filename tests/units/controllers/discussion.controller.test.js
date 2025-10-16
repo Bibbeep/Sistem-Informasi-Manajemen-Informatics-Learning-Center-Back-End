@@ -2,7 +2,10 @@
 jest.mock('../../../src/services/discussion.service');
 jest.mock('../../../src/validations/validator');
 
-const { getAll } = require('../../../src/controllers/discussion.controller');
+const {
+    getAll,
+    getById,
+} = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
     validateDiscussionQuery,
@@ -15,6 +18,7 @@ describe('Discussion Controller Unit Tests', () => {
     beforeEach(() => {
         req = {
             query: {},
+            params: {},
         };
         res = {
             status: jest.fn().mockReturnThis(),
@@ -82,6 +86,40 @@ describe('Discussion Controller Unit Tests', () => {
 
             expect(validateDiscussionQuery).toHaveBeenCalledWith(req.query);
             expect(DiscussionService.getMany).toHaveBeenCalledWith(mockQuery);
+            expect(next).toHaveBeenCalledWith(serviceError);
+        });
+    });
+
+    describe('getById Tests', () => {
+        it('should return 200 with discussion details on success', async () => {
+            req.params.discussionId = '1';
+            const mockDiscussion = { id: 1, title: 'Test Discussion' };
+            DiscussionService.getOne.mockResolvedValue(mockDiscussion);
+
+            await getById(req, res, next);
+
+            expect(DiscussionService.getOne).toHaveBeenCalledWith(1);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved discussion forum details.',
+                data: {
+                    discussion: mockDiscussion,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            req.params.discussionId = '999';
+            const serviceError = new Error('Service error');
+            DiscussionService.getOne.mockRejectedValue(serviceError);
+
+            await getById(req, res, next);
+
+            expect(DiscussionService.getOne).toHaveBeenCalledWith(999);
             expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
