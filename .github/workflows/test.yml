@@ -84,10 +84,8 @@ jobs:
 
       - name: Setup PostgreSQL
         env:
-          PGPASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-        run: |
-          psql -h localhost -U ${{ secrets.POSTGRES_USER }} -c "CREATE DATABASE ${{ vars.POSTGRES_DB }}"
-          npx sequelize-cli db:migrate
+          DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ vars.POSTGRES_DB }}
+        run: npx sequelize-cli db:migrate
 
       - name: Run tests
         env:
