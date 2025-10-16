@@ -83,8 +83,6 @@ jobs:
         run: npm install
 
       - name: Setup PostgreSQL
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
         run: |
           psql -h localhost -U ${{ secrets.POSTGRES_USER }} -c "CREATE DATABASE ${{ vars.POSTGRES_DB }}"
           npx sequelize-cli db:migrate
@@ -96,7 +94,7 @@ jobs:
           CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
           RATE_LIMITER_WINDOW_SEC: ${{ vars.RATE_LIMITER_WINDOW_SEC }}
           RATE_LIMITER_MAX_REQ: ${{ vars.RATE_LIMITER_MAX_REQ }}
-          DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ vars.POSTGRES_DB }}
+          DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:@localhost:5432/${{ vars.POSTGRES_DB }}
           JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
           JWT_EXP: ${{ vars.JWT_EXP }}
           REDIS_URL: redis://@localhost:6379/0
