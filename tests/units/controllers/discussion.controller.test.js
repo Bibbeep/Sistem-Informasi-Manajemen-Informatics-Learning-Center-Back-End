@@ -5,11 +5,13 @@ const {
     getAll,
     getById,
     create,
+    updateById,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
     validateDiscussionQuery,
     validateDiscussion,
+    validateUpdateDiscussionData,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -209,9 +211,7 @@ describe('Discussion Controller Unit Tests', () => {
 
             await updateById(req, res, next);
 
-            expect(validateUpdateDiscussionData).toHaveBeenCalledWith(
-                req.body,
-            );
+            expect(validateUpdateDiscussionData).toHaveBeenCalledWith(req.body);
             expect(DiscussionService.updateOne).toHaveBeenCalledWith({
                 ...mockValue,
                 discussionId: 1,
@@ -239,9 +239,7 @@ describe('Discussion Controller Unit Tests', () => {
 
             await updateById(req, res, next);
 
-            expect(validateUpdateDiscussionData).toHaveBeenCalledWith(
-                req.body,
-            );
+            expect(validateUpdateDiscussionData).toHaveBeenCalledWith(req.body);
             expect(DiscussionService.updateOne).not.toHaveBeenCalled();
             expect(next).toHaveBeenCalledWith(validationError);
         });
@@ -259,9 +257,7 @@ describe('Discussion Controller Unit Tests', () => {
 
             await updateById(req, res, next);
 
-            expect(validateUpdateDiscussionData).toHaveBeenCalledWith(
-                req.body,
-            );
+            expect(validateUpdateDiscussionData).toHaveBeenCalledWith(req.body);
             expect(DiscussionService.updateOne).toHaveBeenCalledWith({
                 ...mockValue,
                 discussionId: 1,
