@@ -85,6 +85,7 @@ module.exports = (err, req, res, next) => {
         if (process.env.NODE_ENV !== 'test') {
             console.error(err);
         }
+        console.log('err ==>', err);
 
         return res.status(500).json({
             success: false,
