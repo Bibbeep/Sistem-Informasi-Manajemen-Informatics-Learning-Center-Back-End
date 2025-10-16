@@ -6,6 +6,7 @@ const {
     getById,
     create,
     updateById,
+    deleteById,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {

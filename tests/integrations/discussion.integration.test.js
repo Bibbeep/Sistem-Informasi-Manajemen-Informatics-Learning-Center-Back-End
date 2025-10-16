@@ -321,4 +321,54 @@ describe('Discussion Integration Tests', () => {
             expect(response.status).toBe(415);
         });
     });
+
+    describe('DELETE /api/v1/discussions/:discussionId', () => {
+        it('should return 200 and delete the discussion for an admin user', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .delete(`/api/v1/discussions/${discussionId}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.message).toBe(
+                'Successfully deleted a discussion forum.',
+            );
+        });
+
+        it('should return 400 for an invalid discussionId', async () => {
+            const response = await request(server)
+                .delete('/api/v1/discussions/abc')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 for an unauthenticated request', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server).delete(
+                `/api/v1/discussions/${discussionId}`,
+            );
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 403 for a regular user trying to delete a discussion', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .delete(`/api/v1/discussions/${discussionId}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(403);
+            expect(response.body.message).toBe('Forbidden.');
+        });
+
+        it('should return 404 when trying to delete a non-existent discussion', async () => {
+            const response = await request(server)
+                .delete('/api/v1/discussions/99999')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+        });
+    });
 });
