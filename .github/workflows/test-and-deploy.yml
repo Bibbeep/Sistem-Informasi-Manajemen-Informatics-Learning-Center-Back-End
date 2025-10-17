@@ -75,14 +75,14 @@ jobs:
             DOMAIN="${{ secrets.DOMAIN }}"
             WWW_DOMAIN="${{ secrets.WWW_DOMAIN }}"
 
+            cd $APP_DIR
+
             CURRENT_COMMIT=$(git rev-parse HEAD)
             echo $CURRENT_COMMIT > ~/.last_good_commit
             echo "Saved current commit: $CURRENT_COMMIT"
 
             git fetch origin
             git reset --hard origin/${{ github.ref_name }}
-
-            cd $APP_DIR
 
             pwd
             ls
