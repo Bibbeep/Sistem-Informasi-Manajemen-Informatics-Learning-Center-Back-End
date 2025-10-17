@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
             },
             programId: {
-                allowNull: false,
+                allowNull: true,
                 type: DataTypes.INTEGER,
                 field: 'program_id',
             },

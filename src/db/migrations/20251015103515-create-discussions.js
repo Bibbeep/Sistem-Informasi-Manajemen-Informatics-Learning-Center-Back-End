@@ -11,7 +11,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
             },
             adminUserId: {
-                allowNull: false,
+                allowNull: true,
                 type: Sequelize.INTEGER,
                 field: 'admin_user_id',
                 references: {

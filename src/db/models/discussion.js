@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
             },
             adminUserId: {
-                allowNull: false,
+                allowNull: true,
                 type: DataTypes.INTEGER,
                 field: 'admin_user_id',
             },
@@ -37,7 +37,12 @@ module.exports = (sequelize, DataTypes) => {
     Discussion.associate = (models) => {
         Discussion.belongsTo(models.User, {
             foreignKey: 'adminUserId',
-            as: 'discussions',
+            as: 'user',
+        });
+
+        Discussion.hasMany(models.Comment, {
+            foreignKey: 'discussionId',
+            as: 'comments',
         });
     };
 

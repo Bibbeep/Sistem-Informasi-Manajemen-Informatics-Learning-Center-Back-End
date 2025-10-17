@@ -1,4 +1,4 @@
-const { Discussion } = require('../db/models');
+const { Discussion, Comment } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 
 class DiscussionService {
@@ -137,6 +137,16 @@ class DiscussionService {
     }
 
     static async getManyComments(data) {
+        const { page, limit, sort } = data;
+
+        const { count, rows } = await Comment.findAndCountAll({
+            limit,
+            offset: (page - 1) * limit,
+            order: sort.startsWith('-')
+                ? [[sort.replace('-', ''), 'DESC']]
+                : [[sort, 'ASC']],
+        });
+
         //
     }
 }

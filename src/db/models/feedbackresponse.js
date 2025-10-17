@@ -12,12 +12,12 @@ module.exports = (sequelize, DataTypes) => {
             feedbackId: {
                 type: DataTypes.INTEGER,
                 field: 'feedback_id',
-                allowNull: false,
+                allowNull: true,
             },
             adminUserId: {
                 type: DataTypes.INTEGER,
                 field: 'admin_user_id',
-                allowNull: false,
+                allowNull: true,
             },
             message: {
                 allowNull: false,

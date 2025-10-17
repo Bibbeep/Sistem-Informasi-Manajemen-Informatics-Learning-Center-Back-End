@@ -70,6 +70,21 @@ module.exports = (sequelize, DataTypes) => {
             as: 'enrollments',
             onDelete: 'CASCADE',
         });
+
+        User.hasMany(models.Certificate, {
+            foreignKey: 'userId',
+            as: 'certificates',
+        });
+
+        User.hasMany(models.Discussion, {
+            foreignKey: 'adminUserId',
+            as: 'discussions',
+        });
+
+        User.hasMany(models.Comment, {
+            foreignKey: 'userId',
+            as: 'comments',
+        });
     };
 
     return User;
