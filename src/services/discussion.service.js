@@ -135,6 +135,10 @@ class DiscussionService {
 
         await Discussion.destroy({ where: { id: discussionId } });
     }
+
+    static async getManyComments(data) {
+        //
+    }
 }
 
 module.exports = DiscussionService;

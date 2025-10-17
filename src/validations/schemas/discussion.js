@@ -20,8 +20,18 @@ const discussionUpdate = Joi.object({
     title: Joi.string().required(),
 }).unknown(false);
 
+// Query parameters for GET /api/v1/discussions/:discussionId/comments
+const commentQueryParam = Joi.object({
+    page: Joi.number().integer().positive().default(1),
+    limit: Joi.number().integer().positive().default(10),
+    sort: Joi.string()
+        .regex(/^-?(id|likesCount|createdAt|updatedAt)$/)
+        .default('id'),
+});
+
 module.exports = {
     discussionQueryParam,
     discussionPayload,
     discussionUpdate,
+    commentQueryParam,
 };

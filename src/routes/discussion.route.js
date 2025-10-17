@@ -1,6 +1,12 @@
 /**
- * @todo [15-10-2025]:
- *  @delete     /api/v1/discussions/:discussionId       [authN] [authR: admin]
+ * @todo [17-10-2025]:
+ * @GET /api/v1/discussions/:discussionId/comments
+ * @GET /api/v1/discussions/:discussionId/comments/:commentId
+ * @POST /api/v1/discussions/:discussionId/comments
+ * @PATCH /api/v1/discussions/:discussionId/comments/:commentId
+ * @DELETE /api/v1/discussions/:discussionId/comments/:commentId
+ * @POST /api/v1/discussions/:discussionId/comments/:commentId/likes
+ * @DELETE /api/v1/discussions/:discussionId/comments/:commentId/likes
  */
 const router = require('express').Router();
 const DiscussionController = require('../controllers/discussion.controller');
@@ -46,6 +52,12 @@ router.delete(
         rules: ['admin'],
     }),
     asyncHandler(DiscussionController.deleteById),
+);
+router.get(
+    '/:discussionId/comments',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    asyncHandler(DiscussionController.getAllComments),
 );
 
 module.exports = router;

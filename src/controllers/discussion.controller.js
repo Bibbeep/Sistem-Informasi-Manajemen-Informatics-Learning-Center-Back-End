@@ -3,6 +3,7 @@ const {
     validateDiscussionQuery,
     validateDiscussion,
     validateUpdateDiscussionData,
+    validateCommentQuery,
 } = require('../validations/validator');
 
 module.exports = {
@@ -113,6 +114,31 @@ module.exports = {
                 statusCode: 200,
                 message: 'Successfully deleted a discussion forum.',
                 data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    getAllComments: async (req, res, next) => {
+        try {
+            const { error, value } = validateCommentQuery(req.query);
+
+            if (error) {
+                throw error;
+            }
+
+            const { pagination, comments } =
+                await DiscussionService.getManyComments(value);
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved all comments.',
+                data: {
+                    comments,
+                },
+                pagination,
                 errors: null,
             });
         } catch (err) {

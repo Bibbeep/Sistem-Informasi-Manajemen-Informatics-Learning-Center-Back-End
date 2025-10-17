@@ -36,6 +36,7 @@ const {
     discussionQueryParam,
     discussionPayload,
     discussionUpdate,
+    commentQueryParam,
 } = require('./schemas/discussion');
 
 // Any auto-increment integer id
@@ -76,4 +77,5 @@ module.exports = {
     validateDiscussionQuery: validator(discussionQueryParam),
     validateDiscussion: validator(discussionPayload),
     validateUpdateDiscussionData: validator(discussionUpdate),
+    validateCommentQuery: validator(commentQueryParam),
 };
