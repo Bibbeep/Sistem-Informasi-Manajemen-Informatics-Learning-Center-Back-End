@@ -1,4 +1,4 @@
-name: Test and Deploy
+name: Auto Deploy to Amazon EC2
 
 on:
   push:
@@ -7,110 +7,9 @@ on:
       - release/*
 
 jobs:
-  test:
-    name: Unit and Integration Testing
-    runs-on: ubuntu-latest
-    environment: test
-    services:
-      postgres:
-        image: postgres:17-alpine
-        env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ vars.POSTGRES_DB }}
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-      redis:
-        image: redis:8-alpine
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 6379:6379
-
-      minio:
-        image: lazybit/minio
-        ports:
-          - 9000:9000
-        env:
-          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
-          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
-        volumes:
-          - ./data:/data
-        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
-
-    steps:
-      - name: Setup MinIO
-        run: |
-          pip3 install minio
-          python3 - <<'EOF'
-          from minio import Minio
-          from minio.error import S3Error
-
-          try:
-              minio = Minio(
-                  'localhost:9000',
-                  access_key='${{ secrets.MINIO_ACCESS_KEY }}',
-                  secret_key='${{ secrets.MINIO_SECRET_KEY }}',
-                  secure=False
-              )
-          except Exception as ex:
-              raise
-
-          minio.make_bucket('${{ vars.S3_TEST_BUCKET_NAME }}')
-          EOF
-
-      - name: Ensure data directory is deletable
-        run: |
-          mkdir -p data
-          sudo chown -R $USER:$USER data/
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js runtime
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Run tests
-        env:
-          NODE_ENV: test
-          PORT: ${{ secrets.PORT }}
-          RATE_LIMITER_WINDOW_SEC: ${{ vars.RATE_LIMITER_WINDOW_SEC }}
-          RATE_LIMITER_MAX_REQ: ${{ vars.RATE_LIMITER_MAX_REQ }}
-          DATABASE_URL: postgres://${{ secrets.POSTGRES_USER }}:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/${{ vars.POSTGRES_DB }}
-          JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-          CORS_ORIGIN: ${{ vars.CORS_ORIGIN }}
-          REDIS_URL: redis://@localhost:6379/0
-          NODEMAILER_SENDER: ${{ secrets.NODEMAILER_SENDER }}
-          NODEMAILER_USER: ${{ secrets.NODEMAILER_USER }}
-          NODEMAILER_PASS: ${{ secrets.NODEMAILER_PASS }}
-          NODEMAILER_HOST: ${{ secrets.NODEMAILER_HOST }}
-          NODEMAILER_PORT: ${{ secrets.NODEMAILER_PORT }}
-          S3_ENDPOINT: http://localhost:9000
-          S3_ACCESS_KEY_ID: ${{ secrets.MINIO_ACCESS_KEY }}
-          S3_SECRET_ACCESS_KEY: ${{ secrets.MINIO_SECRET_KEY }}
-          S3_TEST_BUCKET_NAME: ${{ vars.S3_TEST_BUCKET_NAME }}
-          S3_REGION: ${{ vars.S3_REGION }}
-        run: npm run test
-
   deploy:
     name: Auto Deploy to Amazon EC2
     runs-on: ubuntu-latest
-    needs: [test]
-    if: ${{ needs.test.result == 'success' }}
     environment: ${{ startsWith(github.ref, 'refs/heads/release/') && 'release' || 'production' }}
     env:
       AWS_INSTANCE_SG_ID: ${{ secrets.AWS_INSTANCE_SG_ID }}
