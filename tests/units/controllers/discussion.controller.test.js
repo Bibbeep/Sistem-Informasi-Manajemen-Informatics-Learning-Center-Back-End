@@ -17,6 +17,7 @@ const {
     validateCommentQuery,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
+const HTTPError = require('../../../src/utils/httpError');
 
 describe('Discussion Controller Unit Tests', () => {
     let req, res, next;
@@ -307,6 +308,7 @@ describe('Discussion Controller Unit Tests', () => {
 
         it('should return 200 with comments and pagination on success', async () => {
             const mockQuery = { page: 1, limit: 10, sort: 'id' };
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
             const mockServiceResponse = {
                 pagination: { totalRecords: 5 },
                 comments: [
@@ -331,6 +333,7 @@ describe('Discussion Controller Unit Tests', () => {
             expect(validateCommentQuery).toHaveBeenCalledWith(req.query);
             expect(DiscussionService.getManyComments).toHaveBeenCalledWith({
                 ...mockQuery,
+                discussionId: mockDiscussionId,
             });
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({
@@ -357,9 +360,11 @@ describe('Discussion Controller Unit Tests', () => {
             expect(next).toHaveBeenCalledWith(validationError);
         });
 
-        it('should forward service errors to the next middleware', async () => {
+        it('should forward service errors (like 404) to the next middleware', async () => {
             const mockQuery = { page: 1, limit: 10, sort: 'id' };
-            const serviceError = new Error('Service error');
+            const mockDiscussionId = 999;
+            req.params.discussionId = mockDiscussionId.toString();
+            const serviceError = new HTTPError(404, 'Resource not found.');
             validateCommentQuery.mockReturnValue({
                 error: null,
                 value: mockQuery,
@@ -371,8 +376,11 @@ describe('Discussion Controller Unit Tests', () => {
             expect(validateCommentQuery).toHaveBeenCalledWith(req.query);
             expect(DiscussionService.getManyComments).toHaveBeenCalledWith({
                 ...mockQuery,
+                discussionId: mockDiscussionId,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
         });
     });
 });

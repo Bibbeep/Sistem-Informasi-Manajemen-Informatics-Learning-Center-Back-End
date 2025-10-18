@@ -2,12 +2,7 @@
 jest.mock('../../../src/db/models');
 
 const DiscussionService = require('../../../src/services/discussion.service');
-const {
-    Discussion,
-    Comment,
-    User,
-    sequelize,
-} = require('../../../src/db/models');
+const { Discussion, Comment } = require('../../../src/db/models');
 const { Op } = require('sequelize');
 const HTTPError = require('../../../src/utils/httpError');
 
