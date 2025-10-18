@@ -7,12 +7,14 @@ const {
     create,
     updateById,
     deleteById,
+    getAllComments,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
     validateDiscussionQuery,
     validateDiscussion,
     validateUpdateDiscussionData,
+    validateCommentQuery,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -294,6 +296,82 @@ describe('Discussion Controller Unit Tests', () => {
             await deleteById(req, res, next);
 
             expect(DiscussionService.deleteOne).toHaveBeenCalledWith(999);
+            expect(next).toHaveBeenCalledWith(serviceError);
+        });
+    });
+
+    describe('getAllComments Tests', () => {
+        beforeEach(() => {
+            req.params.discussionId = '1';
+        });
+
+        it('should return 200 with comments and pagination on success', async () => {
+            const mockQuery = { page: 1, limit: 10, sort: 'id' };
+            const mockServiceResponse = {
+                pagination: { totalRecords: 5 },
+                comments: [
+                    {
+                        id: 1,
+                        message: 'Test Comment',
+                        userId: 1,
+                        fullName: 'Test User',
+                    },
+                ],
+            };
+            validateCommentQuery.mockReturnValue({
+                error: null,
+                value: mockQuery,
+            });
+            DiscussionService.getManyComments.mockResolvedValue(
+                mockServiceResponse,
+            );
+
+            await getAllComments(req, res, next);
+
+            expect(validateCommentQuery).toHaveBeenCalledWith(req.query);
+            expect(DiscussionService.getManyComments).toHaveBeenCalledWith({
+                ...mockQuery,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved all comments.',
+                data: {
+                    comments: mockServiceResponse.comments,
+                },
+                pagination: mockServiceResponse.pagination,
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error if query params are invalid', async () => {
+            const validationError = new ValidationError('Validation failed');
+            validateCommentQuery.mockReturnValue({ error: validationError });
+
+            await getAllComments(req, res, next);
+
+            expect(validateCommentQuery).toHaveBeenCalledWith(req.query);
+            expect(DiscussionService.getManyComments).not.toHaveBeenCalled();
+            expect(next).toHaveBeenCalledWith(validationError);
+        });
+
+        it('should forward service errors to the next middleware', async () => {
+            const mockQuery = { page: 1, limit: 10, sort: 'id' };
+            const serviceError = new Error('Service error');
+            validateCommentQuery.mockReturnValue({
+                error: null,
+                value: mockQuery,
+            });
+            DiscussionService.getManyComments.mockRejectedValue(serviceError);
+
+            await getAllComments(req, res, next);
+
+            expect(validateCommentQuery).toHaveBeenCalledWith(req.query);
+            expect(DiscussionService.getManyComments).toHaveBeenCalledWith({
+                ...mockQuery,
+            });
             expect(next).toHaveBeenCalledWith(serviceError);
         });
     });
