@@ -137,16 +137,24 @@ class DiscussionService {
     }
 
     static async getManyComments(data) {
-        const { page, limit, sort } = data;
-
-        const { count, rows } = await Comment.findAndCountAll({
-            limit,
-            offset: (page - 1) * limit,
-            order: sort.startsWith('-')
-                ? [[sort.replace('-', ''), 'DESC']]
-                : [[sort, 'ASC']],
-        });
-
+        // const { page, limit, sort } = data;
+        // let groupAndOrder = {
+        //     order: sort.startsWith('-')
+        //         ? [[sort.replace('-', ''), 'DESC']]
+        //         : [[sort, 'ASC']],
+        // };
+        // if (['likesCount'].includes(sort)) {
+        //     groupAndOrder.group = {
+        //     };
+        // }
+        // const { count, rows } = await Comment.findAndCountAll({
+        //     where: {
+        //         parentCommentId: null,
+        //     },
+        //     limit,
+        //     offset: (page - 1) * limit,
+        //     ...groupAndOrder,
+        // });
         //
     }
 }
