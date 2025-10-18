@@ -2,7 +2,8 @@
 jest.mock('../../../src/db/models');
 
 const DiscussionService = require('../../../src/services/discussion.service');
-const { Discussion } = require('../../../src/db/models');
+const { Discussion, Comment } = require('../../../src/db/models');
+const { Op } = require('sequelize');
 const HTTPError = require('../../../src/utils/httpError');
 
 describe('Discussion Service Unit Tests', () => {
@@ -306,6 +307,236 @@ describe('Discussion Service Unit Tests', () => {
 
             expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
             expect(Discussion.destroy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getManyComments Tests', () => {
+        let mockCount, mockRows;
+
+        beforeEach(() => {
+            mockCount = 25;
+            mockRows = Array.from({ length: 10 }, (_, i) => {
+                return {
+                    id: i + 1,
+                    userId: i % 3 === 0 ? null : i + 1,
+                    parentCommentId: null,
+                    message: `Test comment ${i + 1}`,
+                    createdAt: new Date(
+                        `2025-10-18T10:${i < 10 ? '0' : ''}${i}:00.000Z`,
+                    ),
+                    updatedAt: new Date(
+                        `2025-10-18T11:${i < 10 ? '0' : ''}${i}:00.000Z`,
+                    ),
+                    getDataValue: jest.fn((key) => {
+                        if (key === 'likesCount')
+                            return Math.floor(Math.random() * 10);
+                        if (key === 'repliesCount')
+                            return Math.floor(Math.random() * 5);
+                        return undefined;
+                    }),
+                    user:
+                        i % 3 === 0
+                            ? null
+                            : { id: i + 1, fullName: `User ${i + 1}` },
+                };
+            });
+
+            Comment.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+        });
+
+        it('should return comments and pagination data with default query parameters', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+            };
+            const expectedPagination = {
+                currentRecords: 10,
+                totalRecords: 25,
+                currentPage: 1,
+                totalPages: 3,
+                nextPage: 2,
+                prevPage: null,
+            };
+
+            const result = await DiscussionService.getManyComments(mockParams);
+
+            expect(Comment.findAndCountAll).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: { parentCommentId: { [Op.is]: null } },
+                    limit: 10,
+                    offset: 0,
+                    order: [['id', 'ASC']],
+                    include: expect.any(Array),
+                    attributes: expect.objectContaining({
+                        include: expect.any(Array),
+                    }),
+                }),
+            );
+            expect(result.pagination).toEqual(expectedPagination);
+            expect(result.comments).toHaveLength(10);
+            expect(result.comments[0]).toHaveProperty('likesCount');
+            expect(result.comments[0]).toHaveProperty('repliesCount');
+            expect(result.comments[0].fullName).toBeNull();
+            expect(result.comments[1].fullName).toBe('User 2');
+        });
+
+        it('should handle sorting by likesCount descending on the second page', async () => {
+            const mockParams = {
+                page: 2,
+                limit: 5,
+                sort: '-likesCount',
+            };
+            mockCount = 12;
+            mockRows = Array.from({ length: 5 }, (_, i) => {
+                return {
+                    id: i + 6,
+                    userId: i + 6,
+                    parentCommentId: null,
+                    message: `Test comment ${i + 6}`,
+                    createdAt: new Date(
+                        `2025-10-18T10:${i + 6 < 10 ? '0' : ''}${i + 6}:00.000Z`,
+                    ),
+                    updatedAt: new Date(
+                        `2025-10-18T11:${i + 6 < 10 ? '0' : ''}${i + 6}:00.000Z`,
+                    ),
+                    getDataValue: jest.fn((key) => {
+                        if (key === 'likesCount') return 10 - i;
+                        if (key === 'repliesCount')
+                            return Math.floor(Math.random() * 5);
+                        return undefined;
+                    }),
+                    user: { id: i + 6, fullName: `User ${i + 6}` },
+                };
+            });
+            Comment.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+            const expectedPagination = {
+                currentRecords: 5,
+                totalRecords: 12,
+                currentPage: 2,
+                totalPages: 3,
+                nextPage: 3,
+                prevPage: 1,
+            };
+
+            const result = await DiscussionService.getManyComments(mockParams);
+
+            expect(Comment.findAndCountAll).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    limit: 5,
+                    offset: 5,
+                    order: [['likesCount', 'DESC']],
+                }),
+            );
+            expect(result.pagination).toEqual(expectedPagination);
+            expect(result.comments).toHaveLength(5);
+        });
+
+        it('should handle sorting by repliesCount ascending', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'repliesCount',
+            };
+            await DiscussionService.getManyComments(mockParams);
+            expect(Comment.findAndCountAll).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    order: [['repliesCount', 'ASC']],
+                }),
+            );
+        });
+
+        it('should handle sorting by updatedAt descending', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: '-updatedAt',
+            };
+            await DiscussionService.getManyComments(mockParams);
+            expect(Comment.findAndCountAll).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    order: [['updatedAt', 'DESC']],
+                }),
+            );
+        });
+
+        it('should return empty comments when no records are found', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+            };
+            Comment.findAndCountAll.mockResolvedValue({ count: 0, rows: [] });
+            const expectedPagination = {
+                currentRecords: 0,
+                totalRecords: 0,
+                currentPage: 1,
+                totalPages: 0,
+                nextPage: null,
+                prevPage: null,
+            };
+
+            const result = await DiscussionService.getManyComments(mockParams);
+
+            expect(result.pagination).toEqual(expectedPagination);
+            expect(result.comments).toEqual([]);
+        });
+
+        it('should handle page number out of bounds', async () => {
+            const mockParams = {
+                page: 10,
+                limit: 10,
+                sort: 'id',
+            };
+            Comment.findAndCountAll.mockResolvedValue({ count: 25, rows: [] });
+            const expectedPagination = {
+                currentRecords: 0,
+                totalRecords: 25,
+                currentPage: 10,
+                totalPages: 3,
+                nextPage: null,
+                prevPage: null,
+            };
+
+            const result = await DiscussionService.getManyComments(mockParams);
+
+            expect(Comment.findAndCountAll).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    offset: 90,
+                }),
+            );
+            expect(result.pagination).toEqual(expectedPagination);
+            expect(result.comments).toEqual([]);
+        });
+
+        it('should handle calculation when prevPage is null due to totalPages + 1 condition', async () => {
+            const mockParams = {
+                page: 5,
+                limit: 10,
+                sort: 'id',
+            };
+            mockCount = 25;
+            Comment.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: [],
+            });
+            const expectedPagination = {
+                currentRecords: 0,
+                totalRecords: 25,
+                currentPage: 5,
+                totalPages: 3,
+                nextPage: null,
+                prevPage: null,
+            };
+
+            const result = await DiscussionService.getManyComments(mockParams);
+            expect(result.pagination).toEqual(expectedPagination);
         });
     });
 });

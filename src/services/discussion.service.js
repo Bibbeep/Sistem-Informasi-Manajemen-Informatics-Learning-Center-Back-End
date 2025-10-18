@@ -1,4 +1,4 @@
-const { Discussion, Comment, User, Like, sequelize } = require('../db/models');
+const { Discussion, Comment, User, sequelize } = require('../db/models');
 const { Op } = require('sequelize');
 const HTTPError = require('../utils/httpError');
 
@@ -185,7 +185,7 @@ class DiscussionService {
                 rows[index] = {
                     id: comment.id,
                     userId: comment.userId,
-                    fullName: comment.user?.fullName,
+                    fullName: comment.user?.fullName || null,
                     parentCommentId: comment.parentCommentId,
                     message: comment.message,
                     likesCount: Number(comment.getDataValue('likesCount')) || 0,
