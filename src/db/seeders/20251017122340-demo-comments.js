@@ -6,7 +6,6 @@ const { User, Discussion } = require('../models');
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        // Fetch users and discussions using Sequelize models
         const users = await User.findAll({ attributes: ['id'] });
         const discussions = await Discussion.findAll({ attributes: ['id'] });
 
@@ -22,7 +21,6 @@ module.exports = {
             return d.id;
         });
 
-        // 1. Create and insert top-level comments
         const topLevelComments = [];
         for (const discussionId of discussionIds) {
             const commentCount = faker.number.int({ min: 3, max: 7 });
@@ -48,10 +46,8 @@ module.exports = {
             { returning: ['id', 'discussion_id', 'created_at'] },
         );
 
-        // 2. Create replies based on the comments inserted above
         const replies = [];
         for (const parentComment of createdComments) {
-            // Give a 50% chance for a comment to have replies
             if (faker.datatype.boolean()) {
                 const replyCount = faker.number.int({ min: 1, max: 2 });
                 for (let i = 0; i < replyCount; i++) {
