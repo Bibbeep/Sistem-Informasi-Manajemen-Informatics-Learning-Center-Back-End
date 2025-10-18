@@ -71,6 +71,11 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'parentCommentId',
             as: 'replies',
         });
+
+        Comment.hasMany(models.Like, {
+            foreignKey: 'commentId',
+            as: 'likes',
+        });
     };
 
     return Comment;

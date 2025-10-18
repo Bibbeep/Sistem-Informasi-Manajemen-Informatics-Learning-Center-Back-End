@@ -25,7 +25,7 @@ const commentQueryParam = Joi.object({
     page: Joi.number().integer().positive().default(1),
     limit: Joi.number().integer().positive().default(10),
     sort: Joi.string()
-        .regex(/^-?(id|likesCount|createdAt|updatedAt)$/)
+        .regex(/^-?(id|likesCount|repliesCount|createdAt|updatedAt)$/)
         .default('id'),
 });
 

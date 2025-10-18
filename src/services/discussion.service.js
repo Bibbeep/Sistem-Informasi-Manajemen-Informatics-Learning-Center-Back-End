@@ -1,4 +1,5 @@
-const { Discussion, Comment } = require('../db/models');
+const { Discussion, Comment, User, Like, sequelize } = require('../db/models');
+const { Op } = require('sequelize');
 const HTTPError = require('../utils/httpError');
 
 class DiscussionService {
@@ -137,25 +138,79 @@ class DiscussionService {
     }
 
     static async getManyComments(data) {
-        // const { page, limit, sort } = data;
-        // let groupAndOrder = {
-        //     order: sort.startsWith('-')
-        //         ? [[sort.replace('-', ''), 'DESC']]
-        //         : [[sort, 'ASC']],
-        // };
-        // if (['likesCount'].includes(sort)) {
-        //     groupAndOrder.group = {
-        //     };
-        // }
-        // const { count, rows } = await Comment.findAndCountAll({
-        //     where: {
-        //         parentCommentId: null,
-        //     },
-        //     limit,
-        //     offset: (page - 1) * limit,
-        //     ...groupAndOrder,
-        // });
-        //
+        const { page, limit, sort } = data;
+
+        const { count, rows } = await Comment.findAndCountAll({
+            where: {
+                parentCommentId: {
+                    [Op.is]: null,
+                },
+            },
+            attributes: {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM comment_likes AS l
+                            WHERE l.comment_id = "Comment".id
+                        )`),
+                        'likesCount',
+                    ],
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*) 
+                            FROM comments AS r 
+                            WHERE r.parent_comment_id = "Comment".id
+                        )`),
+                        'repliesCount',
+                    ],
+                ],
+            },
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'fullName'],
+                },
+            ],
+            limit,
+            offset: (page - 1) * limit,
+            order: sort.startsWith('-')
+                ? [[sort.replace('-', ''), 'DESC']]
+                : [[sort, 'ASC']],
+        });
+
+        if (rows.length) {
+            rows.forEach((comment, index) => {
+                rows[index] = {
+                    id: comment.id,
+                    userId: comment.userId,
+                    fullName: comment.user?.fullName,
+                    parentCommentId: comment.parentCommentId,
+                    message: comment.message,
+                    likesCount: Number(comment.getDataValue('likesCount')) || 0,
+                    repliesCount:
+                        Number(comment.getDataValue('repliesCount')) || 0,
+                    createdAt: comment.createdAt,
+                    updatedAt: comment.updatedAt,
+                };
+            });
+        }
+
+        const totalPages = Math.ceil(count / limit);
+
+        return {
+            pagination: {
+                currentRecords: rows.length,
+                totalRecords: count,
+                currentPage: page,
+                totalPages,
+                nextPage: page < totalPages ? page + 1 : null,
+                prevPage:
+                    page > totalPages + 1 ? null : page > 1 ? page - 1 : null,
+            },
+            comments: rows,
+        };
     }
 }
 
