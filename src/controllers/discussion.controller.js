@@ -129,7 +129,10 @@ module.exports = {
             }
 
             const { pagination, comments } =
-                await DiscussionService.getManyComments(value);
+                await DiscussionService.getManyComments({
+                    discussionId: parseInt(req.params.discussionId, 10),
+                    ...value,
+                });
 
             return res.status(200).json({
                 success: true,

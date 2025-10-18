@@ -138,13 +138,28 @@ class DiscussionService {
     }
 
     static async getManyComments(data) {
-        const { page, limit, sort } = data;
+        const { page, limit, sort, discussionId } = data;
+
+        const discussion = await Discussion.findByPk(discussionId);
+
+        if (!discussion) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: discussionId,
+                    },
+                },
+            ]);
+        }
 
         const { count, rows } = await Comment.findAndCountAll({
             where: {
                 parentCommentId: {
                     [Op.is]: null,
                 },
+                discussionId,
             },
             attributes: {
                 include: [

@@ -2,7 +2,12 @@
 jest.mock('../../../src/db/models');
 
 const DiscussionService = require('../../../src/services/discussion.service');
-const { Discussion, Comment } = require('../../../src/db/models');
+const {
+    Discussion,
+    Comment,
+    User,
+    sequelize,
+} = require('../../../src/db/models');
 const { Op } = require('sequelize');
 const HTTPError = require('../../../src/utils/httpError');
 
@@ -311,7 +316,7 @@ describe('Discussion Service Unit Tests', () => {
     });
 
     describe('getManyComments Tests', () => {
-        let mockCount, mockRows;
+        let mockCount, mockRows, mockDiscussion;
 
         beforeEach(() => {
             mockCount = 25;
@@ -341,10 +346,43 @@ describe('Discussion Service Unit Tests', () => {
                 };
             });
 
+            mockDiscussion = { id: 1, title: 'Existing Discussion' };
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+
             Comment.findAndCountAll.mockResolvedValue({
                 count: mockCount,
                 rows: mockRows,
             });
+        });
+
+        it('should throw HTTPError 404 if discussion is not found', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                discussionId: 999,
+            };
+            Discussion.findByPk.mockResolvedValue(null);
+
+            await expect(
+                DiscussionService.getManyComments(mockParams),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Discussion with "discussionId" does not exist',
+                        context: {
+                            key: 'discussionId',
+                            value: mockParams.discussionId,
+                        },
+                    },
+                ]),
+            );
+
+            expect(Discussion.findByPk).toHaveBeenCalledWith(
+                mockParams.discussionId,
+            );
+            expect(Comment.findAndCountAll).not.toHaveBeenCalled();
         });
 
         it('should return comments and pagination data with default query parameters', async () => {
@@ -352,6 +390,7 @@ describe('Discussion Service Unit Tests', () => {
                 page: 1,
                 limit: 10,
                 sort: 'id',
+                discussionId: 1,
             };
             const expectedPagination = {
                 currentRecords: 10,
@@ -364,9 +403,15 @@ describe('Discussion Service Unit Tests', () => {
 
             const result = await DiscussionService.getManyComments(mockParams);
 
+            expect(Discussion.findByPk).toHaveBeenCalledWith(
+                mockParams.discussionId,
+            );
             expect(Comment.findAndCountAll).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    where: { parentCommentId: { [Op.is]: null } },
+                    where: {
+                        parentCommentId: { [Op.is]: null },
+                        discussionId: mockParams.discussionId,
+                    },
                     limit: 10,
                     offset: 0,
                     order: [['id', 'ASC']],
@@ -389,6 +434,7 @@ describe('Discussion Service Unit Tests', () => {
                 page: 2,
                 limit: 5,
                 sort: '-likesCount',
+                discussionId: 1,
             };
             mockCount = 12;
             mockRows = Array.from({ length: 5 }, (_, i) => {
@@ -404,9 +450,14 @@ describe('Discussion Service Unit Tests', () => {
                         `2025-10-18T11:${i + 6 < 10 ? '0' : ''}${i + 6}:00.000Z`,
                     ),
                     getDataValue: jest.fn((key) => {
-                        if (key === 'likesCount') return 10 - i;
-                        if (key === 'repliesCount')
+                        if (key === 'likesCount') {
+                            return 10 - i;
+                        }
+
+                        if (key === 'repliesCount') {
                             return Math.floor(Math.random() * 5);
+                        }
+
                         return undefined;
                     }),
                     user: { id: i + 6, fullName: `User ${i + 6}` },
@@ -427,8 +478,15 @@ describe('Discussion Service Unit Tests', () => {
 
             const result = await DiscussionService.getManyComments(mockParams);
 
+            expect(Discussion.findByPk).toHaveBeenCalledWith(
+                mockParams.discussionId,
+            );
             expect(Comment.findAndCountAll).toHaveBeenCalledWith(
                 expect.objectContaining({
+                    where: {
+                        parentCommentId: { [Op.is]: null },
+                        discussionId: mockParams.discussionId,
+                    },
                     limit: 5,
                     offset: 5,
                     order: [['likesCount', 'DESC']],
@@ -443,11 +501,19 @@ describe('Discussion Service Unit Tests', () => {
                 page: 1,
                 limit: 10,
                 sort: 'repliesCount',
+                discussionId: 1,
             };
             await DiscussionService.getManyComments(mockParams);
+            expect(Discussion.findByPk).toHaveBeenCalledWith(
+                mockParams.discussionId,
+            );
             expect(Comment.findAndCountAll).toHaveBeenCalledWith(
                 expect.objectContaining({
                     order: [['repliesCount', 'ASC']],
+                    where: {
+                        parentCommentId: { [Op.is]: null },
+                        discussionId: mockParams.discussionId,
+                    },
                 }),
             );
         });
@@ -457,20 +523,29 @@ describe('Discussion Service Unit Tests', () => {
                 page: 1,
                 limit: 10,
                 sort: '-updatedAt',
+                discussionId: 1,
             };
             await DiscussionService.getManyComments(mockParams);
+            expect(Discussion.findByPk).toHaveBeenCalledWith(
+                mockParams.discussionId,
+            );
             expect(Comment.findAndCountAll).toHaveBeenCalledWith(
                 expect.objectContaining({
                     order: [['updatedAt', 'DESC']],
+                    where: {
+                        parentCommentId: { [Op.is]: null },
+                        discussionId: mockParams.discussionId,
+                    },
                 }),
             );
         });
 
-        it('should return empty comments when no records are found', async () => {
+        it('should return empty comments when no records are found but discussion exists', async () => {
             const mockParams = {
                 page: 1,
                 limit: 10,
                 sort: 'id',
+                discussionId: 1,
             };
             Comment.findAndCountAll.mockResolvedValue({ count: 0, rows: [] });
             const expectedPagination = {
@@ -484,31 +559,43 @@ describe('Discussion Service Unit Tests', () => {
 
             const result = await DiscussionService.getManyComments(mockParams);
 
+            expect(Discussion.findByPk).toHaveBeenCalledWith(
+                mockParams.discussionId,
+            );
+            expect(Comment.findAndCountAll).toHaveBeenCalled();
             expect(result.pagination).toEqual(expectedPagination);
             expect(result.comments).toEqual([]);
         });
 
-        it('should handle page number out of bounds', async () => {
+        it('should handle page number out of bounds when discussion exists', async () => {
             const mockParams = {
-                page: 10,
+                page: 4,
                 limit: 10,
                 sort: 'id',
+                discussionId: 1,
             };
             Comment.findAndCountAll.mockResolvedValue({ count: 25, rows: [] });
             const expectedPagination = {
                 currentRecords: 0,
                 totalRecords: 25,
-                currentPage: 10,
+                currentPage: 4,
                 totalPages: 3,
                 nextPage: null,
-                prevPage: null,
+                prevPage: 3,
             };
 
             const result = await DiscussionService.getManyComments(mockParams);
 
+            expect(Discussion.findByPk).toHaveBeenCalledWith(
+                mockParams.discussionId,
+            );
             expect(Comment.findAndCountAll).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    offset: 90,
+                    where: {
+                        parentCommentId: { [Op.is]: null },
+                        discussionId: mockParams.discussionId,
+                    },
+                    offset: 30,
                 }),
             );
             expect(result.pagination).toEqual(expectedPagination);
@@ -520,6 +607,7 @@ describe('Discussion Service Unit Tests', () => {
                 page: 5,
                 limit: 10,
                 sort: 'id',
+                discussionId: 1,
             };
             mockCount = 25;
             Comment.findAndCountAll.mockResolvedValue({
@@ -536,6 +624,10 @@ describe('Discussion Service Unit Tests', () => {
             };
 
             const result = await DiscussionService.getManyComments(mockParams);
+            expect(Discussion.findByPk).toHaveBeenCalledWith(
+                mockParams.discussionId,
+            );
+            expect(Comment.findAndCountAll).toHaveBeenCalled();
             expect(result.pagination).toEqual(expectedPagination);
         });
     });
