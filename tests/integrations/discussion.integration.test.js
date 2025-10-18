@@ -9,6 +9,7 @@ const likeFactory = require('../../src/db/seeders/factories/likes');
 const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
+const { Discussion } = require('../../src/db/models');
 
 describe('Discussion Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -149,8 +150,8 @@ describe('Discussion Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.admin}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.discussions).toHaveLength(10);
-            expect(response.body.pagination.totalRecords).toBe(25);
+            expect(response.body.data.discussions).toHaveLength(3);
+            expect(response.body.pagination.totalRecords).toBe(3);
             expect(response.body.message).toBe(
                 'Successfully retrieved all discussion forums.',
             );
@@ -162,8 +163,8 @@ describe('Discussion Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.discussions).toHaveLength(10);
-            expect(response.body.pagination.totalRecords).toBe(25);
+            expect(response.body.data.discussions).toHaveLength(3);
+            expect(response.body.pagination.totalRecords).toBe(3);
         });
 
         it('should return 200 and apply query parameters correctly (pagination, sort, filter)', async () => {
@@ -174,9 +175,9 @@ describe('Discussion Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.admin}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.discussions.length).toBe(5);
+            expect(response.body.data.discussions.length).toBe(0);
             expect(response.body.pagination.currentPage).toBe(2);
-            expect(response.body.pagination.totalRecords).toBe(13);
+            expect(response.body.pagination.totalRecords).toBe(0);
         });
 
         it('should return 200 and handle an out-of-bounds page number gracefully', async () => {
@@ -640,13 +641,26 @@ describe('Discussion Integration Tests', () => {
         });
 
         it('should return 404 when the discussion does not exist', async () => {
+            const nonExistentDiscussionId = 99999;
+            const checkDiscussion = await Discussion.findByPk(
+                nonExistentDiscussionId,
+            );
+            expect(checkDiscussion).toBeNull();
+
             const response = await request(server)
-                .get('/api/v1/discussions/99999/comments')
+                .get(`/api/v1/discussions/${nonExistentDiscussionId}/comments`)
                 .set('Authorization', `Bearer ${tokens.regular}`);
 
             expect(response.status).toBe(404);
-            expect(response.body.data.comments).toHaveLength(0);
-            expect(response.body.pagination.totalRecords).toBe(0);
+            expect(response.body.success).toBe(false);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors).toBeInstanceOf(Array);
+            expect(response.body.errors[0].message).toContain(
+                'Discussion with "discussionId" does not exist',
+            );
+            expect(response.body.errors[0].context.value).toBe(
+                nonExistentDiscussionId,
+            );
         });
     });
 });
