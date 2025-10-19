@@ -8,6 +8,7 @@ const {
     validateProgramQuery,
     validateEnrollmentQuery,
     validateInvoiceQuery,
+    validateCommentQuery,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 
@@ -560,6 +561,23 @@ describe('Authentication Validation Unit Tests', () => {
                     sort: 'id',
                     type: 'all',
                     status: 'all',
+                }),
+            );
+        });
+    });
+
+    describe('validateCommentQuery Tests', () => {
+        it('should pass validation with parentCommentId=0', async () => {
+            const { error, value } = validateCommentQuery({
+                parentCommentId: '0',
+            });
+
+            expect(error).toBeUndefined();
+            expect(value).toEqual(
+                expect.objectContaining({
+                    page: 1,
+                    limit: 10,
+                    parentCommentId: null,
                 }),
             );
         });
