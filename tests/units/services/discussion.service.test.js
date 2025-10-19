@@ -716,7 +716,7 @@ describe('Discussion Service Unit Tests', () => {
     });
 
     describe('getOneComment Tests', () => {
-        it('should return 404 when discussion does not exist', async () => {
+        it('should throw 404 when discussion does not exist', async () => {
             const mockData = {
                 discussionId: 404,
                 commentId: 1,
@@ -740,7 +740,7 @@ describe('Discussion Service Unit Tests', () => {
             );
         });
 
-        it('should return 404 when comment does not exist', async () => {
+        it('should throw 404 when comment does not exist', async () => {
             const mockData = {
                 discussionId: 1,
                 commentId: 404,
@@ -767,7 +767,7 @@ describe('Discussion Service Unit Tests', () => {
             );
         });
 
-        it('should return 200 and return result', async () => {
+        it('should return result', async () => {
             const mockData = {
                 discussionId: 1,
                 commentId: 1,
@@ -814,7 +814,7 @@ describe('Discussion Service Unit Tests', () => {
             expect(result).toBeDefined();
         });
 
-        it('should return 200 and return result with deleted user', async () => {
+        it('should return result with deleted user', async () => {
             const mockData = {
                 discussionId: 1,
                 commentId: 1,
@@ -869,7 +869,7 @@ describe('Discussion Service Unit Tests', () => {
             expect(result).toBeDefined();
         });
 
-        it('should return 200 and return result without replies', async () => {
+        it('should return result without replies', async () => {
             const mockData = {
                 discussionId: 1,
                 commentId: 1,
@@ -897,6 +897,120 @@ describe('Discussion Service Unit Tests', () => {
             const result = await DiscussionService.getOneComment(mockData);
 
             expect(result).toBeDefined();
+        });
+    });
+
+    describe('createComment Tests', () => {
+        it('should return new top-level comment', async () => {
+            const mockData = {
+                discussionId: 1,
+                parentCommentId: null,
+                userId: 1,
+                message: 'Lorem ipsum',
+            };
+            const mockDiscussion = {
+                id: 1,
+            };
+            const mockComment = {
+                id: 1,
+                discusssionId: 1,
+                userId: 1,
+                parentCommentId: null,
+                message: 'Lorem ipsum',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                deletedAt: null,
+            };
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            Comment.findOne.mockResolvedValue(true);
+            Comment.create.mockResolvedValue(mockComment);
+
+            const result = await DiscussionService.createComment(mockData);
+
+            expect(result).toBe(mockComment);
+        });
+
+        it('should return new reply', async () => {
+            const mockData = {
+                discussionId: 1,
+                parentCommentId: 1,
+                userId: 1,
+                message: 'Lorem ipsum',
+            };
+            const mockDiscussion = {
+                id: 1,
+            };
+            const mockComment = {
+                id: 1,
+                discusssionId: 1,
+                userId: 1,
+                parentCommentId: 1,
+                message: 'Lorem ipsum',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                deletedAt: null,
+            };
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            Comment.findOne.mockResolvedValue(true);
+            Comment.create.mockResolvedValue(mockComment);
+
+            const result = await DiscussionService.createComment(mockData);
+
+            expect(result).toBe(mockComment);
+        });
+
+        it('should throw 404 error when discussion does not exist', async () => {
+            const mockData = {
+                discussionId: 404,
+                parentCommentId: 1,
+                userId: 1,
+                message: 'Lorem ipsum',
+            };
+            Discussion.findByPk.mockResolvedValue(null);
+
+            await expect(
+                DiscussionService.createComment(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Discussion with "discussionId" does not exist',
+                        context: {
+                            key: 'discussionId',
+                            value: mockData.discussionId,
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw 404 error when parent comment does not exist', async () => {
+            const mockData = {
+                discussionId: 1,
+                parentCommentId: 404,
+                userId: 1,
+                message: 'Lorem ipsum',
+            };
+            const mockDiscussion = {
+                id: 1,
+            };
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            Comment.findOne.mockResolvedValue(null);
+
+            await expect(
+                DiscussionService.createComment(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Comment with "parentCommentId" does not exist',
+                        context: {
+                            key: 'parentCommentId',
+                            value: mockData.parentCommentId,
+                        },
+                    },
+                ]),
+            );
         });
     });
 });

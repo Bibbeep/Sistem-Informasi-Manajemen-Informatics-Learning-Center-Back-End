@@ -379,7 +379,6 @@ class DiscussionService {
 
     static async createComment(data) {
         const { discussionId, parentCommentId, userId, message } = data;
-        console.log(data);
         const discussion = await Discussion.findByPk(discussionId);
 
         if (!discussion) {
