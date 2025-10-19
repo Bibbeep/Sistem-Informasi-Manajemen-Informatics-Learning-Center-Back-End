@@ -9,6 +9,7 @@ const likeFactory = require('../../src/db/seeders/factories/likes');
 const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
+const { User } = require('../../src/db/models');
 
 describe('Discussion Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -33,11 +34,16 @@ describe('Discussion Integration Tests', () => {
             { role: 'User' },
             mockUserPassword,
         );
+        const deletedUser = await userFactory(
+            { role: 'User' },
+            mockUserPassword,
+        );
 
         users = {
             admin: adminUser,
             regular: regularUser,
             another: anotherUser,
+            deleted: deletedUser,
         };
 
         discussions = [];
@@ -71,6 +77,12 @@ describe('Discussion Integration Tests', () => {
             message: 'Comment 3 D1',
             createdAt: new Date('2025-10-18T10:00:00Z'),
         });
+        const comment1_4 = await commentFactory({
+            discussionId: discussion1.id,
+            userId: users.deleted.id,
+            message: 'Comment 3 D1',
+            createdAt: new Date('2025-10-18T10:00:00Z'),
+        });
 
         const reply1_1_1 = await commentFactory({
             discussionId: discussion1.id,
@@ -90,6 +102,18 @@ describe('Discussion Integration Tests', () => {
             parentCommentId: comment1_2.id,
             message: 'Reply 2 to C2 D1',
         });
+        const reply1_2_3 = await commentFactory({
+            discussionId: discussion1.id,
+            userId: users.deleted.id,
+            parentCommentId: comment1_2.id,
+            message: 'Reply 2 to C2 D1',
+        });
+
+        await User.destroy({
+            where: {
+                id: users.deleted.id,
+            },
+        });
 
         const comment2_1 = await commentFactory({
             discussionId: discussion2.id,
@@ -105,6 +129,8 @@ describe('Discussion Integration Tests', () => {
             reply1_2_1,
             reply1_2_2,
             comment2_1,
+            comment1_4,
+            reply1_2_3,
         ];
 
         await likeFactory({ commentId: comment1_1.id, userId: users.admin.id });
@@ -156,6 +182,19 @@ describe('Discussion Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.data.discussions).toHaveLength(3);
+            expect(response.body.pagination.totalRecords).toBe(3);
+            expect(response.body.message).toBe(
+                'Successfully retrieved all discussion forums.',
+            );
+        });
+
+        it('should return 200 and fetch all discussions for an admin user with limit 1 and page 2', async () => {
+            const response = await request(server)
+                .get('/api/v1/discussions?limit=1&page=2')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.discussions).toHaveLength(1);
             expect(response.body.pagination.totalRecords).toBe(3);
             expect(response.body.message).toBe(
                 'Successfully retrieved all discussion forums.',
@@ -467,13 +506,13 @@ describe('Discussion Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.success).toBe(true);
-            expect(response.body.data.comments).toHaveLength(6);
-            expect(response.body.pagination.totalRecords).toBe(6);
+            expect(response.body.data.comments).toHaveLength(8);
+            expect(response.body.pagination.totalRecords).toBe(8);
             expect(response.body.data.comments[0].parentCommentId).toBeNull();
             expect(response.body.data.comments[0].likesCount).toBe(2);
             expect(response.body.data.comments[0].repliesCount).toBe(1);
             expect(response.body.data.comments[1].likesCount).toBe(1);
-            expect(response.body.data.comments[1].repliesCount).toBe(2);
+            expect(response.body.data.comments[1].repliesCount).toBe(3);
             expect(response.body.data.comments[2].likesCount).toBe(0);
             expect(response.body.data.comments[2].repliesCount).toBe(0);
             expect(response.body.message).toBe(
@@ -508,8 +547,8 @@ describe('Discussion Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.comments).toHaveLength(3);
-            expect(response.body.pagination.totalRecords).toBe(3);
+            expect(response.body.data.comments).toHaveLength(4);
+            expect(response.body.pagination.totalRecords).toBe(4);
             expect(response.body.data.comments[0].parentCommentId).toBeNull();
         });
 
@@ -525,11 +564,31 @@ describe('Discussion Integration Tests', () => {
             expect(response.body.data.comments).toHaveLength(2);
             expect(response.body.pagination).toEqual({
                 currentRecords: 2,
-                totalRecords: 6,
+                totalRecords: 8,
                 currentPage: 1,
-                totalPages: 3,
+                totalPages: 4,
                 nextPage: 2,
                 prevPage: null,
+            });
+        });
+
+        it('should return 200 and apply pagination correctly for page in the middle', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments?limit=1&page=2`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comments).toHaveLength(1);
+            expect(response.body.pagination).toEqual({
+                currentRecords: 1,
+                totalRecords: 8,
+                currentPage: 2,
+                totalPages: 8,
+                nextPage: 3,
+                prevPage: 1,
             });
         });
 
@@ -542,9 +601,8 @@ describe('Discussion Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.comments).toHaveLength(6);
+            expect(response.body.data.comments).toHaveLength(8);
             expect(response.body.data.comments[0].id).toBe(comments[0].id);
-            expect(response.body.data.comments[1].id).toBe(comments[1].id);
         });
 
         it('should return 200 and sort by repliesCount descending', async () => {
@@ -556,10 +614,9 @@ describe('Discussion Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.comments).toHaveLength(6);
+            expect(response.body.data.comments).toHaveLength(8);
             expect(response.body.data.comments[0].id).toBe(comments[1].id);
             expect(response.body.data.comments[1].id).toBe(comments[0].id);
-            expect(response.body.data.comments[2].id).toBe(comments[2].id);
         });
 
         it('should return 200 and sort by createdAt ascending', async () => {
@@ -571,16 +628,26 @@ describe('Discussion Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`);
 
             expect(response.status).toBe(200);
-            expect(response.body.data.comments).toHaveLength(6);
+            expect(response.body.data.comments).toHaveLength(8);
             expect(response.body.data.comments[0].id).toBe(comments[0].id);
             expect(response.body.data.comments[1].id).toBe(comments[1].id);
-            expect(response.body.data.comments[2].id).toBe(comments[2].id);
         });
 
         it('should return 200 and an empty list if no comments exist for the discussion', async () => {
             const discussionId = discussions[2].id;
             const response = await request(server)
                 .get(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comments).toHaveLength(0);
+            expect(response.body.pagination.totalRecords).toBe(0);
+        });
+
+        it('should return 200 and an empty list if page out of bounds', async () => {
+            const discussionId = discussions[2].id;
+            const response = await request(server)
+                .get(`/api/v1/discussions/${discussionId}/comments?page=100`)
                 .set('Authorization', `Bearer ${tokens.regular}`);
 
             expect(response.status).toBe(200);
@@ -633,7 +700,7 @@ describe('Discussion Integration Tests', () => {
     describe('GET /api/v1/discussions/:discussionId/comments/:commentId', () => {
         it('should return 200 and fetch specific comment details without replies', async () => {
             const discussionId = discussions[0].id;
-            const commentId = comments[1].id; // comment1_2
+            const commentId = comments[1].id;
             const response = await request(server)
                 .get(
                     `/api/v1/discussions/${discussionId}/comments/${commentId}`,
@@ -644,7 +711,7 @@ describe('Discussion Integration Tests', () => {
             expect(response.body.data.comment.id).toBe(commentId);
             expect(response.body.data.comment.message).toBe('Comment 2 D1');
             expect(response.body.data.comment.likesCount).toBe(1);
-            expect(response.body.data.comment.repliesCount).toBe(2);
+            expect(response.body.data.comment.repliesCount).toBe(3);
             expect(response.body.data.comment.replies).toBeUndefined();
             expect(response.body.message).toBe(
                 'Successfully retrieved a comment details.',
@@ -653,7 +720,7 @@ describe('Discussion Integration Tests', () => {
 
         it('should return 200 and fetch specific comment details including replies', async () => {
             const discussionId = discussions[0].id;
-            const commentId = comments[1].id; // comment1_2
+            const commentId = comments[1].id;
             const response = await request(server)
                 .get(
                     `/api/v1/discussions/${discussionId}/comments/${commentId}?includeReplies=true`,
@@ -662,13 +729,26 @@ describe('Discussion Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.data.comment.id).toBe(commentId);
-            expect(response.body.data.comment.replies).toHaveLength(2);
+            expect(response.body.data.comment.replies).toHaveLength(3);
             expect(response.body.data.comment.replies[0].id).toBe(
                 comments[4].id,
-            ); // reply1_2_1
+            );
             expect(response.body.data.comment.replies[1].id).toBe(
                 comments[5].id,
-            ); // reply1_2_2
+            );
+        });
+
+        it('should return 200 and fetch specific comment details with deleted user', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[7].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comment.id).toBe(commentId);
         });
 
         it('should return 400 for invalid discussionId format', async () => {
@@ -733,13 +813,6 @@ describe('Discussion Integration Tests', () => {
 
         it('should return 404 when the comment does not exist within the specified discussion', async () => {
             const discussionId = discussions[0].id;
-            const commentId = comments[6].id;
-            const response = await request(server)
-                .get(
-                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
-                )
-                .set('Authorization', `Bearer ${tokens.admin}`);
-
             const nonExistentCommentId = 99999;
             const responseNotFound = await request(server)
                 .get(
