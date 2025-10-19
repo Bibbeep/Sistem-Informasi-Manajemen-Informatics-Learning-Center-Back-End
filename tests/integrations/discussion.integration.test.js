@@ -58,32 +58,37 @@ describe('Discussion Integration Tests', () => {
             userId: users.regular.id,
             message: 'Comment 1 D1',
             createdAt: new Date('2025-10-18T08:00:00Z'),
-            updatedAt: new Date('2025-10-18T08:00:00Z'),
         });
         const comment1_2 = await commentFactory({
             discussionId: discussion1.id,
             userId: users.another.id,
             message: 'Comment 2 D1',
             createdAt: new Date('2025-10-18T09:00:00Z'),
-            updatedAt: new Date('2025-10-18T09:30:00Z'),
         });
+        const comment1_3 = await commentFactory({
+            discussionId: discussion1.id,
+            userId: users.regular.id,
+            message: 'Comment 3 D1',
+            createdAt: new Date('2025-10-18T10:00:00Z'),
+        });
+
         const reply1_1_1 = await commentFactory({
             discussionId: discussion1.id,
             userId: users.admin.id,
             parentCommentId: comment1_1.id,
-            message: 'Reply to C1 D1',
+            message: 'Reply 1 to C1 D1',
         });
         const reply1_2_1 = await commentFactory({
             discussionId: discussion1.id,
             userId: users.regular.id,
             parentCommentId: comment1_2.id,
-            message: 'Reply to C2 D1',
+            message: 'Reply 1 to C2 D1',
         });
         const reply1_2_2 = await commentFactory({
             discussionId: discussion1.id,
             userId: users.another.id,
             parentCommentId: comment1_2.id,
-            message: 'Another reply to C2 D1',
+            message: 'Reply 2 to C2 D1',
         });
 
         const comment2_1 = await commentFactory({
@@ -92,14 +97,15 @@ describe('Discussion Integration Tests', () => {
             message: 'Comment 1 D2',
         });
 
-        comments.push(
+        comments = [
             comment1_1,
             comment1_2,
+            comment1_3,
             reply1_1_1,
             reply1_2_1,
             reply1_2_2,
             comment2_1,
-        );
+        ];
 
         await likeFactory({ commentId: comment1_1.id, userId: users.admin.id });
         await likeFactory({
@@ -449,6 +455,178 @@ describe('Discussion Integration Tests', () => {
 
             expect(response.status).toBe(404);
             expect(response.body.message).toBe('Resource not found.');
+        });
+    });
+
+    describe('GET /api/v1/discussions/:discussionId/comments', () => {
+        it('should return 200 and fetch top-level comments for a discussion with default params', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+            expect(response.body.data.comments).toHaveLength(6);
+            expect(response.body.pagination.totalRecords).toBe(6);
+            expect(response.body.data.comments[0].parentCommentId).toBeNull();
+            expect(response.body.data.comments[0].likesCount).toBe(2);
+            expect(response.body.data.comments[0].repliesCount).toBe(1);
+            expect(response.body.data.comments[1].likesCount).toBe(1);
+            expect(response.body.data.comments[1].repliesCount).toBe(2);
+            expect(response.body.data.comments[2].likesCount).toBe(0);
+            expect(response.body.data.comments[2].repliesCount).toBe(0);
+            expect(response.body.message).toBe(
+                'Successfully retrieved all comments.',
+            );
+        });
+
+        it('should return 200 and fetch replies for a specific comment using parentCommentId', async () => {
+            const discussionId = discussions[0].id;
+            const parentCommentId = comments[0].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments?parentCommentId=${parentCommentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comments).toHaveLength(1);
+            expect(response.body.pagination.totalRecords).toBe(1);
+            expect(response.body.data.comments[0].parentCommentId).toBe(
+                parentCommentId,
+            );
+            expect(response.body.data.comments[0].likesCount).toBe(1);
+        });
+
+        it('should return 200 and fetch top-level comments when parentCommentId=0', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments?parentCommentId=0`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comments).toHaveLength(3);
+            expect(response.body.pagination.totalRecords).toBe(3);
+            expect(response.body.data.comments[0].parentCommentId).toBeNull();
+        });
+
+        it('should return 200 and apply pagination correctly', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments?limit=2&page=1`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comments).toHaveLength(2);
+            expect(response.body.pagination).toEqual({
+                currentRecords: 2,
+                totalRecords: 6,
+                currentPage: 1,
+                totalPages: 3,
+                nextPage: 2,
+                prevPage: null,
+            });
+        });
+
+        it('should return 200 and sort by likesCount descending', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments?sort=-likesCount`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comments).toHaveLength(6);
+            expect(response.body.data.comments[0].id).toBe(comments[0].id);
+            expect(response.body.data.comments[1].id).toBe(comments[1].id);
+        });
+
+        it('should return 200 and sort by repliesCount descending', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments?sort=-repliesCount`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comments).toHaveLength(6);
+            expect(response.body.data.comments[0].id).toBe(comments[1].id);
+            expect(response.body.data.comments[1].id).toBe(comments[0].id);
+            expect(response.body.data.comments[2].id).toBe(comments[2].id);
+        });
+
+        it('should return 200 and sort by createdAt ascending', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments?sort=createdAt`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comments).toHaveLength(6);
+            expect(response.body.data.comments[0].id).toBe(comments[0].id);
+            expect(response.body.data.comments[1].id).toBe(comments[1].id);
+            expect(response.body.data.comments[2].id).toBe(comments[2].id);
+        });
+
+        it('should return 200 and an empty list if no comments exist for the discussion', async () => {
+            const discussionId = discussions[2].id;
+            const response = await request(server)
+                .get(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comments).toHaveLength(0);
+            expect(response.body.pagination.totalRecords).toBe(0);
+        });
+
+        it('should return 400 for invalid discussionId format', async () => {
+            const response = await request(server)
+                .get('/api/v1/discussions/abc/comments')
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 400 for invalid query parameters (e.g., negative page)', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(`/api/v1/discussions/${discussionId}/comments?page=-1`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 401 for unauthenticated requests', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server).get(
+                `/api/v1/discussions/${discussionId}/comments`,
+            );
+
+            expect(response.status).toBe(401);
+            expect(response.body.message).toBe('Unauthorized.');
+        });
+
+        it('should return 404 when the discussion does not exist', async () => {
+            const response = await request(server)
+                .get('/api/v1/discussions/99999/comments')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Discussion with "discussionId" does not exist',
+            );
         });
     });
 });
