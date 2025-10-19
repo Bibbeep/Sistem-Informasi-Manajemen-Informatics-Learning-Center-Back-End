@@ -311,10 +311,22 @@ class DiscussionService {
                         },
                     ],
                 },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'fullName'],
+                    required: false,
+                },
             ];
         }
 
-        const comment = await Comment.findByPk(commentId, options);
+        const comment = await Comment.findOne({
+            where: {
+                discussionId,
+                id: commentId,
+            },
+            ...options,
+        });
 
         if (!comment) {
             throw new HTTPError(404, 'Resource not found.', [

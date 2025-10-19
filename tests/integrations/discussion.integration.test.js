@@ -629,4 +629,129 @@ describe('Discussion Integration Tests', () => {
             );
         });
     });
+
+    describe('GET /api/v1/discussions/:discussionId/comments/:commentId', () => {
+        it('should return 200 and fetch specific comment details without replies', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[1].id; // comment1_2
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comment.id).toBe(commentId);
+            expect(response.body.data.comment.message).toBe('Comment 2 D1');
+            expect(response.body.data.comment.likesCount).toBe(1);
+            expect(response.body.data.comment.repliesCount).toBe(2);
+            expect(response.body.data.comment.replies).toBeUndefined();
+            expect(response.body.message).toBe(
+                'Successfully retrieved a comment details.',
+            );
+        });
+
+        it('should return 200 and fetch specific comment details including replies', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[1].id; // comment1_2
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}?includeReplies=true`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comment.id).toBe(commentId);
+            expect(response.body.data.comment.replies).toHaveLength(2);
+            expect(response.body.data.comment.replies[0].id).toBe(
+                comments[4].id,
+            ); // reply1_2_1
+            expect(response.body.data.comment.replies[1].id).toBe(
+                comments[5].id,
+            ); // reply1_2_2
+        });
+
+        it('should return 400 for invalid discussionId format', async () => {
+            const commentId = comments[0].id;
+            const response = await request(server)
+                .get(`/api/v1/discussions/abc/comments/${commentId}`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 400 for invalid commentId format', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .get(`/api/v1/discussions/${discussionId}/comments/xyz`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 400 for invalid includeReplies query parameter', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}?includeReplies=maybe`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+            expect(response.body.errors[0].message).toContain(
+                '"includeReplies" must be a boolean',
+            );
+        });
+
+        it('should return 401 for unauthenticated requests', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+            const response = await request(server).get(
+                `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+            );
+
+            expect(response.status).toBe(401);
+            expect(response.body.message).toBe('Unauthorized.');
+        });
+
+        it('should return 404 when the discussion does not exist', async () => {
+            const commentId = comments[0].id;
+            const response = await request(server)
+                .get(`/api/v1/discussions/99999/comments/${commentId}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Discussion with "discussionId" does not exist',
+            );
+        });
+
+        it('should return 404 when the comment does not exist within the specified discussion', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[6].id;
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            const nonExistentCommentId = 99999;
+            const responseNotFound = await request(server)
+                .get(
+                    `/api/v1/discussions/${discussionId}/comments/${nonExistentCommentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(responseNotFound.status).toBe(404);
+            expect(responseNotFound.body.message).toBe('Resource not found.');
+            expect(responseNotFound.body.errors[0].message).toContain(
+                'Comment with "commentId" does not exist',
+            );
+        });
+    });
 });

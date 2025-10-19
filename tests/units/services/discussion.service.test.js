@@ -674,6 +674,45 @@ describe('Discussion Service Unit Tests', () => {
 
             expect(result.comments[0].fullName).toBeNull();
         });
+
+        it('should return comments with page > 1', async () => {
+            const mockData = {
+                page: 2,
+                limit: 10,
+                sort: 'id',
+                discussionId: 1,
+            };
+            const mockDiscussion = {
+                id: 1,
+            };
+            const mockCount = 21;
+            const mockRows = [
+                {
+                    id: 2,
+                    userId: 1,
+                    user: {
+                        fullName: 'John Doe',
+                    },
+                    parentCommentId: 1,
+                    message: 'Lorem ipsum',
+                    getDataValue: jest.fn(() => {
+                        return 1;
+                    }),
+                    createdAt: new Date(),
+                    updatedAt: new Date(),
+                },
+            ];
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            Comment.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const result = await DiscussionService.getManyComments(mockData);
+
+            expect(result.pagination.currentRecords).toBe(1);
+            expect(result.pagination.totalRecords).toBe(21);
+        });
     });
 
     describe('getOneComment Tests', () => {
@@ -711,7 +750,7 @@ describe('Discussion Service Unit Tests', () => {
                 id: 1,
             };
             Discussion.findByPk.mockResolvedValue(mockDiscussion);
-            Comment.findByPk.mockResolvedValue(null);
+            Comment.findOne.mockResolvedValue(null);
 
             await expect(
                 DiscussionService.getOneComment(mockData),
@@ -768,7 +807,92 @@ describe('Discussion Service Unit Tests', () => {
             };
             Discussion.findByPk.mockResolvedValue(mockDiscussion);
             sequelize.literal.mockReturnValue(true);
-            Comment.findByPk.mockResolvedValue(mockComment);
+            Comment.findOne.mockResolvedValue(mockComment);
+
+            const result = await DiscussionService.getOneComment(mockData);
+
+            expect(result).toBeDefined();
+        });
+
+        it('should return 200 and return result with deleted user', async () => {
+            const mockData = {
+                discussionId: 1,
+                commentId: 1,
+                includeReplies: true,
+            };
+            const mockDiscussion = {
+                id: 1,
+            };
+            const mockComment = {
+                id: 1,
+                userId: 1,
+                parentCommentId: 2,
+                message: 'Lorem ipsum',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                deletedAt: null,
+                getDataValue: jest.fn(() => {
+                    return 0;
+                }),
+                replies: [
+                    {
+                        id: 3,
+                        userId: 3,
+                        user: { fullName: 'Jane' },
+                        message: 'Lorem ipsum',
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        deletedAt: null,
+                        getDataValue: jest.fn(() => {
+                            return 0;
+                        }),
+                    },
+                    {
+                        id: 4,
+                        userId: 3,
+                        message: 'Lorem ipsum',
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        deletedAt: null,
+                        getDataValue: jest.fn(() => {
+                            return 1;
+                        }),
+                    },
+                ],
+            };
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            sequelize.literal.mockReturnValue(true);
+            Comment.findOne.mockResolvedValue(mockComment);
+
+            const result = await DiscussionService.getOneComment(mockData);
+
+            expect(result).toBeDefined();
+        });
+
+        it('should return 200 and return result without replies', async () => {
+            const mockData = {
+                discussionId: 1,
+                commentId: 1,
+                includeReplies: false,
+            };
+            const mockDiscussion = {
+                id: 1,
+            };
+            const mockComment = {
+                id: 1,
+                userId: 1,
+                parentCommentId: 2,
+                message: 'Lorem ipsum',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                deletedAt: null,
+                getDataValue: jest.fn(() => {
+                    return 1;
+                }),
+            };
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            sequelize.literal.mockReturnValue(true);
+            Comment.findOne.mockResolvedValue(mockComment);
 
             const result = await DiscussionService.getOneComment(mockData);
 
