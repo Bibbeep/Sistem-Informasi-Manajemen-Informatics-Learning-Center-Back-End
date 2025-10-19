@@ -9,7 +9,7 @@ const likeFactory = require('../../src/db/seeders/factories/likes');
 const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
-const { User } = require('../../src/db/models');
+const { User, Comment } = require('../../src/db/models');
 
 describe('Discussion Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -825,6 +825,211 @@ describe('Discussion Integration Tests', () => {
             expect(responseNotFound.body.errors[0].message).toContain(
                 'Comment with "commentId" does not exist',
             );
+        });
+    });
+
+    describe('POST /api/v1/discussions/:discussionId/comments', () => {
+        it('should return 201 and create a top-level comment', async () => {
+            const discussionId = discussions[0].id;
+            const newComment = {
+                message: 'This is a new top-level comment.',
+                parentCommentId: null,
+            };
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(newComment);
+
+            expect(response.status).toBe(201);
+            expect(response.body.success).toBe(true);
+            expect(response.body.message).toBe(
+                'Successfully created a comment.',
+            );
+            expect(response.body.data.discussion).toBeDefined();
+            expect(response.body.data.discussion.discussionId).toBe(
+                discussionId,
+            );
+            expect(response.body.data.discussion.userId).toBe(users.regular.id);
+            expect(response.body.data.discussion.message).toBe(
+                newComment.message,
+            );
+            expect(response.body.data.discussion.parentCommentId).toBeNull();
+
+            const createdComment = await Comment.findByPk(
+                response.body.data.discussion.id,
+            );
+            expect(createdComment).not.toBeNull();
+            expect(createdComment.message).toBe(newComment.message);
+        });
+
+        it('should return 201 and create a reply comment', async () => {
+            const discussionId = discussions[0].id;
+            const parentCommentId = comments[0].id;
+            const newReply = {
+                message: 'This is a reply to the first comment.',
+                parentCommentId: parentCommentId,
+            };
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.another}`)
+                .send(newReply);
+
+            expect(response.status).toBe(201);
+            expect(response.body.data.discussion.parentCommentId).toBe(
+                parentCommentId,
+            );
+            expect(response.body.data.discussion.userId).toBe(users.another.id);
+            expect(response.body.data.discussion.message).toBe(
+                newReply.message,
+            );
+
+            const createdReply = await Comment.findByPk(
+                response.body.data.discussion.id,
+            );
+            expect(createdReply).not.toBeNull();
+            expect(createdReply.parentCommentId).toBe(parentCommentId);
+        });
+
+        it('should return 400 for invalid request body (missing message)', async () => {
+            const discussionId = discussions[0].id;
+            const invalidComment = {
+                parentCommentId: null,
+            };
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(invalidComment);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+            expect(response.body.errors[0].message).toContain(
+                '"message" is required',
+            );
+        });
+
+        it('should return 400 for invalid parentCommentId format (not integer or null)', async () => {
+            const discussionId = discussions[0].id;
+            const invalidComment = {
+                message: 'Test comment',
+                parentCommentId: 'abc',
+            };
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(invalidComment);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+            expect(response.body.errors[0].message).toContain(
+                '"parentCommentId" must be a number',
+            );
+        });
+
+        it('should return 400 for invalid discussionId format in URL', async () => {
+            const invalidDiscussionId = 'abc';
+            const newComment = {
+                message: 'Test message',
+                parentCommentId: null,
+            };
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${invalidDiscussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(newComment);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 401 for unauthenticated requests', async () => {
+            const discussionId = discussions[0].id;
+            const newComment = {
+                message: 'Unauthorized comment',
+                parentCommentId: null,
+            };
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${discussionId}/comments`)
+                .send(newComment);
+
+            expect(response.status).toBe(401);
+            expect(response.body.message).toBe('Unauthorized.');
+        });
+
+        it('should return 404 when discussion does not exist', async () => {
+            const nonExistentDiscussionId = 99999;
+            const newComment = {
+                message: 'Comment for non-existent discussion',
+                parentCommentId: null,
+            };
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${nonExistentDiscussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(newComment);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Discussion with "discussionId" does not exist',
+            );
+        });
+
+        it('should return 404 when parentCommentId refers to a non-existent comment', async () => {
+            const discussionId = discussions[0].id;
+            const nonExistentParentId = 99999;
+            const newReply = {
+                message: 'Reply to non-existent comment',
+                parentCommentId: nonExistentParentId,
+            };
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(newReply);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Comment with "parentCommentId" does not exist',
+            );
+        });
+
+        it('should return 404 when parentCommentId belongs to a different discussion', async () => {
+            const discussionId = discussions[0].id;
+            const parentCommentId = comments[6].id;
+            const newReply = {
+                message: 'Reply attempt across discussions',
+                parentCommentId: parentCommentId,
+            };
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(newReply);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Comment with "parentCommentId" does not exist',
+            );
+        });
+
+        it('should return 415 for incorrect content type', async () => {
+            const discussionId = discussions[0].id;
+
+            const response = await request(server)
+                .post(`/api/v1/discussions/${discussionId}/comments`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Content-Type', 'text/plain')
+                .send('message=Some message&parentCommentId=null');
+
+            expect(response.status).toBe(415);
+            expect(response.body.message).toBe('Unsupported Media Type.');
         });
     });
 });
