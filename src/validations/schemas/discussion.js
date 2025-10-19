@@ -27,6 +27,18 @@ const commentQueryParam = Joi.object({
     sort: Joi.string()
         .regex(/^-?(id|likesCount|repliesCount|createdAt|updatedAt)$/)
         .default('id'),
+    parentCommentId: Joi.when(Joi.ref('.'), {
+        is: Joi.number().integer().valid(0),
+        then: Joi.custom(() => {
+            return null;
+        }),
+        otherwise: Joi.number().integer().positive(),
+    }),
+});
+
+// Query parameters for GET /api/v1/discussions/:discussionId/comments/:commentId
+const commentByIdQueryParam = Joi.object({
+    // includeReplies
 });
 
 module.exports = {
@@ -34,4 +46,5 @@ module.exports = {
     discussionPayload,
     discussionUpdate,
     commentQueryParam,
+    commentByIdQueryParam,
 };

@@ -139,7 +139,6 @@ class DiscussionService {
 
     static async getManyComments(data) {
         const { page, limit, sort, discussionId } = data;
-
         const discussion = await Discussion.findByPk(discussionId);
 
         if (!discussion) {
@@ -154,13 +153,16 @@ class DiscussionService {
             ]);
         }
 
+        let where = {
+            discussionId,
+        };
+
+        if (data.parentCommentId !== undefined) {
+            where.parentCommentId = data.parentCommentId;
+        }
+
         const { count, rows } = await Comment.findAndCountAll({
-            where: {
-                parentCommentId: {
-                    [Op.is]: null,
-                },
-                discussionId,
-            },
+            where,
             attributes: {
                 include: [
                     [
@@ -226,6 +228,37 @@ class DiscussionService {
             },
             comments: rows,
         };
+    }
+
+    static async getOneComment(data) {
+        const { discussionId, commentId } = data;
+        const discussion = await Discussion.findByPk(discussionId);
+
+        if (!discussion) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: discussionId,
+                    },
+                },
+            ]);
+        }
+
+        const comment = await Comment.findByPk(commentId);
+
+        if (!comment) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Comment with "commentId" does not exist',
+                    context: {
+                        key: 'commentId',
+                        value: commentId,
+                    },
+                },
+            ]);
+        }
     }
 }
 
