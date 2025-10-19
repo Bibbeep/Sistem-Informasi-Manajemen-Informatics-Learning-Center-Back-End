@@ -41,10 +41,17 @@ const commentByIdQueryParam = Joi.object({
     includeReplies: Joi.bool().default(false),
 });
 
+// Request body for POST /api/v1/discussions/:discussionId/comments
+const commentPayload = Joi.object({
+    parentCommentId: Joi.number().integer().positive().allow(null).required(),
+    message: Joi.string().required(),
+}).unknown(false);
+
 module.exports = {
     discussionQueryParam,
     discussionPayload,
     discussionUpdate,
     commentQueryParam,
     commentByIdQueryParam,
+    commentPayload,
 };

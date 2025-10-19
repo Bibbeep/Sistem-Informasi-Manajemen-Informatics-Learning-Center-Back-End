@@ -376,6 +376,53 @@ class DiscussionService {
 
         return result;
     }
+
+    static async createComment(data) {
+        const { discussionId, parentCommentId, userId, message } = data;
+        console.log(data);
+        const discussion = await Discussion.findByPk(discussionId);
+
+        if (!discussion) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: discussionId,
+                    },
+                },
+            ]);
+        }
+
+        if (
+            parentCommentId &&
+            !(await Comment.findOne({
+                where: {
+                    id: parentCommentId,
+                    discussionId,
+                },
+            }))
+        ) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Comment with "parentCommentId" does not exist',
+                    context: {
+                        key: 'parentCommentId',
+                        value: parentCommentId,
+                    },
+                },
+            ]);
+        }
+
+        const comment = await Comment.create({
+            discussionId,
+            parentCommentId,
+            userId,
+            message,
+        });
+
+        return comment;
+    }
 }
 
 module.exports = DiscussionService;

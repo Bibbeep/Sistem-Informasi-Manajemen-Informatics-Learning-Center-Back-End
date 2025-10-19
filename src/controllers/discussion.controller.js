@@ -5,6 +5,7 @@ const {
     validateUpdateDiscussionData,
     validateCommentQuery,
     validateCommentByIdQuery,
+    validateComment,
 } = require('../validations/validator');
 
 module.exports = {
@@ -169,6 +170,33 @@ module.exports = {
                 message: 'Successfully retrieved a comment details.',
                 data: {
                     comment,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
+    createComment: async (req, res, next) => {
+        try {
+            const { error, value } = validateComment(req.body);
+
+            if (error) {
+                throw error;
+            }
+
+            const discussion = await DiscussionService.createComment({
+                ...value,
+                discussionId: parseInt(req.params.discussionId, 10),
+                userId: parseInt(req.tokenPayload.sub),
+            });
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a comment.',
+                data: {
+                    discussion,
                 },
                 errors: null,
             });

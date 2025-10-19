@@ -1,6 +1,5 @@
 /**
  * @todo [18-10-2025]:
- * @GET /api/v1/discussions/:discussionId/comments/:commentId
  * @POST /api/v1/discussions/:discussionId/comments
  * @PATCH /api/v1/discussions/:discussionId/comments/:commentId
  * @DELETE /api/v1/discussions/:discussionId/comments/:commentId
@@ -64,6 +63,13 @@ router.get(
     validatePathParameterId('discussionId'),
     validatePathParameterId('commentId'),
     asyncHandler(DiscussionController.getCommentById),
+);
+router.post(
+    '/:discussionId/comments',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    requireJsonContent,
+    asyncHandler(DiscussionController.createComment),
 );
 
 module.exports = router;
