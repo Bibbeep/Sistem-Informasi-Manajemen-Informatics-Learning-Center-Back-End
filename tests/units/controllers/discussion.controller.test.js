@@ -8,6 +8,7 @@ const {
     updateById,
     deleteById,
     getAllComments,
+    getCommentById,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
@@ -15,6 +16,7 @@ const {
     validateDiscussion,
     validateUpdateDiscussionData,
     validateCommentQuery,
+    validateCommentByIdQuery,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 const HTTPError = require('../../../src/utils/httpError');
@@ -377,6 +379,129 @@ describe('Discussion Controller Unit Tests', () => {
             expect(DiscussionService.getManyComments).toHaveBeenCalledWith({
                 ...mockQuery,
                 discussionId: mockDiscussionId,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('getCommentById Tests', () => {
+        beforeEach(() => {
+            req.params = { discussionId: '1', commentId: '5' };
+        });
+
+        it('should return 200 with comment details on success (no replies)', async () => {
+            const mockQuery = { includeReplies: false };
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
+            const mockCommentId = parseInt(req.params.commentId, 10);
+            const mockCommentResponse = {
+                id: mockCommentId,
+                message: 'Test Comment',
+                userId: 1,
+                userName: 'Test User',
+                likesCount: 2,
+                repliesCount: 0,
+            };
+            validateCommentByIdQuery.mockReturnValue({
+                error: null,
+                value: mockQuery,
+            });
+            DiscussionService.getOneComment.mockResolvedValue(
+                mockCommentResponse,
+            );
+
+            await getCommentById(req, res, next);
+
+            expect(validateCommentByIdQuery).toHaveBeenCalledWith(req.query);
+            expect(DiscussionService.getOneComment).toHaveBeenCalledWith({
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                includeReplies: false,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully retrieved a comment details.',
+                data: {
+                    comment: mockCommentResponse,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should return 200 with comment details and replies on success', async () => {
+            req.query = { includeReplies: 'true' };
+            const mockQuery = { includeReplies: true };
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
+            const mockCommentId = parseInt(req.params.commentId, 10);
+            const mockCommentResponse = {
+                id: mockCommentId,
+                message: 'Test Comment',
+                likesCount: 2,
+                repliesCount: 1,
+                replies: [{ id: 6, message: 'Reply 1' }],
+            };
+            validateCommentByIdQuery.mockReturnValue({
+                error: null,
+                value: mockQuery,
+            });
+            DiscussionService.getOneComment.mockResolvedValue(
+                mockCommentResponse,
+            );
+
+            await getCommentById(req, res, next);
+
+            expect(validateCommentByIdQuery).toHaveBeenCalledWith(req.query);
+            expect(DiscussionService.getOneComment).toHaveBeenCalledWith({
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                includeReplies: true,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    data: { comment: mockCommentResponse },
+                }),
+            );
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error if query params are invalid', async () => {
+            req.query = { includeReplies: 'abc' };
+            const validationError = new ValidationError('Validation failed');
+            validateCommentByIdQuery.mockReturnValue({
+                error: validationError,
+            });
+
+            await getCommentById(req, res, next);
+
+            expect(validateCommentByIdQuery).toHaveBeenCalledWith(req.query);
+            expect(DiscussionService.getOneComment).not.toHaveBeenCalled();
+            expect(next).toHaveBeenCalledWith(validationError);
+        });
+
+        it('should forward service errors (like 404) to the next middleware', async () => {
+            req.params.commentId = '999';
+            const mockQuery = { includeReplies: false };
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
+            const mockCommentId = 999;
+            const serviceError = new HTTPError(404, 'Resource not found.');
+            validateCommentByIdQuery.mockReturnValue({
+                error: null,
+                value: mockQuery,
+            });
+            DiscussionService.getOneComment.mockRejectedValue(serviceError);
+
+            await getCommentById(req, res, next);
+
+            expect(validateCommentByIdQuery).toHaveBeenCalledWith(req.query);
+            expect(DiscussionService.getOneComment).toHaveBeenCalledWith({
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                includeReplies: false,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
