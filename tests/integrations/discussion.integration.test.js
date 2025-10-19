@@ -9,7 +9,7 @@ const likeFactory = require('../../src/db/seeders/factories/likes');
 const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
-const { User, Comment } = require('../../src/db/models');
+const { User, Comment, Discussion } = require('../../src/db/models');
 
 describe('Discussion Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -1021,6 +1021,197 @@ describe('Discussion Integration Tests', () => {
                 .set('Authorization', `Bearer ${tokens.regular}`)
                 .set('Content-Type', 'text/plain')
                 .send('message=Some message&parentCommentId=null');
+
+            expect(response.status).toBe(415);
+            expect(response.body.message).toBe('Unsupported Media Type.');
+        });
+    });
+
+    describe('PATCH /api/v1/discussions/:discussionId/comments/:commentId', () => {
+        it('should return 200 and update the comment message by the owner', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+            const updateData = { message: 'Updated message by owner.' };
+
+            const response = await request(server)
+                .patch(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(updateData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+            expect(response.body.message).toBe(
+                'Successfully updated a comment.',
+            );
+            expect(response.body.data.comment.id).toBe(commentId);
+            expect(response.body.data.comment.message).toBe(updateData.message);
+
+            const updatedComment = await Comment.findByPk(commentId);
+            expect(updatedComment.message).toBe(updateData.message);
+        });
+
+        it('should return 200 and update the comment message by an admin', async () => {
+            const discussionId = discussions[0].id;
+            const updateData = { message: 'Updated message by admin.' };
+            const commentId = 1;
+
+            const response = await request(server)
+                .patch(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.comment.message).toBe(updateData.message);
+
+            const updatedComment = await Comment.findByPk(commentId);
+            expect(updatedComment.message).toBe(updateData.message);
+        });
+
+        it('should return 400 for invalid request body (empty message)', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+
+            const response = await request(server)
+                .patch(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send({ message: '' });
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+            expect(response.body.errors[0].message).toContain(
+                '"message" is not allowed to be empty',
+            );
+        });
+
+        it('should return 400 for invalid discussionId format', async () => {
+            const commentId = comments[0].id;
+            const updateData = { message: 'Valid message' };
+
+            const response = await request(server)
+                .patch(`/api/v1/discussions/abc/comments/${commentId}`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(updateData);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 400 for invalid commentId format', async () => {
+            const discussionId = discussions[0].id;
+            const updateData = { message: 'Valid message' };
+
+            const response = await request(server)
+                .patch(`/api/v1/discussions/${discussionId}/comments/xyz`)
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(updateData);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 401 for unauthenticated requests', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+            const response = await request(server).patch(
+                `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+            );
+
+            expect(response.status).toBe(401);
+            expect(response.body.message).toBe('Unauthorized.');
+        });
+
+        it("should return 403 when a user tries to update another user's comment", async () => {
+            const discussionId = discussions[0].id;
+            const updateData = { message: 'Forbidden update attempt' };
+            const commentId = 2;
+
+            const response = await request(server)
+                .patch(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .send(updateData);
+
+            expect(response.status).toBe(403);
+            expect(response.body.message).toBe('Forbidden.');
+        });
+
+        it('should return 404 when discussion does not exist', async () => {
+            const nonExistentDiscussionId = 99999;
+            const commentId = comments[0].id;
+            const updateData = {
+                message: 'Update for non-existent discussion',
+            };
+
+            const response = await request(server)
+                .patch(
+                    `/api/v1/discussions/${nonExistentDiscussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Discussion with "discussionId" does not exist',
+            );
+        });
+
+        it('should return 404 when comment does not exist', async () => {
+            const discussionId = discussions[0].id;
+            const nonExistentCommentId = 99999;
+            const updateData = { message: 'Update for non-existent comment' };
+
+            const response = await request(server)
+                .patch(
+                    `/api/v1/discussions/${discussionId}/comments/${nonExistentCommentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Comment with "commentId" does not exist',
+            );
+        });
+
+        it('should return 404 when comment exists but belongs to a different discussion', async () => {
+            const updateData = { message: 'Cross-discussion update attempt' };
+            const commentId = 808;
+            const discussionId = 1;
+
+            const response = await request(server)
+                .patch(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .send(updateData);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Comment with "commentId" does not exist',
+            );
+        });
+
+        it('should return 415 for incorrect content type', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+
+            const response = await request(server)
+                .patch(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Content-Type', 'text/plain')
+                .send('message=Some new message');
 
             expect(response.status).toBe(415);
             expect(response.body.message).toBe('Unsupported Media Type.');
