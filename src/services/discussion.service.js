@@ -230,7 +230,7 @@ class DiscussionService {
     }
 
     static async getOneComment(data) {
-        const { discussionId, commentId } = data;
+        const { discussionId, commentId, includeReplies } = data;
         const discussion = await Discussion.findByPk(discussionId);
 
         if (!discussion) {
@@ -245,7 +245,68 @@ class DiscussionService {
             ]);
         }
 
-        const comment = await Comment.findByPk(commentId);
+        let options = {
+            attributes: {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM comment_likes AS l
+                            WHERE l.comment_id = "Comment".id
+                        )`),
+                        'likesCount',
+                    ],
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*) 
+                            FROM comments AS r 
+                            WHERE r.parent_comment_id = "Comment".id
+                        )`),
+                        'repliesCount',
+                    ],
+                ],
+            },
+        };
+
+        if (includeReplies) {
+            options.include = [
+                {
+                    model: Comment,
+                    as: 'replies',
+                    required: false,
+                    attributes: {
+                        include: [
+                            [
+                                sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM comment_likes AS l
+                            WHERE l.comment_id = replies.id
+                        )`),
+                                'likesCount',
+                            ],
+                            [
+                                sequelize.literal(`(
+                            SELECT COUNT(*) 
+                            FROM comments AS r 
+                            WHERE r.parent_comment_id = replies.id
+                        )`),
+                                'repliesCount',
+                            ],
+                        ],
+                    },
+                    include: [
+                        {
+                            model: User,
+                            as: 'user',
+                            attributes: ['id', 'fullName'],
+                            required: false,
+                        },
+                    ],
+                },
+            ];
+        }
+
+        const comment = await Comment.findByPk(commentId, options);
 
         if (!comment) {
             throw new HTTPError(404, 'Resource not found.', [
@@ -258,6 +319,42 @@ class DiscussionService {
                 },
             ]);
         }
+
+        if (comment.replies?.length) {
+            comment.replies.forEach((reply, index) => {
+                comment.replies[index] = {
+                    id: reply.id,
+                    userId: reply.userId,
+                    fullName: reply.user?.fullName || null,
+                    message: reply.message,
+                    likesCount: Number(reply.getDataValue('likesCount')) || 0,
+                    repliesCount:
+                        Number(reply.getDataValue('repliesCount')) || 0,
+                    createdAt: reply.createdAt,
+                    updatedAt: reply.updatedAt,
+                    deletedAt: reply.deletedAt,
+                };
+            });
+        }
+
+        const result = {
+            id: comment.id,
+            userId: comment.userId,
+            userName: comment.user?.fullname,
+            parentCommentId: comment.parentCommentId,
+            message: comment.message,
+            likesCount: Number(comment.getDataValue('likesCount')) || 0,
+            repliesCount: Number(comment.getDataValue('repliesCount')) || 0,
+            createdAt: comment.createdAt,
+            updatedAt: comment.updatedAt,
+            deletedAt: comment.deletedAt,
+        };
+
+        if (comment.replies) {
+            result.replies = comment.replies;
+        }
+
+        return result;
     }
 }
 

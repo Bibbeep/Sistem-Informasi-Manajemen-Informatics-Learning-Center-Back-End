@@ -49,7 +49,7 @@ module.exports = {
         const replies = [];
         for (const parentComment of createdComments) {
             if (faker.datatype.boolean()) {
-                const replyCount = faker.number.int({ min: 1, max: 2 });
+                const replyCount = faker.number.int({ min: 1, max: 5 });
                 for (let i = 0; i < replyCount; i++) {
                     const createdAt = faker.date.between({
                         from: parentComment.created_at,

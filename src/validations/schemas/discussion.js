@@ -38,7 +38,7 @@ const commentQueryParam = Joi.object({
 
 // Query parameters for GET /api/v1/discussions/:discussionId/comments/:commentId
 const commentByIdQueryParam = Joi.object({
-    // includeReplies
+    includeReplies: Joi.bool().default(false),
 });
 
 module.exports = {
