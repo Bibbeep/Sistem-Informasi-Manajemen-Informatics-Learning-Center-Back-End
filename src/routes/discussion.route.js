@@ -1,6 +1,5 @@
 /**
- * @todo [18-10-2025]:
- * @POST /api/v1/discussions/:discussionId/comments
+ * @todo [20-10-2025]:
  * @PATCH /api/v1/discussions/:discussionId/comments/:commentId
  * @DELETE /api/v1/discussions/:discussionId/comments/:commentId
  * @POST /api/v1/discussions/:discussionId/comments/:commentId/likes
@@ -15,6 +14,7 @@ const {
 } = require('../middlewares/auth.middleware');
 const asyncHandler = require('../utils/asyncHandler');
 const { requireJsonContent } = require('../middlewares/contentType.middleware');
+const { Comment } = require('../db/models');
 
 router.get('/', authenticate, asyncHandler(DiscussionController.getAll));
 router.get(
@@ -70,6 +70,21 @@ router.post(
     validatePathParameterId('discussionId'),
     requireJsonContent,
     asyncHandler(DiscussionController.createComment),
+);
+router.patch(
+    '/:discussionId/comments/:commentId',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    validatePathParameterId('commentId'),
+    requireJsonContent,
+    authorize({
+        rules: ['self', 'admin'],
+        model: Comment,
+        param: 'commentId',
+        ownerForeignKey: 'userId',
+        ownerQueryParam: 'prohibited',
+    }),
+    asyncHandler(DiscussionController.updateCommentById),
 );
 
 module.exports = router;

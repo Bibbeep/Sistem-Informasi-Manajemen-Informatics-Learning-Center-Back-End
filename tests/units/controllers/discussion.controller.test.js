@@ -523,11 +523,11 @@ describe('Discussion Controller Unit Tests', () => {
                 parentCommentId: 1,
                 message: 'HEY',
             };
-            const mockDiscussion = {
+            const mockComment = {
                 id: 1,
             };
             validateComment.mockReturnValue({ value: mockValue });
-            DiscussionService.createComment.mockResolvedValue(mockDiscussion);
+            DiscussionService.createComment.mockResolvedValue(mockComment);
 
             await createComment(req, res, next);
 
@@ -538,7 +538,7 @@ describe('Discussion Controller Unit Tests', () => {
                 statusCode: 201,
                 message: 'Successfully created a comment.',
                 data: {
-                    discussion: mockDiscussion,
+                    comment: mockComment,
                 },
                 errors: null,
             });

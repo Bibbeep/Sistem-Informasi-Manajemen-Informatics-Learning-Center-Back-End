@@ -846,18 +846,14 @@ describe('Discussion Integration Tests', () => {
             expect(response.body.message).toBe(
                 'Successfully created a comment.',
             );
-            expect(response.body.data.discussion).toBeDefined();
-            expect(response.body.data.discussion.discussionId).toBe(
-                discussionId,
-            );
-            expect(response.body.data.discussion.userId).toBe(users.regular.id);
-            expect(response.body.data.discussion.message).toBe(
-                newComment.message,
-            );
-            expect(response.body.data.discussion.parentCommentId).toBeNull();
+            expect(response.body.data.comment).toBeDefined();
+            expect(response.body.data.comment.discussionId).toBe(discussionId);
+            expect(response.body.data.comment.userId).toBe(users.regular.id);
+            expect(response.body.data.comment.message).toBe(newComment.message);
+            expect(response.body.data.comment.parentCommentId).toBeNull();
 
             const createdComment = await Comment.findByPk(
-                response.body.data.discussion.id,
+                response.body.data.comment.id,
             );
             expect(createdComment).not.toBeNull();
             expect(createdComment.message).toBe(newComment.message);
@@ -877,16 +873,14 @@ describe('Discussion Integration Tests', () => {
                 .send(newReply);
 
             expect(response.status).toBe(201);
-            expect(response.body.data.discussion.parentCommentId).toBe(
+            expect(response.body.data.comment.parentCommentId).toBe(
                 parentCommentId,
             );
-            expect(response.body.data.discussion.userId).toBe(users.another.id);
-            expect(response.body.data.discussion.message).toBe(
-                newReply.message,
-            );
+            expect(response.body.data.comment.userId).toBe(users.another.id);
+            expect(response.body.data.comment.message).toBe(newReply.message);
 
             const createdReply = await Comment.findByPk(
-                response.body.data.discussion.id,
+                response.body.data.comment.id,
             );
             expect(createdReply).not.toBeNull();
             expect(createdReply.parentCommentId).toBe(parentCommentId);
