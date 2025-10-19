@@ -10,6 +10,7 @@ const {
     getAllComments,
     getCommentById,
     createComment,
+    updateCommentById,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
@@ -19,6 +20,7 @@ const {
     validateCommentQuery,
     validateCommentByIdQuery,
     validateComment,
+    validateUpdateCommentData,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 const HTTPError = require('../../../src/utils/httpError');
@@ -579,6 +581,91 @@ describe('Discussion Controller Unit Tests', () => {
             await createComment(req, res, next);
 
             expect(next).toHaveBeenCalledWith(mockServiceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('updateCommentById Tests', () => {
+        beforeEach(() => {
+            req.params = { discussionId: '1', commentId: '5' };
+            req.body = { message: 'Updated message' };
+            req.tokenPayload = { sub: '10' };
+        });
+
+        it('should return 200 with updated comment on success', async () => {
+            const mockValue = { message: 'Updated message' };
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
+            const mockCommentId = parseInt(req.params.commentId, 10);
+            const mockUpdatedComment = {
+                id: mockCommentId,
+                message: 'Updated message',
+                userId: 10,
+            };
+            validateUpdateCommentData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            DiscussionService.updateOneComment.mockResolvedValue(
+                mockUpdatedComment,
+            );
+
+            await updateCommentById(req, res, next);
+
+            expect(validateUpdateCommentData).toHaveBeenCalledWith(req.body);
+            expect(DiscussionService.updateOneComment).toHaveBeenCalledWith({
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                message: mockValue.message,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully updated a comment.',
+                data: {
+                    comment: mockUpdatedComment,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should call next with a validation error if body is invalid', async () => {
+            req.body = { message: '' };
+            const validationError = new ValidationError('Validation failed');
+            validateUpdateCommentData.mockReturnValue({
+                error: validationError,
+            });
+
+            await updateCommentById(req, res, next);
+
+            expect(validateUpdateCommentData).toHaveBeenCalledWith(req.body);
+            expect(DiscussionService.updateOneComment).not.toHaveBeenCalled();
+            expect(next).toHaveBeenCalledWith(validationError);
+        });
+
+        it('should forward service errors (like 404) to the next middleware', async () => {
+            req.params.commentId = '999';
+            const mockValue = { message: 'Updated message' };
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
+            const mockCommentId = 999;
+            const serviceError = new HTTPError(404, 'Resource not found.');
+            validateUpdateCommentData.mockReturnValue({
+                error: null,
+                value: mockValue,
+            });
+            DiscussionService.updateOneComment.mockRejectedValue(serviceError);
+
+            await updateCommentById(req, res, next);
+
+            expect(validateUpdateCommentData).toHaveBeenCalledWith(req.body);
+            expect(DiscussionService.updateOneComment).toHaveBeenCalledWith({
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                message: mockValue.message,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
         });
