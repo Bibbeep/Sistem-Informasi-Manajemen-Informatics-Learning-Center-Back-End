@@ -2,7 +2,7 @@
 jest.mock('../../../src/db/models');
 
 const DiscussionService = require('../../../src/services/discussion.service');
-const { Discussion, Comment } = require('../../../src/db/models');
+const { Discussion, Comment, sequelize } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
 
 describe('Discussion Service Unit Tests', () => {
@@ -673,6 +673,106 @@ describe('Discussion Service Unit Tests', () => {
             const result = await DiscussionService.getManyComments(data);
 
             expect(result.comments[0].fullName).toBeNull();
+        });
+    });
+
+    describe('getOneComment Tests', () => {
+        it('should return 404 when discussion does not exist', async () => {
+            const mockData = {
+                discussionId: 404,
+                commentId: 1,
+                includeReplies: true,
+            };
+            Discussion.findByPk.mockResolvedValue(null);
+
+            await expect(
+                DiscussionService.getOneComment(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Discussion with "discussionId" does not exist',
+                        context: {
+                            key: 'discussionId',
+                            value: mockData.discussionId,
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should return 404 when comment does not exist', async () => {
+            const mockData = {
+                discussionId: 1,
+                commentId: 404,
+                includeReplies: false,
+            };
+            const mockDiscussion = {
+                id: 1,
+            };
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            Comment.findByPk.mockResolvedValue(null);
+
+            await expect(
+                DiscussionService.getOneComment(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Comment with "commentId" does not exist',
+                        context: {
+                            key: 'commentId',
+                            value: mockData.commentId,
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should return 200 and return result', async () => {
+            const mockData = {
+                discussionId: 1,
+                commentId: 1,
+                includeReplies: true,
+            };
+            const mockDiscussion = {
+                id: 1,
+            };
+            const mockComment = {
+                id: 1,
+                userId: 1,
+                user: {
+                    fullName: 'John',
+                },
+                parentCommentId: 2,
+                message: 'Lorem ipsum',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                deletedAt: null,
+                getDataValue: jest.fn(() => {
+                    return 1;
+                }),
+                replies: [
+                    {
+                        id: 3,
+                        userId: 3,
+                        user: { fullName: 'Jane' },
+                        message: 'Lorem ipsum',
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        deletedAt: null,
+                        getDataValue: jest.fn(() => {
+                            return 1;
+                        }),
+                    },
+                ],
+            };
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            sequelize.literal.mockReturnValue(true);
+            Comment.findByPk.mockResolvedValue(mockComment);
+
+            const result = await DiscussionService.getOneComment(mockData);
+
+            expect(result).toBeDefined();
         });
     });
 });

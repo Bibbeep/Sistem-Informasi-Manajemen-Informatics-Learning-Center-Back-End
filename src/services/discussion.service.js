@@ -266,6 +266,14 @@ class DiscussionService {
                     ],
                 ],
             },
+            include: [
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['id', 'fullName'],
+                    required: false,
+                },
+            ],
         };
 
         if (includeReplies) {
@@ -340,7 +348,7 @@ class DiscussionService {
         const result = {
             id: comment.id,
             userId: comment.userId,
-            userName: comment.user?.fullname,
+            fullName: comment.user?.fullName || null,
             parentCommentId: comment.parentCommentId,
             message: comment.message,
             likesCount: Number(comment.getDataValue('likesCount')) || 0,
