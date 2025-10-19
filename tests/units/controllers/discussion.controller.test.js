@@ -9,6 +9,7 @@ const {
     deleteById,
     getAllComments,
     getCommentById,
+    createComment,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
@@ -17,6 +18,7 @@ const {
     validateUpdateDiscussionData,
     validateCommentQuery,
     validateCommentByIdQuery,
+    validateComment,
 } = require('../../../src/validations/validator');
 const { ValidationError } = require('joi');
 const HTTPError = require('../../../src/utils/httpError');
@@ -504,6 +506,79 @@ describe('Discussion Controller Unit Tests', () => {
                 includeReplies: false,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('createComment Tests', () => {
+        it('should call res with 201', async () => {
+            req.params.discussionId = '1';
+            req.tokenPayload.sub = 1;
+            req.body = {
+                parentCommentId: 1,
+                message: 'HEY',
+            };
+            const mockValue = {
+                parentCommentId: 1,
+                message: 'HEY',
+            };
+            const mockDiscussion = {
+                id: 1,
+            };
+            validateComment.mockReturnValue({ value: mockValue });
+            DiscussionService.createComment.mockResolvedValue(mockDiscussion);
+
+            await createComment(req, res, next);
+
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully created a comment.',
+                data: {
+                    discussion: mockDiscussion,
+                },
+                errors: null,
+            });
+        });
+
+        it('should call next with Joi error', async () => {
+            req.params.discussionId = '1';
+            req.tokenPayload.sub = 1;
+            req.body = {
+                parentCommentId: true,
+                message: 123,
+            };
+            const mockError = new ValidationError();
+            validateComment.mockReturnValue({ error: mockError });
+
+            await createComment(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service error', async () => {
+            req.params.discussionId = '1';
+            req.tokenPayload.sub = 1;
+            req.body = {
+                parentCommentId: 1,
+                message: 'HEY',
+            };
+            const mockValue = {
+                parentCommentId: 1,
+                message: 'HEY',
+            };
+            const mockServiceError = new Error('BOOM');
+            validateComment.mockReturnValue({ value: mockValue });
+            DiscussionService.createComment.mockRejectedValue(mockServiceError);
+
+            await createComment(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockServiceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
         });
