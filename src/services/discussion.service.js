@@ -422,6 +422,57 @@ class DiscussionService {
 
         return comment;
     }
+
+    static async updateOneComment(data) {
+        const { discussionId, commentId, message } = data;
+
+        if (!(await Discussion.findByPk(discussionId))) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: discussionId,
+                    },
+                },
+            ]);
+        }
+
+        if (
+            !(await Comment.findOne({
+                where: {
+                    id: commentId,
+                    discussionId,
+                },
+            }))
+        ) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Comment with "commentId" does not exist',
+                    context: {
+                        key: 'commentId',
+                        value: commentId,
+                    },
+                },
+            ]);
+        }
+
+        // eslint-disable-next-line no-unused-vars
+        const [count, rows] = await Comment.update(
+            {
+                message,
+            },
+            {
+                where: {
+                    discussionId,
+                    id: commentId,
+                },
+                returning: true,
+            },
+        );
+
+        return rows[0].toJSON();
+    }
 }
 
 module.exports = DiscussionService;

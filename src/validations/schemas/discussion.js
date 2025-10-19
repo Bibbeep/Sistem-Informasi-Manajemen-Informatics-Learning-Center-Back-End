@@ -47,6 +47,13 @@ const commentPayload = Joi.object({
     message: Joi.string().required(),
 }).unknown(false);
 
+// Request body for PATCH /api/v1/discussions/:discussionId/comments/:discussionId
+const commentUpdate = Joi.object({
+    message: Joi.string(),
+})
+    .min(1)
+    .unknown(false);
+
 module.exports = {
     discussionQueryParam,
     discussionPayload,
@@ -54,4 +61,5 @@ module.exports = {
     commentQueryParam,
     commentByIdQueryParam,
     commentPayload,
+    commentUpdate,
 };

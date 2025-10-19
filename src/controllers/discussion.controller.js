@@ -213,7 +213,11 @@ module.exports = {
                 throw error;
             }
 
-            const comment = await DiscussionService.updateOneComment(value);
+            const comment = await DiscussionService.updateOneComment({
+                discussionId: parseInt(req.params.discussionId, 10),
+                commentId: parseInt(req.params.commentId, 10),
+                ...value,
+            });
 
             return res.status(200).json({
                 success: true,
