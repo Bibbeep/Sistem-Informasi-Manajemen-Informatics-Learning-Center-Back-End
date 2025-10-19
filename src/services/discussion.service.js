@@ -1,5 +1,4 @@
 const { Discussion, Comment, User, sequelize } = require('../db/models');
-const { Op } = require('sequelize');
 const HTTPError = require('../utils/httpError');
 
 class DiscussionService {
