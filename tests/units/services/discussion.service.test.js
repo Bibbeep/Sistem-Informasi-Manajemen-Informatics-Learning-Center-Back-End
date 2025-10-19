@@ -1013,4 +1013,147 @@ describe('Discussion Service Unit Tests', () => {
             );
         });
     });
+
+    describe('updateOneComment Tests', () => {
+        const mockDiscussionId = 1;
+        const mockCommentId = 5;
+        const mockUserId = 10;
+        const mockUpdateData = { message: 'Updated comment message.' };
+        const mockDiscussion = { id: mockDiscussionId };
+        const mockCommentInstance = {
+            id: mockCommentId,
+            discussionId: mockDiscussionId,
+            userId: mockUserId,
+            message: 'Original message',
+            toJSON: jest.fn(() => {
+                return {
+                    id: mockCommentId,
+                    discussionId: mockDiscussionId,
+                    userId: mockUserId,
+                    message: mockUpdateData.message,
+                    createdAt: new Date('2025-10-19T10:00:00Z'),
+                    updatedAt: new Date('2025-10-19T11:00:00Z'),
+                };
+            }),
+        };
+
+        beforeEach(() => {
+            Discussion.findByPk.mockResolvedValue(mockDiscussion);
+            Comment.findOne.mockResolvedValue(mockCommentInstance);
+            Comment.update.mockResolvedValue([1, [mockCommentInstance]]);
+        });
+
+        it('should update the comment message successfully', async () => {
+            const data = {
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                message: mockUpdateData.message,
+            };
+            const result = await DiscussionService.updateOneComment(data);
+
+            expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
+            expect(Comment.findOne).toHaveBeenCalledWith({
+                where: {
+                    id: mockCommentId,
+                    discussionId: mockDiscussionId,
+                },
+            });
+            expect(Comment.update).toHaveBeenCalledWith(
+                { message: mockUpdateData.message },
+                {
+                    where: {
+                        discussionId: mockDiscussionId,
+                        id: mockCommentId,
+                    },
+                    returning: true,
+                },
+            );
+            expect(result).toEqual(mockCommentInstance.toJSON());
+        });
+
+        it('should throw HTTPError 404 if discussion does not exist', async () => {
+            const nonExistentDiscussionId = 999;
+            Discussion.findByPk.mockResolvedValue(null);
+            const data = {
+                discussionId: nonExistentDiscussionId,
+                commentId: mockCommentId,
+                message: mockUpdateData.message,
+            };
+
+            await expect(
+                DiscussionService.updateOneComment(data),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Discussion with "discussionId" does not exist',
+                        context: {
+                            key: 'discussionId',
+                            value: nonExistentDiscussionId,
+                        },
+                    },
+                ]),
+            );
+            expect(Discussion.findByPk).toHaveBeenCalledWith(
+                nonExistentDiscussionId,
+            );
+            expect(Comment.findOne).not.toHaveBeenCalled();
+            expect(Comment.update).not.toHaveBeenCalled();
+        });
+
+        it('should throw HTTPError 404 if comment does not exist within the discussion', async () => {
+            const nonExistentCommentId = 999;
+            Comment.findOne.mockResolvedValue(null);
+            const data = {
+                discussionId: mockDiscussionId,
+                commentId: nonExistentCommentId,
+                message: mockUpdateData.message,
+            };
+
+            await expect(
+                DiscussionService.updateOneComment(data),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Comment with "commentId" does not exist',
+                        context: {
+                            key: 'commentId',
+                            value: nonExistentCommentId,
+                        },
+                    },
+                ]),
+            );
+            expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
+            expect(Comment.findOne).toHaveBeenCalledWith({
+                where: {
+                    id: nonExistentCommentId,
+                    discussionId: mockDiscussionId,
+                },
+            });
+            expect(Comment.update).not.toHaveBeenCalled();
+        });
+
+        it('should throw error if Comment.update fails', async () => {
+            const data = {
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                message: mockUpdateData.message,
+            };
+            const updateError = new Error('Database update failed');
+            Comment.update.mockRejectedValue(updateError);
+
+            await expect(
+                DiscussionService.updateOneComment(data),
+            ).rejects.toThrow(updateError);
+
+            expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
+            expect(Comment.findOne).toHaveBeenCalledWith({
+                where: {
+                    id: mockCommentId,
+                    discussionId: mockDiscussionId,
+                },
+            });
+            expect(Comment.update).toHaveBeenCalled();
+        });
+    });
 });
