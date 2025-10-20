@@ -271,4 +271,25 @@ module.exports = {
             next(err);
         }
     },
+    deleteLike: async (req, res, next) => {
+        try {
+            const likesCount = await DiscussionService.deleteLike({
+                discussionId: parseInt(req.params.discussionId, 10),
+                commentId: parseInt(req.params.commentId, 10),
+                userId: parseInt(req.tokenPayload.sub, 10),
+            });
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully unliked a comment.',
+                data: {
+                    likesCount,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

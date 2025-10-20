@@ -598,6 +598,88 @@ class DiscussionService {
         /* istanbul ignore next */
         return Number(comment.getDataValue('likesCount'));
     }
+
+    static async deleteLike(data) {
+        const { discussionId, commentId, userId } = data;
+
+        if (!(await Discussion.findByPk(discussionId))) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: discussionId,
+                    },
+                },
+            ]);
+        }
+
+        if (
+            !(await Comment.findOne({
+                where: {
+                    id: commentId,
+                    discussionId,
+                },
+            }))
+        ) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Comment with "commentId" does not exist',
+                    context: {
+                        key: 'commentId',
+                        value: commentId,
+                    },
+                },
+            ]);
+        }
+
+        if (
+            !(await Like.findOne({
+                where: {
+                    commentId,
+                    userId,
+                },
+            }))
+        ) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Like on comment with "commentId" does not exist',
+                    context: {
+                        key: 'commentId',
+                        value: commentId,
+                    },
+                },
+            ]);
+        }
+
+        await Like.destroy({
+            where: {
+                commentId,
+                userId,
+            },
+        });
+
+        const comment = await Comment.findOne({
+            where: {
+                id: commentId,
+                discussionId,
+            },
+            attributes: {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM comment_likes AS l
+                            WHERE l.comment_id = "Comment".id
+                        )`),
+                        'likesCount',
+                    ],
+                ],
+            },
+        });
+
+        return Number(comment.getDataValue('likesCount'));
+    }
 }
 
 module.exports = DiscussionService;

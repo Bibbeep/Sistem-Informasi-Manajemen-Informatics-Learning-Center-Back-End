@@ -1,7 +1,3 @@
-/**
- * @todo [20-10-2025]:
- * @DELETE /api/v1/discussions/:discussionId/comments/:commentId/likes
- */
 const router = require('express').Router();
 const DiscussionController = require('../controllers/discussion.controller');
 const {
@@ -103,6 +99,13 @@ router.post(
     validatePathParameterId('discussionId'),
     validatePathParameterId('commentId'),
     asyncHandler(DiscussionController.createLike),
+);
+router.delete(
+    '/:discussionId/comments/:commentId/likes',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    validatePathParameterId('commentId'),
+    asyncHandler(DiscussionController.deleteLike),
 );
 
 module.exports = router;
