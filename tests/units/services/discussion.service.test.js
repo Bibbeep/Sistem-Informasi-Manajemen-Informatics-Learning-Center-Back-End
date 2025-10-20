@@ -2,7 +2,12 @@
 jest.mock('../../../src/db/models');
 
 const DiscussionService = require('../../../src/services/discussion.service');
-const { Discussion, Comment, sequelize } = require('../../../src/db/models');
+const {
+    Discussion,
+    Comment,
+    Like,
+    sequelize,
+} = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
 
 describe('Discussion Service Unit Tests', () => {
@@ -1218,6 +1223,108 @@ describe('Discussion Service Unit Tests', () => {
             await expect(
                 DiscussionService.deleteOneComment(mockData),
             ).rejects.toThrow(mockError);
+        });
+    });
+
+    describe('createLike Tests', () => {
+        // Will fix it later
+        it('should create a like and return likesCount', async () => {
+            const mockComment = {
+                getDataValue: jest.fn(() => {
+                    return '1';
+                }),
+            };
+            Discussion.findByPk.mockResolvedValue(true);
+            Comment.findOne
+                .mockResolvedValueOnce(true)
+                .mockResolvedValueOnce(mockComment);
+            Like.findOne.mockResolvedValue(null);
+            Like.create.mockResolvedValue();
+
+            const result = await DiscussionService.createLike({
+                discussionId: 1,
+                commentId: 1,
+                userId: 1,
+            });
+
+            expect(Like.findOne).toHaveBeenCalledWith({
+                where: {
+                    id: 1,
+                    discussionId: 1,
+                },
+            });
+            expect(result).toEqual(1);
+        });
+
+        it('should throw 404 error when discussion does not exist', async () => {
+            Discussion.findByPk.mockResolvedValue(null);
+
+            await expect(
+                DiscussionService.createLike({
+                    discussionId: 1,
+                    commentId: 1,
+                    userId: 1,
+                }),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message:
+                            'Discussion with "discussionId" does not exist',
+                        context: {
+                            key: 'discussionId',
+                            value: 1,
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw 404 error when comment does not exist', async () => {
+            Discussion.findByPk.mockResolvedValue(true);
+            Comment.findOne.mockResolvedValue(null);
+
+            await expect(
+                DiscussionService.createLike({
+                    discussionId: 1,
+                    commentId: 1,
+                    userId: 1,
+                }),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Comment with "commentId" does not exist',
+                        context: {
+                            key: 'commentId',
+                            value: 1,
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw 409 error when like already exist', async () => {
+            Discussion.findByPk.mockResolvedValue(true);
+            Comment.findOne.mockResolvedValue(true);
+            Like.findOne.mockResolvedValue({ id: 1 });
+
+            await expect(
+                DiscussionService.createLike({
+                    discussionId: 1,
+                    commentId: 1,
+                    userId: 1,
+                }),
+            ).rejects.toThrow(
+                new HTTPError(409, 'Resource conflict.', [
+                    {
+                        message:
+                            'Comment with "commentId" has already been liked.',
+                        context: {
+                            key: 'commmentId',
+                            value: 1,
+                        },
+                    },
+                ]),
+            );
         });
     });
 });
