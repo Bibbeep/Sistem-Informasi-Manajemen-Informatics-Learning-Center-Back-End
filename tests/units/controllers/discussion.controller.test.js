@@ -12,6 +12,7 @@ const {
     createComment,
     updateCommentById,
     deleteCommentById,
+    createLike,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
@@ -704,6 +705,59 @@ describe('Discussion Controller Unit Tests', () => {
             await deleteCommentById(req, res, next);
 
             expect(next).toHaveBeenCalledWith(mockError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('createLike Tests', () => {
+        beforeEach(() => {
+            req.params = { discussionId: '1', commentId: '5' };
+            req.tokenPayload = { sub: '10' };
+        });
+
+        it('should return 201 with the new likes count on success', async () => {
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
+            const mockCommentId = parseInt(req.params.commentId, 10);
+            const mockUserId = parseInt(req.tokenPayload.sub, 10);
+            const mockLikesCount = 5;
+            DiscussionService.createLike.mockResolvedValue(mockLikesCount);
+
+            await createLike(req, res, next);
+
+            expect(DiscussionService.createLike).toHaveBeenCalledWith({
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                userId: mockUserId,
+            });
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully liked a comment.',
+                data: {
+                    likesCount: mockLikesCount,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors (like 404 or 409) to the next middleware', async () => {
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
+            const mockCommentId = parseInt(req.params.commentId, 10);
+            const mockUserId = parseInt(req.tokenPayload.sub, 10);
+            const serviceError = new HTTPError(409, 'Resource conflict.');
+            DiscussionService.createLike.mockRejectedValue(serviceError);
+
+            await createLike(req, res, next);
+
+            expect(DiscussionService.createLike).toHaveBeenCalledWith({
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                userId: mockUserId,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
         });

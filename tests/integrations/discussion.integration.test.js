@@ -9,7 +9,7 @@ const likeFactory = require('../../src/db/seeders/factories/likes');
 const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
-const { User, Comment } = require('../../src/db/models');
+const { User, Comment, , Discussion, Like } = require('../../src/db/models');
 
 describe('Discussion Integration Tests', () => {
     const mockUserPassword = 'password123';
