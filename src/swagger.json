@@ -6104,6 +6104,470 @@
                 },
                 "description": "API for discussion management — DELETE /api/v1/discussions/{discussionId}"
             }
+        },
+        "/api/v1/discussions/{discussionId}/comments": {
+            "get": {
+                "summary": "Retrieves all comments for a specific discussion",
+                "tags": ["Discussion Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the discussion."
+                    },
+                    {
+                        "in": "query",
+                        "name": "page",
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "limit",
+                        "schema": {
+                            "type": "integer",
+                            "default": 10
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "sort",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "id",
+                                "-id",
+                                "likesCount",
+                                "-likesCount",
+                                "repliesCount",
+                                "-repliesCount",
+                                "createdAt",
+                                "-createdAt",
+                                "updatedAt",
+                                "-updatedAt"
+                            ],
+                            "default": "id"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "parentCommentId",
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "Filter by parentCommentId to get replies to a specific comment. Use 0 to get top-level comments only."
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved all comments.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommentListSuccessResponse200"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 200,
+                                    "message": "Successfully retrieved all comments.",
+                                    "data": {
+                                        "comments": [
+                                            {
+                                                "id": 101,
+                                                "userId": 12,
+                                                "fullName": "Alice Johnson",
+                                                "parentCommentId": null,
+                                                "message": "This is a top-level comment on the discussion.",
+                                                "likesCount": 3,
+                                                "repliesCount": 2,
+                                                "createdAt": "2025-10-18T09:12:34.000Z",
+                                                "updatedAt": "2025-10-18T09:12:34.000Z"
+                                            },
+                                            {
+                                                "id": 102,
+                                                "userId": 15,
+                                                "fullName": "Bob Martin",
+                                                "parentCommentId": 101,
+                                                "message": "This is a reply to the top-level comment.",
+                                                "likesCount": 1,
+                                                "repliesCount": 0,
+                                                "createdAt": "2025-10-18T10:00:00.000Z",
+                                                "updatedAt": "2025-10-18T10:00:00.000Z"
+                                            }
+                                        ]
+                                    },
+                                    "pagination": {
+                                        "page": 1,
+                                        "limit": 10,
+                                        "totalPages": 1,
+                                        "totalItems": 2
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "summary": "Creates a new comment in a discussion",
+                "tags": ["Discussion Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "description": "The ID of the discussion."
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CommentCreateRequestBody"
+                            },
+                            "example": {
+                                "parentCommentId": null,
+                                "message": "I found this topic very helpful — thanks for sharing!"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Successfully created a comment.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommentCreateSuccessResponse201"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 201,
+                                    "message": "Successfully created a comment.",
+                                    "data": {
+                                        "comment": {
+                                            "id": 103,
+                                            "userId": 20,
+                                            "fullName": "Carol Peters",
+                                            "parentCommentId": null,
+                                            "message": "I found this topic very helpful — thanks for sharing!",
+                                            "likesCount": 0,
+                                            "repliesCount": 0,
+                                            "createdAt": "2025-10-20T08:00:00.000Z",
+                                            "updatedAt": "2025-10-20T08:00:00.000Z"
+                                        }
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/discussions/{discussionId}/comments/{commentId}": {
+            "get": {
+                "summary": "Retrieves a specific comment by its ID",
+                "tags": ["Discussion Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "commentId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "query",
+                        "name": "includeReplies",
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully retrieved a comment.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommentSuccessResponse200"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 200,
+                                    "message": "Successfully retrieved a comment.",
+                                    "data": {
+                                        "comment": {
+                                            "id": 101,
+                                            "userId": 12,
+                                            "fullName": "Alice Johnson",
+                                            "parentCommentId": null,
+                                            "message": "This is a top-level comment on the discussion.",
+                                            "likesCount": 3,
+                                            "repliesCount": 2,
+                                            "createdAt": "2025-10-18T09:12:34.000Z",
+                                            "updatedAt": "2025-10-18T09:12:34.000Z"
+                                        }
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "summary": "Updates a specific comment by its ID",
+                "tags": ["Discussion Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "commentId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CommentUpdateRequestBody"
+                            },
+                            "example": {
+                                "message": "Updated comment content. Here I clarify my previous point."
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successfully updated a comment.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommentUpdateSuccessResponse200"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 200,
+                                    "message": "Successfully updated a comment.",
+                                    "data": {
+                                        "comment": {
+                                            "id": 101,
+                                            "userId": 12,
+                                            "fullName": "Alice Johnson",
+                                            "parentCommentId": null,
+                                            "message": "Updated comment content. Here I clarify my previous point.",
+                                            "likesCount": 3,
+                                            "repliesCount": 2,
+                                            "createdAt": "2025-10-18T09:12:34.000Z",
+                                            "updatedAt": "2025-10-20T08:30:00.000Z"
+                                        }
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Deletes a specific comment by its ID",
+                "tags": ["Discussion Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "commentId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully deleted a comment.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CommentDeleteSuccessResponse200"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 200,
+                                    "message": "Successfully deleted a comment.",
+                                    "data": null,
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/discussions/{discussionId}/comments/{commentId}/likes": {
+            "post": {
+                "summary": "Likes a specific comment",
+                "tags": ["Discussion Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "commentId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Successfully liked a comment.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LikeCreateSuccessResponse201"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 201,
+                                    "message": "Successfully liked a comment.",
+                                    "data": {
+                                        "likesCount": 4
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "summary": "Unlikes a specific comment",
+                "tags": ["Discussion Management"],
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "in": "path",
+                        "name": "discussionId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "in": "path",
+                        "name": "commentId",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully unliked a comment.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/LikeDeleteSuccessResponse200"
+                                },
+                                "example": {
+                                    "success": true,
+                                    "statusCode": 200,
+                                    "message": "Successfully unliked a comment.",
+                                    "data": {
+                                        "likesCount": 3
+                                    },
+                                    "errors": null
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -6649,6 +7113,249 @@
                         "type": "string",
                         "format": "date-time",
                         "example": "2025-10-16T10:00:00.000Z"
+                    }
+                }
+            },
+            "Comment": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer"
+                    },
+                    "userId": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "fullName": {
+                        "type": "string",
+                        "nullable": true
+                    },
+                    "parentCommentId": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "likesCount": {
+                        "type": "integer"
+                    },
+                    "repliesCount": {
+                        "type": "integer"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updatedAt": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            },
+            "CommentCreateRequestBody": {
+                "type": "object",
+                "properties": {
+                    "parentCommentId": {
+                        "type": "integer",
+                        "nullable": true
+                    },
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "required": ["parentCommentId", "message"]
+            },
+            "CommentUpdateRequestBody": {
+                "type": "object",
+                "properties": {
+                    "message": {
+                        "type": "string"
+                    }
+                },
+                "required": ["message"]
+            },
+            "CommentListSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "comments": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Comment"
+                                }
+                            }
+                        }
+                    },
+                    "pagination": {
+                        "$ref": "#/components/schemas/Pagination"
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                }
+            },
+            "CommentSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "comment": {
+                                "$ref": "#/components/schemas/Comment"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                }
+            },
+            "CommentCreateSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "comment": {
+                                "$ref": "#/components/schemas/Comment"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                }
+            },
+            "CommentUpdateSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "comment": {
+                                "$ref": "#/components/schemas/Comment"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                }
+            },
+            "CommentDeleteSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "nullable": true
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                }
+            },
+            "LikeCreateSuccessResponse201": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "likesCount": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
+                    }
+                }
+            },
+            "LikeDeleteSuccessResponse200": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "statusCode": {
+                        "type": "integer"
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "likesCount": {
+                                "type": "integer"
+                            }
+                        }
+                    },
+                    "errors": {
+                        "type": "object",
+                        "nullable": true
                     }
                 }
             },
