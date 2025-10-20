@@ -1156,4 +1156,68 @@ describe('Discussion Service Unit Tests', () => {
             expect(Comment.update).toHaveBeenCalled();
         });
     });
+
+    describe('deleteOneComment Tests', () => {
+        it('should delete a comment', async () => {
+            Discussion.findByPk.mockResolvedValue({ id: 1 });
+            Comment.findOne.mockResolvedValue({ id: 1 });
+            Comment.destroy.mockResolvedValue(true);
+
+            await expect(
+                DiscussionService.deleteOneComment({
+                    discussionId: 1,
+                    commentId: 1,
+                }),
+            ).resolves.not.toThrow();
+
+            expect(Comment.destroy).toHaveBeenCalledWith({
+                where: {
+                    id: 1,
+                },
+            });
+        });
+
+        it('should throw a 404 error when discussion does not exist', async () => {
+            const mockData = {
+                discussionId: 1,
+                commentId: 1,
+            };
+            Discussion.findByPk.mockResolvedValue(null);
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: mockData.discussionId,
+                    },
+                },
+            ]);
+
+            await expect(
+                DiscussionService.deleteOneComment(mockData),
+            ).rejects.toThrow(mockError);
+        });
+
+        it('should throw a 404 error when comment does not exist', async () => {
+            const mockData = {
+                discussionId: 1,
+                commentId: 1,
+            };
+            Discussion.findByPk.mockResolvedValue({ id: 1 });
+            Comment.findOne.mockResolvedValue(null);
+            const mockError = new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Comment with "commentId" does not exist',
+                    context: {
+                        key: 'commentId',
+                        value: mockData.commentId,
+                    },
+                },
+            ]);
+
+            await expect(
+                DiscussionService.deleteOneComment(mockData),
+            ).rejects.toThrow(mockError);
+        });
+    });
 });
