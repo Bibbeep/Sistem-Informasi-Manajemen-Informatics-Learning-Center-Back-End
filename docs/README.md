@@ -1,6 +1,10 @@
 Sistem Informasi Manajemen - Informatics Learning Center (SIM ILC) Back-End
 ===========================================================================
 
+[![Unit Testing](https://github.com/Bibbeep/Sistem-Informasi-Manajemen-Informatics-Learning-Center-Back-End/actions/workflows/unit-test.yml/badge.svg)](https://github.com/Bibbeep/Sistem-Informasi-Manajemen-Informatics-Learning-Center-Back-End/actions/workflows/unit-test.yml)
+
+[![Auto Deploy to Amazon EC2](https://github.com/Bibbeep/Sistem-Informasi-Manajemen-Informatics-Learning-Center-Back-End/actions/workflows/deploy.yml/badge.svg)](https://github.com/Bibbeep/Sistem-Informasi-Manajemen-Informatics-Learning-Center-Back-End/actions/workflows/deploy.yml)
+
 This is the internal back-end service for the SIM ILC project, providing a robust API for managing users, programs, enrollments, payments, certificates, dicussions, and feedbacks. It's built with Node.js, Express, and Sequelize.
 
 For a fully containerized setup using Docker, please see the [**Docker Setup Guide**](README.Docker.md).

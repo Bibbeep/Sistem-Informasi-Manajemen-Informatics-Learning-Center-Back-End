@@ -1,7 +1,3 @@
-/**
- * @todo [15-10-2025]:
- *  @delete     /api/v1/discussions/:discussionId       [authN] [authR: admin]
- */
 const router = require('express').Router();
 const DiscussionController = require('../controllers/discussion.controller');
 const {
@@ -11,6 +7,7 @@ const {
 } = require('../middlewares/auth.middleware');
 const asyncHandler = require('../utils/asyncHandler');
 const { requireJsonContent } = require('../middlewares/contentType.middleware');
+const { Comment } = require('../db/models');
 
 router.get('/', authenticate, asyncHandler(DiscussionController.getAll));
 router.get(
@@ -46,6 +43,69 @@ router.delete(
         rules: ['admin'],
     }),
     asyncHandler(DiscussionController.deleteById),
+);
+router.get(
+    '/:discussionId/comments',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    asyncHandler(DiscussionController.getAllComments),
+);
+router.get(
+    '/:discussionId/comments/:commentId',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    validatePathParameterId('commentId'),
+    asyncHandler(DiscussionController.getCommentById),
+);
+router.post(
+    '/:discussionId/comments',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    requireJsonContent,
+    asyncHandler(DiscussionController.createComment),
+);
+router.patch(
+    '/:discussionId/comments/:commentId',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    validatePathParameterId('commentId'),
+    requireJsonContent,
+    authorize({
+        rules: ['self', 'admin'],
+        model: Comment,
+        param: 'commentId',
+        ownerForeignKey: 'userId',
+        ownerQueryParam: 'prohibited',
+    }),
+    asyncHandler(DiscussionController.updateCommentById),
+);
+router.delete(
+    '/:discussionId/comments/:commentId',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    validatePathParameterId('commentId'),
+    authorize({
+        rules: ['self', 'admin'],
+        model: Comment,
+        param: 'commentId',
+        ownerForeignKey: 'userId',
+        ownerQueryParam: 'prohibited',
+    }),
+    asyncHandler(DiscussionController.deleteCommentById),
+);
+router.post(
+    '/:discussionId/comments/:commentId/likes',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    validatePathParameterId('commentId'),
+    asyncHandler(DiscussionController.createLike),
+);
+router.delete(
+    '/:discussionId/comments/:commentId/likes',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    validatePathParameterId('commentId'),
+    asyncHandler(DiscussionController.deleteLike),
 );
 
 module.exports = router;

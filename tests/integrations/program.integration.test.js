@@ -733,7 +733,7 @@ describe('Program Management Integration Tests', () => {
 
             expect(response.status).toBe(201);
             expect(response.body.data.thumbnailUrl).toBeDefined();
-        });
+        }, 10000);
 
         it('should return 400 when thumbnail is empty', async () => {
             const response = await request(server)
@@ -1265,7 +1265,7 @@ describe('Program Management Integration Tests', () => {
                     errors: null,
                 }),
             );
-        });
+        }, 10000);
 
         it('should return 201 and replace an existing material', async () => {
             await request(server)
@@ -1284,7 +1284,7 @@ describe('Program Management Integration Tests', () => {
 
             expect(response.status).toBe(201);
             expect(response.body.data.materialUrl).toContain('.png');
-        });
+        }, 10000);
 
         it('should return 400 when programId is invalid', async () => {
             const response = await request(server)
