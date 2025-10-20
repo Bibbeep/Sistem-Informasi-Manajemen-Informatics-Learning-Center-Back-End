@@ -9,7 +9,7 @@ const likeFactory = require('../../src/db/seeders/factories/likes');
 const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
-const { User, Comment, , Discussion, Like } = require('../../src/db/models');
+const { User, Comment, Like } = require('../../src/db/models');
 
 describe('Discussion Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -1389,6 +1389,136 @@ describe('Discussion Integration Tests', () => {
             expect(response.body.errors[0].message).toContain(
                 'Comment with "commentId" does not exist',
             );
+        });
+    });
+
+    describe('POST /api/v1/discussions/:discussionId/comments/:commentId/likes', () => {
+        it('should return 201 and increment likes count when liking a comment', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[2].id;
+            const initialComment = await Comment.findByPk(commentId, {
+                attributes: [
+                    [
+                        sequelize.fn('COUNT', sequelize.col('likes.id')),
+                        'likesCount',
+                    ],
+                ],
+                include: [{ model: Like, as: 'likes', attributes: [] }],
+                group: ['Comment.id'],
+                raw: true,
+            });
+            expect(
+                initialComment ? parseInt(initialComment.likesCount, 10) : 0,
+            ).toBe(0);
+
+            const response = await request(server)
+                .post(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}/likes`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(201);
+            expect(response.body.success).toBe(true);
+            expect(response.body.message).toBe('Successfully liked a comment.');
+            expect(response.body.data.likesCount).toBe(1);
+            const like = await Like.findOne({
+                where: { commentId: commentId, userId: users.regular.id },
+            });
+            expect(like).not.toBeNull();
+
+            const updatedComment = await Comment.findByPk(commentId, {
+                attributes: [
+                    [
+                        sequelize.fn('COUNT', sequelize.col('likes.id')),
+                        'likesCount',
+                    ],
+                ],
+                include: [{ model: Like, as: 'likes', attributes: [] }],
+                group: ['Comment.id'],
+                raw: true,
+            });
+            expect(parseInt(updatedComment.likesCount, 10)).toBe(1);
+        });
+
+        it('should return 409 when trying to like a comment already liked by the user', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+
+            const response = await request(server)
+                .post(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}/likes`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(409);
+            expect(response.body.message).toBe('Resource conflict.');
+            expect(response.body.errors[0].message).toContain(
+                'already been liked',
+            );
+        });
+
+        it('should return 400 for invalid discussionId format', async () => {
+            const commentId = comments[0].id;
+            const response = await request(server)
+                .post(`/api/v1/discussions/abc/comments/${commentId}/likes`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for invalid commentId format', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .post(`/api/v1/discussions/${discussionId}/comments/xyz/likes`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 for unauthenticated requests', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+            const response = await request(server).post(
+                `/api/v1/discussions/${discussionId}/comments/${commentId}/likes`,
+            );
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 404 when discussion does not exist', async () => {
+            const commentId = comments[0].id;
+            const response = await request(server)
+                .post(`/api/v1/discussions/99999/comments/${commentId}/likes`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.errors[0].message).toContain('Discussion');
+        });
+
+        it('should return 404 when comment does not exist', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .post(
+                    `/api/v1/discussions/${discussionId}/comments/99999/likes`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.errors[0].message).toContain('Comment');
+        });
+
+        it('should return 404 when comment exists but in a different discussion', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[6].id;
+
+            const response = await request(server)
+                .post(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}/likes`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.errors[0].message).toContain('Comment');
         });
     });
 });

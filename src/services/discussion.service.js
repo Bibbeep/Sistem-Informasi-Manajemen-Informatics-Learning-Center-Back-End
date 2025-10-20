@@ -592,7 +592,7 @@ class DiscussionService {
             },
         });
 
-        return Number(comment.getDataValue('likesCount')) || 0;
+        return Number(comment.getDataValue('likesCount'));
     }
 }
 
