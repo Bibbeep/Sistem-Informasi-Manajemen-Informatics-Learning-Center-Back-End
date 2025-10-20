@@ -9,7 +9,7 @@ const likeFactory = require('../../src/db/seeders/factories/likes');
 const AuthService = require('../../src/services/auth.service');
 const { sequelize } = require('../../src/configs/database');
 const { redisClient } = require('../../src/configs/redis');
-const { User, Comment } = require('../../src/db/models');
+const { User, Comment, Discussion } = require('../../src/db/models');
 
 describe('Discussion Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -1215,6 +1215,180 @@ describe('Discussion Integration Tests', () => {
 
             expect(response.status).toBe(415);
             expect(response.body.message).toBe('Unsupported Media Type.');
+        });
+    });
+
+    describe('DELETE /api/v1/discussions/:discussionId/comments/:commentId', () => {
+        it('should return 200 and soft delete the comment by the owner', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+            expect(response.body.message).toBe(
+                'Successfully deleted a discussion forum.',
+            );
+            expect(response.body.data).toBeNull();
+
+            const deletedComment = await Comment.findByPk(commentId, {
+                paranoid: false,
+            });
+            expect(deletedComment).not.toBeNull();
+            expect(deletedComment.deletedAt).not.toBeNull();
+
+            const commentAfterDelete = await Comment.findByPk(commentId);
+            expect(commentAfterDelete).toBeNull();
+        });
+
+        it('should return 200 and soft delete the comment by an admin', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+
+            const deletedComment = await Comment.findByPk(commentId, {
+                paranoid: false,
+            });
+            expect(deletedComment).not.toBeNull();
+            expect(deletedComment.deletedAt).not.toBeNull();
+        });
+
+        it('should return 400 for invalid discussionId format', async () => {
+            const commentId = comments[0].id;
+            const response = await request(server)
+                .delete(`/api/v1/discussions/abc/comments/${commentId}`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 400 for invalid commentId format', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .delete(`/api/v1/discussions/${discussionId}/comments/xyz`)
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+            expect(response.body.message).toBe('Validation error.');
+        });
+
+        it('should return 401 for unauthenticated requests', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+
+            const response = await request(server).delete(
+                `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+            );
+
+            expect(response.status).toBe(401);
+            expect(response.body.message).toBe('Unauthorized.');
+        });
+
+        it("should return 403 when a user tries to delete another user's comment", async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.another}`);
+
+            expect(response.status).toBe(403);
+            expect(response.body.message).toBe('Forbidden.');
+
+            const commentAfterAttempt = await Comment.findByPk(commentId);
+            expect(commentAfterAttempt).not.toBeNull();
+        });
+
+        it('should return 404 when discussion does not exist', async () => {
+            const nonExistentDiscussionId = 99999;
+            const commentId = comments[0].id;
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${nonExistentDiscussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Discussion with "discussionId" does not exist',
+            );
+        });
+
+        it('should return 404 when comment does not exist', async () => {
+            const discussionId = discussions[0].id;
+            const nonExistentCommentId = 99999;
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${nonExistentCommentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Comment with "commentId" does not exist',
+            );
+        });
+
+        it('should return 404 when comment exists but belongs to a different discussion', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[6].id;
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Comment with "commentId" does not exist',
+            );
+
+            const commentAfterAttempt = await Comment.findByPk(commentId);
+            expect(commentAfterAttempt).not.toBeNull();
+        });
+
+        it('should return 404 when trying to delete an already deleted comment', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+
+            await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Comment with "commentId" does not exist',
+            );
         });
     });
 });
