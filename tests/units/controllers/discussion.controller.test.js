@@ -11,6 +11,7 @@ const {
     getCommentById,
     createComment,
     updateCommentById,
+    deleteCommentById,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
@@ -666,6 +667,43 @@ describe('Discussion Controller Unit Tests', () => {
                 message: mockValue.message,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('deleteCommentById tests', () => {
+        it('should call res with 200', async () => {
+            req.params = {
+                discussionId: '1',
+                commentId: '1',
+            };
+            DiscussionService.deleteOneComment.mockResolvedValue();
+
+            await deleteCommentById(req, res, next);
+
+            expect(next).not.toHaveBeenCalled();
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a discussion forum.',
+                data: null,
+                errors: null,
+            });
+        });
+
+        it('should forwards service error to next', async () => {
+            req.params = {
+                discussionId: '1',
+                commentId: '1',
+            };
+            const mockError = new Error('BOOM');
+            DiscussionService.deleteOneComment.mockRejectedValue(mockError);
+
+            await deleteCommentById(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(mockError);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();
         });
