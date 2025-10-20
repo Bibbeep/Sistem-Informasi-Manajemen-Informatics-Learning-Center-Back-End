@@ -232,4 +232,22 @@ module.exports = {
             next(err);
         }
     },
+    deleteCommentById: async (req, res, next) => {
+        try {
+            await DiscussionService.deleteOneComment({
+                discussionId: parseInt(req.params.discussionId, 10),
+                commentId: parseInt(req.params.commentId, 10),
+            });
+
+            return res.status(200).json({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully deleted a discussion forum.',
+                data: null,
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };

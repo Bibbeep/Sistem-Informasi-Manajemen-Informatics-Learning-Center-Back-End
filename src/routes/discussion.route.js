@@ -1,6 +1,5 @@
 /**
  * @todo [20-10-2025]:
- * @PATCH /api/v1/discussions/:discussionId/comments/:commentId
  * @DELETE /api/v1/discussions/:discussionId/comments/:commentId
  * @POST /api/v1/discussions/:discussionId/comments/:commentId/likes
  * @DELETE /api/v1/discussions/:discussionId/comments/:commentId/likes
@@ -85,6 +84,20 @@ router.patch(
         ownerQueryParam: 'prohibited',
     }),
     asyncHandler(DiscussionController.updateCommentById),
+);
+router.delete(
+    '/:discussionId/comments/:commentId',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    validatePathParameterId('commentId'),
+    authorize({
+        rules: ['self', 'admin'],
+        model: Comment,
+        param: 'commentId',
+        ownerForeignKey: 'userId',
+        ownerQueryParam: 'prohibited',
+    }),
+    asyncHandler(DiscussionController.deleteCommentById),
 );
 
 module.exports = router;
