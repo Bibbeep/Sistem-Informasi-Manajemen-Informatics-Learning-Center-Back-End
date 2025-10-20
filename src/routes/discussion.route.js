@@ -1,7 +1,5 @@
 /**
  * @todo [20-10-2025]:
- * @DELETE /api/v1/discussions/:discussionId/comments/:commentId
- * @POST /api/v1/discussions/:discussionId/comments/:commentId/likes
  * @DELETE /api/v1/discussions/:discussionId/comments/:commentId/likes
  */
 const router = require('express').Router();
@@ -98,6 +96,13 @@ router.delete(
         ownerQueryParam: 'prohibited',
     }),
     asyncHandler(DiscussionController.deleteCommentById),
+);
+router.post(
+    '/:discussionId/comments/:commentId/likes',
+    authenticate,
+    validatePathParameterId('discussionId'),
+    validatePathParameterId('commentId'),
+    asyncHandler(DiscussionController.createLike),
 );
 
 module.exports = router;

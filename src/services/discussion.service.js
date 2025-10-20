@@ -1,4 +1,4 @@
-const { Discussion, Comment, User, sequelize } = require('../db/models');
+const { Discussion, Comment, User, Like, sequelize } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 
 class DiscussionService {
@@ -513,6 +513,94 @@ class DiscussionService {
                 id: commentId,
             },
         });
+    }
+
+    static async createLike(data) {
+        const { discussionId, commentId, userId } = data;
+
+        if (!(await Discussion.findByPk(discussionId))) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Discussion with "discussionId" does not exist',
+                    context: {
+                        key: 'discussionId',
+                        value: discussionId,
+                    },
+                },
+            ]);
+        }
+
+        if (
+            !(await Comment.findOne({
+                where: {
+                    id: commentId,
+                    discussionId,
+                },
+            }))
+        ) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Comment with "commentId" does not exist',
+                    context: {
+                        key: 'commentId',
+                        value: commentId,
+                    },
+                },
+            ]);
+        }
+
+        if (
+            await Like.findOne({
+                where: {
+                    commentId,
+                    userId,
+                },
+            })
+        ) {
+            throw new HTTPError(409, 'Resource conflict.', [
+                {
+                    message: 'Comment with "commentId" has already been liked.',
+                    context: {
+                        key: 'commmentId',
+                        value: commentId,
+                    },
+                },
+            ]);
+        }
+
+        await Like.create({
+            commentId,
+            userId,
+        });
+
+        const comment = await Comment.findOne({
+            where: {
+                id: commentId,
+                discussionId,
+            },
+            attributes: {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM comment_likes AS l
+                            WHERE l.comment_id = "Comment".id
+                        )`),
+                        'likesCount',
+                    ],
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*) 
+                            FROM comments AS r 
+                            WHERE r.parent_comment_id = "Comment".id
+                        )`),
+                        'repliesCount',
+                    ],
+                ],
+            },
+        });
+
+        return Number(comment.getDataValue('likesCount')) || 0;
     }
 }
 

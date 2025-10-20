@@ -250,4 +250,25 @@ module.exports = {
             next(err);
         }
     },
+    createLike: async (req, res, next) => {
+        try {
+            const likesCount = await DiscussionService.createLike({
+                discussionId: parseInt(req.params.discussionId, 10),
+                commentId: parseInt(req.params.commentId, 10),
+                userId: parseInt(req.tokenPayload.sub, 10),
+            });
+
+            return res.status(201).json({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully liked a comment.',
+                data: {
+                    likesCount,
+                },
+                errors: null,
+            });
+        } catch (err) {
+            next(err);
+        }
+    },
 };
