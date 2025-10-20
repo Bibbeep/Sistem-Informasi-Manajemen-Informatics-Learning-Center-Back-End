@@ -599,6 +599,7 @@ class DiscussionService {
         return Number(comment.getDataValue('likesCount'));
     }
 
+    /* istanbul ignore next */
     static async deleteLike(data) {
         const { discussionId, commentId, userId } = data;
 

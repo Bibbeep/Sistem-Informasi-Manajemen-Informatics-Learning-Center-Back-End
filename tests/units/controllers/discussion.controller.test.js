@@ -13,6 +13,7 @@ const {
     updateCommentById,
     deleteCommentById,
     createLike,
+    deleteLike,
 } = require('../../../src/controllers/discussion.controller');
 const DiscussionService = require('../../../src/services/discussion.service');
 const {
@@ -753,6 +754,59 @@ describe('Discussion Controller Unit Tests', () => {
             await createLike(req, res, next);
 
             expect(DiscussionService.createLike).toHaveBeenCalledWith({
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                userId: mockUserId,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('deleteLike Tests', () => {
+        beforeEach(() => {
+            req.params = { discussionId: '1', commentId: '5' };
+            req.tokenPayload = { sub: '10' };
+        });
+
+        it('should return 200 with the new likes count on success', async () => {
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
+            const mockCommentId = parseInt(req.params.commentId, 10);
+            const mockUserId = parseInt(req.tokenPayload.sub, 10);
+            const mockLikesCount = 4;
+            DiscussionService.deleteLike.mockResolvedValue(mockLikesCount);
+
+            await deleteLike(req, res, next);
+
+            expect(DiscussionService.deleteLike).toHaveBeenCalledWith({
+                discussionId: mockDiscussionId,
+                commentId: mockCommentId,
+                userId: mockUserId,
+            });
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 200,
+                message: 'Successfully unliked a comment.',
+                data: {
+                    likesCount: mockLikesCount,
+                },
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors (like 404) to the next middleware', async () => {
+            const mockDiscussionId = parseInt(req.params.discussionId, 10);
+            const mockCommentId = parseInt(req.params.commentId, 10);
+            const mockUserId = parseInt(req.tokenPayload.sub, 10);
+            const serviceError = new HTTPError(404, 'Resource not found.');
+            DiscussionService.deleteLike.mockRejectedValue(serviceError);
+
+            await deleteLike(req, res, next);
+
+            expect(DiscussionService.deleteLike).toHaveBeenCalledWith({
                 discussionId: mockDiscussionId,
                 commentId: mockCommentId,
                 userId: mockUserId,

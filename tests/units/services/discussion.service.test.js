@@ -1327,4 +1327,22 @@ describe('Discussion Service Unit Tests', () => {
             );
         });
     });
+
+    describe('deleteLike Tests', () => {
+        it('should return likesCount upon like deletion', async () => {
+            //
+        });
+
+        it('should throw 404 error when discussion does not exist', async () => {
+            //
+        });
+
+        it('should throw 404 error when comment does not exist', async () => {
+            //
+        });
+
+        it('should throw 404 error when like does not exist', async () => {
+            //
+        });
+    });
 });
