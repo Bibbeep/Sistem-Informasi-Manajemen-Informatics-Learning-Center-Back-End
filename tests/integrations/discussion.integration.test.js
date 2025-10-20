@@ -1521,4 +1521,116 @@ describe('Discussion Integration Tests', () => {
             expect(response.body.errors[0].message).toContain('Comment');
         });
     });
+
+    describe('DELETE /api/v1/discussions/:discussionId/comments/:commentId/likes', () => {
+        it('should return 200 and decrement likes count when unliking a comment', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+            const userId = users.admin.id;
+
+            const like = await Like.findOne({ where: { commentId, userId } });
+            expect(like).not.toBeNull();
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}/likes`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.success).toBe(true);
+            expect(response.body.message).toBe(
+                'Successfully unliked a comment.',
+            );
+            expect(response.body.data.likesCount).toBe(1);
+
+            const likeAfter = await Like.findOne({
+                where: { commentId, userId },
+            });
+            expect(likeAfter).toBeNull();
+        });
+
+        it('should return 404 when trying to unlike a comment the user has not liked', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[2].id;
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}/likes`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.message).toBe('Resource not found.');
+            expect(response.body.errors[0].message).toContain(
+                'Like on comment',
+            );
+        });
+
+        it('should return 400 for invalid discussionId format', async () => {
+            const commentId = comments[0].id;
+            const response = await request(server)
+                .delete(`/api/v1/discussions/abc/comments/${commentId}/likes`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 400 for invalid commentId format', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/xyz/likes`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 401 for unauthenticated requests', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[0].id;
+            const response = await request(server).delete(
+                `/api/v1/discussions/${discussionId}/comments/${commentId}/likes`,
+            );
+
+            expect(response.status).toBe(401);
+        });
+
+        it('should return 404 when discussion does not exist', async () => {
+            const commentId = comments[0].id;
+            const response = await request(server)
+                .delete(`/api/v1/discussions/99999/comments/${commentId}/likes`)
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.errors[0].message).toContain('Discussion');
+        });
+
+        it('should return 404 when comment does not exist', async () => {
+            const discussionId = discussions[0].id;
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/99999/likes`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.errors[0].message).toContain('Comment');
+        });
+
+        it('should return 404 when comment exists but in a different discussion', async () => {
+            const discussionId = discussions[0].id;
+            const commentId = comments[6].id;
+
+            const response = await request(server)
+                .delete(
+                    `/api/v1/discussions/${discussionId}/comments/${commentId}/likes`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(404);
+            expect(response.body.errors[0].message).toContain('Comment');
+        });
+    });
 });
