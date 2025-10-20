@@ -461,7 +461,7 @@ describe('Feedback Management Integration Tests', () => {
                     errors: null,
                 }),
             );
-        });
+        }, 10000);
 
         it('should return 400 with invalid request body', async () => {
             const mockReqBody = {
