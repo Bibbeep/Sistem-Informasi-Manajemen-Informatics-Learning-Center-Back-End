@@ -588,14 +588,6 @@ class DiscussionService {
                         )`),
                         'likesCount',
                     ],
-                    [
-                        sequelize.literal(`(
-                            SELECT COUNT(*) 
-                            FROM comments AS r 
-                            WHERE r.parent_comment_id = "Comment".id
-                        )`),
-                        'repliesCount',
-                    ],
                 ],
             },
         });
