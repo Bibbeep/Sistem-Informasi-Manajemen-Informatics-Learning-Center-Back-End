@@ -1,4 +1,4 @@
-# Sistem Informasi Manajemen Informatics Learning Center API Contract
+# Sistem Informasi Manajemen Informatics Learning Center API Endpoints
 
 An internal Node.js/Express API for the Informatics Learning Center project. It provides endpoints to manage users, authentication, programs, enrollments, payments/invoices, certificates, discussions, feedback, and related admin workflows.
 
