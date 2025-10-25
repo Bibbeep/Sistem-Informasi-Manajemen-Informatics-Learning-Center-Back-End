@@ -9,7 +9,7 @@ config:
   layout: dagre
 ---
 erDiagram
-    USERS {
+    users {
         int id PK
         varchar email
         varchar hashed_password
@@ -21,7 +21,7 @@ erDiagram
         timestamptz updated_at
     }
 
-    PROGRAMS {
+    programs {
         int id PK
         varchar title
         text description
@@ -34,7 +34,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    COURSES {
+    courses {
         int id PK
         int program_id FK
         timestamptz created_at
@@ -42,7 +42,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    COURSE_MODULES {
+    course_modules {
         int id PK
         int course_id FK
         int number_code
@@ -53,7 +53,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    USER_PROGRAM_ENROLLMENTS {
+    user_program_enrollments {
         int id PK
         int program_id FK
         int user_id FK
@@ -65,7 +65,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    USER_PROGRAM_INVOICES {
+    user_program_invoices {
         int id PK
         int user_program_enrollment_id FK
         varchar virtual_account_number
@@ -77,7 +77,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    USER_PROGRAM_PAYMENTS {
+    user_program_payments {
         int id PK
         int user_program_invoice_id FK
         int amount_paid_idr
@@ -85,7 +85,7 @@ erDiagram
         timestamptz updated_at
     }
 
-    USER_COMPLETED_MODULES {
+    user_completed_modules {
         int id PK
         int course_module_id FK
         int user_program_enrollment_id FK
@@ -94,7 +94,7 @@ erDiagram
         timestamptz updated_at
     }
 
-    CERTIFICATES {
+    certificates {
         int id PK
         int user_program_enrollment_id FK
         int user_id FK
@@ -107,7 +107,7 @@ erDiagram
         timestamptz updated_at
     }
 
-    SEMINARS {
+    seminars {
         int id PK
         int program_id FK
         boolean is_online
@@ -119,7 +119,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    WORKSHOPS {
+    workshops {
         int id PK
         int program_id FK
         boolean is_online
@@ -131,7 +131,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    COMPETITIONS {
+    competitions {
         int id PK
         int program_id FK
         boolean is_online
@@ -145,7 +145,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    DISCUSSIONS {
+    discussions {
         int id PK
         int admin_user_id FK
         varchar title
@@ -153,7 +153,7 @@ erDiagram
         timestamptz updated_at
     }
 
-    COMMENTS {
+    comments {
         int id PK
         int discussion_id FK
         int user_id FK
@@ -164,7 +164,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    COMMENT_LIKES {
+    comment_likes {
         int id PK
         int comment_id FK
         int user_id FK
@@ -172,7 +172,7 @@ erDiagram
         timestamptz updated_at
     }
 
-    FEEDBACKS {
+    feedbacks {
         int id PK
         varchar email
         varchar full_name
@@ -182,7 +182,7 @@ erDiagram
         timestamptz deleted_at
     }
 
-    FEEDBACK_RESPONSES {
+    feedback_responses {
         int id PK
         int feedback_id FK
         int admin_user_id FK
@@ -191,34 +191,32 @@ erDiagram
         timestamptz updated_at
     }
 
-    %% Relationships
+    users ||--o{ user_program_enrollments : has
+    users ||--o{ certificates : receives
+    users ||--o{ comment_likes : gives
+    users ||--o{ comments : writes
+    users ||--o{ discussions : manages
+    users ||--o{ feedback_responses : handles
 
-    USERS ||--o{ USER_PROGRAM_ENROLLMENTS : has
-    USERS ||--o{ CERTIFICATES : receives
-    USERS ||--o{ COMMENT_LIKES : gives
-    USERS ||--o{ COMMENTS : writes
-    USERS ||--o{ DISCUSSIONS : manages
-    USERS ||--o{ FEEDBACK_RESPONSES : handles
+    programs ||--o{ courses : includes
+    programs ||--o{ seminars : includes
+    programs ||--o{ workshops : includes
+    programs ||--o{ competitions : includes
+    programs ||--o{ user_program_enrollments : enrollments
 
-    PROGRAMS ||--o{ COURSES : includes
-    PROGRAMS ||--o{ SEMINARS : includes
-    PROGRAMS ||--o{ WORKSHOPS : includes
-    PROGRAMS ||--o{ COMPETITIONS : includes
-    PROGRAMS ||--o{ USER_PROGRAM_ENROLLMENTS : enrollments
+    courses ||--o{ course_modules : contains
+    course_modules ||--o{ user_completed_modules : completed_by
 
-    COURSES ||--o{ COURSE_MODULES : contains
-    COURSE_MODULES ||--o{ USER_COMPLETED_MODULES : completed_by
+    user_program_enrollments ||--o{ user_program_invoices : billed_in
+    user_program_invoices ||--o{ user_program_payments : paid_by
+    user_program_enrollments ||--o{ user_completed_modules : progress
+    user_program_enrollments ||--o{ certificates : awards
 
-    USER_PROGRAM_ENROLLMENTS ||--o{ USER_PROGRAM_INVOICES : billed_in
-    USER_PROGRAM_INVOICES ||--o{ USER_PROGRAM_PAYMENTS : paid_by
-    USER_PROGRAM_ENROLLMENTS ||--o{ USER_COMPLETED_MODULES : progress
-    USER_PROGRAM_ENROLLMENTS ||--o{ CERTIFICATES : awards
+    discussions ||--o{ comments : has
+    comments ||--o{ comment_likes : liked_by
+    comments ||--o{ comments : replies_to
 
-    DISCUSSIONS ||--o{ COMMENTS : has
-    COMMENTS ||--o{ COMMENT_LIKES : liked_by
-    COMMENTS ||--o{ COMMENTS : replies_to
-
-    FEEDBACKS ||--o{ FEEDBACK_RESPONSES : replied_by
+    feedbacks ||--o{ feedback_responses : replied_by
 ```
 
 ## Data Flow Diagram
