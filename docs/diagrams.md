@@ -221,6 +221,25 @@ erDiagram
 
 ## Data Flow Diagram
 
+### Level 0 (Context-Diagram)
+
+```mermaid
+---
+config:
+  theme: dark
+  layout: dagree
+---
+flowchart LR
+    User[User]
+    Admin[Admin]
+    System((Informatics Learning Center System))
+
+    User --> |Program Enrollment| System
+    System --> |Program materials| User
+    Admin --> |Program information| System
+    System --> |User information| Admin
+```
+
 ## Class Diagram
 
 ## Docker Architecture Diagram
