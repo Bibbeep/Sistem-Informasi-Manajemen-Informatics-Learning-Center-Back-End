@@ -240,6 +240,23 @@ flowchart LR
     System --> |User information| Admin
 ```
 
-## Class Diagram
+## Architecture Diagram
 
-## Docker Architecture Diagram
+### Deployment on AWS
+
+```mermaid
+---
+config:
+  theme: dark
+  layout: dagree
+---
+architecture-beta
+  group api(logos:aws-ec2)[API]
+
+  service server(logos:aws-ec2)[Server] in api
+  service db(logos:aws-rds)[Database] in api
+  service cache(logos:aws-elasticache)[Cache] in api
+  service storage(logos:aws-s3)[Storage] in api
+```
+
+## Class Diagram
