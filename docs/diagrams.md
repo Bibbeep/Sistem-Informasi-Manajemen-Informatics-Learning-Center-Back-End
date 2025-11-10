@@ -242,6 +242,28 @@ flowchart LR
 
 ## Architecture Diagram
 
+### Deployment on Docker
+
+```mermaid
+---
+config:
+  theme: dark
+  layout: dagree
+---
+architecture-beta
+  group api(logos:docker-icon)[API]
+
+  service server(server)[Server] in api
+  service db(logos:postgresql)[Database] in api
+  service cache(logos:redis)[Cache] in api
+  service storage(logos:aws-s3)[Storage] in api
+
+  server:R -- L:cache
+  cache:R -- L:db
+  server:B -- T:storage
+
+```
+
 ### Deployment on AWS
 
 ```mermaid
@@ -251,12 +273,16 @@ config:
   layout: dagree
 ---
 architecture-beta
-  group api(logos:aws-ec2)[API]
+  group api(logos:aws)[API]
 
   service server(logos:aws-ec2)[Server] in api
   service db(logos:aws-rds)[Database] in api
   service cache(logos:aws-elasticache)[Cache] in api
   service storage(logos:aws-s3)[Storage] in api
+
+  server:R -- L:cache
+  cache:R -- L:db
+  server:B -- T:storage
 ```
 
 ## Class Diagram
