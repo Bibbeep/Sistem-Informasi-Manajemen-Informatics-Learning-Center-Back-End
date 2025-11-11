@@ -9,8 +9,8 @@ done
 echo "Database is ready!"
 
 echo "Creating database and running migrations..."
-npx sequelize-cli db:create --env production || echo "Database already exists or creation failed"
-npx sequelize-cli db:migrate --env production
+npx sequelize-cli db:create --env $NODE_ENV || echo "Database already exists or creation failed"
+npx sequelize-cli db:migrate --env $NODE_ENV
 
 echo "Starting application..."
 exec "$@"
