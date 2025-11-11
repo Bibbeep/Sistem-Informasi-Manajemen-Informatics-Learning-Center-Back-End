@@ -58,7 +58,10 @@ You will need to have the following software installed on your machine:
 *   **Redis**: A running instance of Redis.
     
 *   **MinIO**: A running instance of MinIO or another S3-compatible object storage service.
-    
+   
+*   **DocRaptor API Key**: A third-party service for generating pdf.
+
+*   **Mail service API Key**: A third-party service for sending emails.
 
 ### 1\. Clone & Install Dependencies
 
@@ -92,24 +95,18 @@ The application requires several environment variables to run correctly.
 | `HOST_NAME` | The public-facing URL of the application. | `http://localhost` |
 | `CORS_ORIGIN` | The URL of the front-end client that will be making requests. | `http://localhost:5173` |
 | **PostgreSQL** | | |
-| `POSTGRES_USER` | The username for your PostgreSQL database. | `postgres` |
-| `POSTGRES_PASSWORD` | The password for your PostgreSQL database. | `your_db_password` |
-| `POSTGRES_DB` | The name of the database to use. | `sim_ilc` |
-| `POSTGRES_HOST` | The host where your database is running. | `localhost` |
-| `POSTGRES_PORT` | The port your database is running on. | `5432` |
+| `DATABASE_URL` | Connection URL to connect to the database. | `postgresql://postgres:root@localhost:5432/sim_ilc` |
 | **JWT** | | |
 | `JWT_SECRET_KEY` | A long, random, secret string used to sign tokens. **Generate one using `openssl rand -hex 32`**. | `a1b2c3...` |
 | `JWT_EXP` | How long a token is valid for (e.g., "7d", "24h"). | `7d` |
 | **Redis** | | |
-| `REDIS_USER` | The username for your Redis instance. | `default` |
-| `REDIS_PASSWORD` | The password for your Redis instance. | `your_redis_password` |
-| `REDIS_DB` | The Redis database number to use. | `0` |
-| `REDIS_HOST` | The host where Redis is running. | `localhost` |
-| `REDIS_PORT` | The port Redis is running on. | `6379` |
+| `REDIS_URL` | Connection URL to connect to redis database. | `redis://default:root@localhost:6379/0` |
 | **Nodemailer (Gmail)** | | |
-| `NODEMAILER_SERVICE` | The email service to use. For development, you can use a service like Mailtrap or Ethereal. For production, `gmail` is an option. | `gmail` |
-| `NODEMAILER_USER` | Your Gmail address. | `youremail@gmail.com` |
-| `NODEMAILER_PASS` | Your **Gmail App Password**. [How to generate an App Password](https://support.google.com/accounts/answer/185833). | `your_gmail_app_password` |
+| `NODEMAILER_SENDER` | Verified sender identity. | `mail@similc.co` |
+| `NODEMAILER_USER` | Mailer service credential. | `youremail@mail.com` |
+| `NODEMAILER_PASS` | Mailer service credential (usually secret key). | `your_secret_key` |
+| `NODEMAILER_HOST` | Hostname for your mailer service. | `smtp.sendgrid.net` |
+| `NODEMAILER_PORT` | Mailer service port. | `587` or `465` |
 | **S3 (MinIO)** | | |
 | `S3_REGION` | The default region for your S3 bucket. | `us-east-1` |
 | `S3_ENDPOINT` | The full URL for your S3-compatible service. | `http://localhost:9000` |
@@ -124,13 +121,12 @@ After configuring your `.env` file with your database credentials, you need to c
 
 ```bash
 # Create the database defined in your .env file
-npx sequelize-cli db:create
+# with psql
+CREATE DATABASE sim_ilc;
 
 # Run all pending migrations to create the tables
 npm run db:migrate
 ```
-    
-    
 
 ### 4\. Run the Application
 
@@ -139,8 +135,6 @@ You can now start the application in development mode. This will use `nodemon` t
 ```bash
 npm run start:dev
 ```
-    
-    
 
 The server will be running at [**http://localhost:3000**](http://localhost:3000) (or the port you specified in `.env`).
 
@@ -150,34 +144,25 @@ Running Tests
 The project includes a comprehensive suite of unit and integration tests.
 
 *   **Run all tests:**
-
     ```bash
     npm run test
 
     # or the silent version
     npm run -s test:clean
     ```
-        
-        
-    
+
 *   **Run only unit tests:**
-    
     ```bash
     npm run test:unit
     ```
-        
     
-*   **Run only integration tests:**
-    
+*   **Run only integration tests:**    
     ```bash
     npm run test:integration
 
     # or the silent version
     npm run -s test:integration:clean
     ```
-        
-        
-    
 
 API Documentation
 -----------------
@@ -199,6 +184,7 @@ Project Structure
     ├── scripts/              # Automation scripts for database and Docker
     │   └── db/               # Database scripts
     ├── src/                  # Source code
+    │   ├── apis/             # Configuration files for external APIs.
     │   ├── configs/          # Configuration files for database, Redis, S3, etc.
     │   ├── controllers/      # Express controllers for handling requests
     │   ├── db/               # Database utilities
