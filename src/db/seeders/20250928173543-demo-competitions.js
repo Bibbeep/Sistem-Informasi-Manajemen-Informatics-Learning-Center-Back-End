@@ -25,7 +25,11 @@ module.exports = {
                     ? null
                     : faker.location.streetAddress(),
                 host_name: faker.company.name(),
-                total_prize: faker.number.int({ min: 1000000, max: 50000000 }),
+                total_prize: faker.number.int({
+                    min: 100_000,
+                    max: 100_000_000,
+                    multipleOf: 100000,
+                }),
                 created_at: createdAt,
                 updated_at: faker.date.between({
                     from: createdAt,

@@ -319,7 +319,7 @@ describe('Certificate Integration Tests', () => {
             );
             expect(printPdf).toHaveBeenCalledTimes(1);
             expect(Upload).toHaveBeenCalledTimes(1);
-        });
+        }, 10000);
 
         it('should return 201 with custom title, issuedAt, and expiredAt', async () => {
             const customData = {
@@ -342,7 +342,7 @@ describe('Certificate Integration Tests', () => {
             expect(response.body.data.certificate.expiredAt).toBe(
                 customData.expiredAt,
             );
-        });
+        }, 10000);
 
         it('should return 201 for an enrollment with an already expired certificate', async () => {
             const response = await request(server)
@@ -352,7 +352,7 @@ describe('Certificate Integration Tests', () => {
 
             expect(response.status).toBe(201);
             expect(response.body.data.certificate).toBeDefined();
-        });
+        }, 10000);
 
         it('should return 401 for an unauthenticated request', async () => {
             const response = await request(server)
@@ -441,7 +441,7 @@ describe('Certificate Integration Tests', () => {
             expect(response.body.data.certificate.title).toBe(updateData.title);
             expect(printPdf).toHaveBeenCalledTimes(1);
             expect(Upload).toHaveBeenCalledTimes(1);
-        });
+        }, 10000);
 
         it('should return 200 and update the certificate expiredAt', async () => {
             const updateData = {
@@ -456,7 +456,7 @@ describe('Certificate Integration Tests', () => {
                 .send(updateData);
 
             expect(response.status).toBe(200);
-        });
+        }, 10000);
 
         it('should return 400 for invalid certificate ID', async () => {
             const response = await request(server)

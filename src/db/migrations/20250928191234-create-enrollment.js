@@ -11,7 +11,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
             },
             programId: {
-                allowNull: false,
+                allowNull: true,
                 type: Sequelize.INTEGER,
                 field: 'program_id',
                 references: {
@@ -19,7 +19,7 @@ module.exports = {
                     key: 'id',
                 },
                 onUpdate: 'CASCADE',
-                onDelete: 'CASCADE',
+                onDelete: 'SET NULL',
             },
             userId: {
                 allowNull: false,

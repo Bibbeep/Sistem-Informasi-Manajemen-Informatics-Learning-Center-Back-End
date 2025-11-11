@@ -30,10 +30,7 @@ const connectRedis = async () => {
 };
 
 redisClient.on('error', (err) => {
-    if (process.env.NODE_ENV !== 'production') {
-        console.error(chalk.red('[Redis]'), 'Client error:', err);
-    }
-
+    console.error(chalk.red('[Redis]'), 'Client error:', err);
     process.exit(-1);
 });
 

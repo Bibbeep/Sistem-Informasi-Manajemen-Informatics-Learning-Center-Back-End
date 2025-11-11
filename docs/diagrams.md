@@ -10,195 +10,279 @@ config:
 ---
 erDiagram
     users {
-        integer id PK "NN"
-        varchar email UK "NN, Unique"
-        varchar hashed_password "NN"
-        varchar full_name "NN"
-        user_member_level member_level "Default: 'Basic'"
-        user_role role "Default: 'User'"
-        text picture_url "Nullable"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
+        int id PK
+        varchar email
+        varchar hashed_password
+        varchar full_name
+        enum member_level
+        enum role
+        text picture_url
+        timestamptz created_at
+        timestamptz updated_at
     }
+
     programs {
-        integer id PK "NN"
-        varchar title "NN"
-        varchar description "NN"
-        text thumbnail_url "Nullable"
-        timestamp available_date "Default: NOW()"
-        program_type type "NN"
-        numeric price_idr "NN"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
+        int id PK
+        varchar title
+        text description
+        text thumbnail_url
+        timestamptz available_date
+        enum type
+        int price_idr
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
     }
-    user_program_enrollments {
-        integer id PK "NN"
-        integer program_id FK "NN"
-        integer user_id FK "NN"
-        program_status status "Default: 'Unpaid'"
-        numeric progress_percentage "Default: 0"
-        timestamp completed_at "Nullable"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
-    }
-    certificates {
-        integer id PK "NN"
-        integer user_program_enrollment_id FK "NN"
-        integer user_id FK "NN"
-        varchar title "NN"
-        varchar credential "Nullable, Unique"
-        text document_url "Nullable"
-        timestamp issued_at "Default: NOW()"
-        timestamp expired_at "Nullable"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-    }
-    user_program_invoices {
-        integer id PK "NN"
-        integer user_program_enrollment_id FK "NN"
-        varchar virtual_account_number "Nullable"
-        integer amount_idr "Default: 0"
-        timestamp payment_due_datetime "Nullable"
-        payment_status status "Default: 'Unverified'"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
-    }
-    user_program_payments {
-        integer id PK "NN"
-        integer user_program_invoice_id FK "NN"
-        numeric amount_paid_idr "NN"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-    }
+
     courses {
-        integer id PK "NN"
-        integer program_id FK "NN"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
+        int id PK
+        int program_id FK
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
     }
+
     course_modules {
-        integer id PK "NN"
-        integer course_id FK "NN"
-        integer number_code "NN"
-        text material_url "Nullable"
-        text youtube_url "NN"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
+        int id PK
+        int course_id FK
+        int number_code
+        text material_url
+        text youtube_url
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
     }
+
+    user_program_enrollments {
+        int id PK
+        int program_id FK
+        int user_id FK
+        enum status
+        numeric progress_percentage
+        timestamptz completed_at
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
+    }
+
+    user_program_invoices {
+        int id PK
+        int user_program_enrollment_id FK
+        varchar virtual_account_number
+        int amount_idr
+        timestamptz payment_due_datetime
+        enum status
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
+    }
+
+    user_program_payments {
+        int id PK
+        int user_program_invoice_id FK
+        int amount_paid_idr
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
     user_completed_modules {
-        integer id PK "NN"
-        integer course_module_id FK "NN"
-        integer user_program_enrollment_id FK "NN"
-        timestamp completed_at "Default: NOW()"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
+        int id PK
+        int course_module_id FK
+        int user_program_enrollment_id FK
+        timestamptz completed_at
+        timestamptz created_at
+        timestamptz updated_at
     }
+
+    certificates {
+        int id PK
+        int user_program_enrollment_id FK
+        int user_id FK
+        varchar title
+        varchar credential
+        text document_url
+        timestamptz issued_at
+        timestamptz expired_at
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
     seminars {
-        integer id PK "NN"
-        integer program_id FK "NN"
-        boolean is_online "Default: true"
-        text video_conference_url "Nullable"
-        varchar location_address "Nullable"
-        varchar_array speaker_names "Nullable"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
+        int id PK
+        int program_id FK
+        boolean is_online
+        text video_conference_url
+        varchar location_address
+        varchar[] speaker_names
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
     }
+
     workshops {
-        integer id PK "NN"
-        integer program_id FK "NN"
-        boolean is_online "Default: true"
-        text video_conference_url "Nullable"
-        varchar location_address "Nullable"
-        varchar_array facilitator_names "Nullable"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
+        int id PK
+        int program_id FK
+        boolean is_online
+        text video_conference_url
+        varchar location_address
+        varchar[] facilitator_names
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
     }
+
     competitions {
-        integer id PK "NN"
-        integer program_id FK "NN"
-        boolean is_online "Default: true"
-        text video_conference_url "Nullable"
-        text contest_room_url "Nullable"
-        varchar location_address "Nullable"
-        varchar host_name "Nullable"
-        numeric total_prize "Default: 0"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
+        int id PK
+        int program_id FK
+        boolean is_online
+        text video_conference_url
+        text contest_room_url
+        varchar location_address
+        varchar host_name
+        int total_prize
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
     }
-    feedbacks {
-        integer id PK "NN"
-        varchar full_name "NN"
-        varchar email "NN"
-        text message "NN"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-    }
-    feedback_responses {
-        integer id PK "NN"
-        integer feedback_id FK "NN"
-        integer admin_user_id FK "NN"
-        text message "NN"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-    }
+
     discussions {
-        integer id PK "NN"
-        integer admin_user_id FK "NN"
-        varchar title "NN"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
+        int id PK
+        int admin_user_id FK
+        varchar title
+        timestamptz created_at
+        timestamptz updated_at
     }
+
     comments {
-        integer id PK "NN"
-        integer discussion_id FK "NN"
-        integer user_id FK "NN"
-        integer parent_comment_id FK "Nullable"
-        text message "NN"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
-        timestamp deleted_at "Default: null"
+        int id PK
+        int discussion_id FK
+        int user_id FK
+        int parent_comment_id FK
+        text message
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
     }
+
     comment_likes {
-        integer id PK "NN"
-        integer comment_id FK "NN"
-        integer user_id FK "NN"
-        timestamp created_at "Default: NOW()"
-        timestamp updated_at "Default: NOW()"
+        int id PK
+        int comment_id FK
+        int user_id FK
+        timestamptz created_at
+        timestamptz updated_at
     }
-    users ||--o{ user_program_enrollments : "enrolls in"
-    programs ||--o{ user_program_enrollments : "has"
-    user_program_enrollments ||--o{ certificates : "earns"
-    users ||--o{ certificates : "is issued to"
-    user_program_enrollments ||--o| user_program_invoices : "generates"
-    user_program_invoices ||--o| user_program_payments : "is paid by"
-    user_program_enrollments ||--o{ user_completed_modules : "tracks"
-    course_modules ||--o{ user_completed_modules : "is completed in"
-    programs ||--o| courses : "can be a"
-    courses ||--o{ course_modules : "contains"
-    programs ||--o| seminars : "can be a"
-    programs ||--o| workshops : "can be a"
-    programs ||--o| competitions : "can be a"
-    feedbacks ||--o{ feedback_responses : "gets"
-    users ||--o{ feedback_responses : "responds to (as admin)"
-    users ||--o{ discussions : "creates (as admin)"
-    discussions ||--o{ comments : "has"
-    users ||--o{ comments : "writes"
-    comments |o--o{ comments : "replies to"
-    comments ||--o{ comment_likes : "receives"
-    users ||--o{ comment_likes : "gives"
+
+    feedbacks {
+        int id PK
+        varchar email
+        varchar full_name
+        text message
+        timestamptz created_at
+        timestamptz updated_at
+        timestamptz deleted_at
+    }
+
+    feedback_responses {
+        int id PK
+        int feedback_id FK
+        int admin_user_id FK
+        text message
+        timestamptz created_at
+        timestamptz updated_at
+    }
+
+    users ||--o{ user_program_enrollments : has
+    users ||--o{ certificates : receives
+    users ||--o{ comment_likes : gives
+    users ||--o{ comments : writes
+    users ||--o{ discussions : manages
+    users ||--o{ feedback_responses : handles
+
+    programs ||--o{ courses : includes
+    programs ||--o{ seminars : includes
+    programs ||--o{ workshops : includes
+    programs ||--o{ competitions : includes
+    programs ||--o{ user_program_enrollments : enrollments
+
+    courses ||--o{ course_modules : contains
+    course_modules ||--o{ user_completed_modules : completed_by
+
+    user_program_enrollments ||--o{ user_program_invoices : billed_in
+    user_program_invoices ||--o{ user_program_payments : paid_by
+    user_program_enrollments ||--o{ user_completed_modules : progress
+    user_program_enrollments ||--o{ certificates : awards
+
+    discussions ||--o{ comments : has
+    comments ||--o{ comment_likes : liked_by
+    comments ||--o{ comments : replies_to
+
+    feedbacks ||--o{ feedback_responses : replied_by
 ```
 
 ## Data Flow Diagram
 
-## Class Diagram
+### Level 0 (Context-Diagram)
 
-## Docker Architecture Diagram
+```mermaid
+---
+config:
+  theme: dark
+  layout: dagree
+---
+flowchart LR
+    User[User]
+    Admin[Admin]
+    System((Informatics Learning Center System))
+
+    User --> |Program Enrollment| System
+    System --> |Program materials| User
+    Admin --> |Program information| System
+    System --> |User information| Admin
+```
+
+## Architecture Diagram
+
+### Deployment on Docker
+
+```mermaid
+---
+config:
+  theme: dark
+  layout: dagree
+---
+architecture-beta
+  group api(logos:docker-icon)[API]
+
+  service server(server)[Server] in api
+  service db(logos:postgresql)[Database] in api
+  service cache(logos:redis)[Cache] in api
+  service storage(logos:aws-s3)[Storage] in api
+
+  server:R -- L:cache
+  cache:R -- L:db
+  server:B -- T:storage
+
+```
+
+### Deployment on AWS
+
+```mermaid
+---
+config:
+  theme: dark
+  layout: dagree
+---
+architecture-beta
+  group api(logos:aws)[API]
+
+  service server(logos:aws-ec2)[Server] in api
+  service db(logos:aws-rds)[Database] in api
+  service cache(logos:aws-elasticache)[Cache] in api
+  service storage(logos:aws-s3)[Storage] in api
+
+  server:R -- L:cache
+  cache:R -- L:db
+  server:B -- T:storage
+```
+
+## Class Diagram

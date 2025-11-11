@@ -3,28 +3,28 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('feedback_responses', {
+        await queryInterface.createTable('comments', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            feedbackId: {
+            discussionId: {
+                allowNull: false,
                 type: Sequelize.INTEGER,
-                allowNull: true,
-                field: 'feedback_id',
+                field: 'discussion_id',
                 references: {
-                    model: 'feedbacks',
+                    model: 'discussions',
                     key: 'id',
                 },
                 onUpdate: 'CASCADE',
-                onDelete: 'SET NULL',
+                onDelete: 'CASCADE',
             },
-            adminUserId: {
-                type: Sequelize.INTEGER,
+            userId: {
                 allowNull: true,
-                field: 'admin_user_id',
+                type: Sequelize.INTEGER,
+                field: 'user_id',
                 references: {
                     model: 'users',
                     key: 'id',
@@ -32,9 +32,20 @@ module.exports = {
                 onUpdate: 'CASCADE',
                 onDelete: 'SET NULL',
             },
+            parentCommentId: {
+                allowNull: true,
+                type: Sequelize.INTEGER,
+                field: 'parent_comment_id',
+                references: {
+                    model: 'comments',
+                    key: 'id',
+                },
+                onUpdate: 'CASCADE',
+                onDelete: 'NO ACTION',
+            },
             message: {
-                type: Sequelize.TEXT,
                 allowNull: false,
+                type: Sequelize.TEXT,
             },
             createdAt: {
                 allowNull: false,
@@ -46,9 +57,14 @@ module.exports = {
                 type: Sequelize.DATE,
                 field: 'updated_at',
             },
+            deletedAt: {
+                allowNull: true,
+                type: Sequelize.DATE,
+                field: 'deleted_at',
+            },
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('feedback_responses');
+        await queryInterface.dropTable('comments');
     },
 };

@@ -1,7 +1,7 @@
 'use strict';
 module.exports = (sequelize, DataTypes) => {
-    const FeedbackResponse = sequelize.define(
-        'FeedbackResponse',
+    const Discussion = sequelize.define(
+        'Discussion',
         {
             id: {
                 allowNull: false,
@@ -9,19 +9,14 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 type: DataTypes.INTEGER,
             },
-            feedbackId: {
-                type: DataTypes.INTEGER,
-                field: 'feedback_id',
-                allowNull: true,
-            },
             adminUserId: {
+                allowNull: true,
                 type: DataTypes.INTEGER,
                 field: 'admin_user_id',
-                allowNull: true,
             },
-            message: {
+            title: {
                 allowNull: false,
-                type: DataTypes.TEXT,
+                type: DataTypes.STRING,
             },
             createdAt: {
                 allowNull: false,
@@ -35,20 +30,21 @@ module.exports = (sequelize, DataTypes) => {
             },
         },
         {
-            tableName: 'feedback_responses',
+            tableName: 'discussions',
         },
     );
 
-    FeedbackResponse.associate = (models) => {
-        FeedbackResponse.belongsTo(models.Feedback, {
-            foreignKey: 'feedbackId',
-            as: 'feedback',
-        });
-        FeedbackResponse.belongsTo(models.User, {
+    Discussion.associate = (models) => {
+        Discussion.belongsTo(models.User, {
             foreignKey: 'adminUserId',
             as: 'user',
         });
+
+        Discussion.hasMany(models.Comment, {
+            foreignKey: 'discussionId',
+            as: 'comments',
+        });
     };
 
-    return FeedbackResponse;
+    return Discussion;
 };

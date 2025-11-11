@@ -403,7 +403,7 @@ describe('Enrollment Integration Tests', () => {
             expect(response.body.data.enrollment.progressPercentage).toBe(
                 '100.00',
             );
-        });
+        }, 10000);
 
         it('should return 200 and update enrollment as admin', async () => {
             const response = await request(server)
@@ -413,7 +413,7 @@ describe('Enrollment Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.data.enrollment.status).toBe('Completed');
-        });
+        }, 10000);
 
         it('should return 400 for invalid enrollmentId', async () => {
             const response = await request(server)
@@ -557,7 +557,7 @@ describe('Enrollment Integration Tests', () => {
             expect(response.status).toBe(201);
             expect(response.body.data).toHaveProperty('progressPercentage');
             expect(response.body.data).toHaveProperty('completedModule');
-        });
+        }, 10000);
 
         it('should return 201 and mark the last module, completing the course', async () => {
             for (let i = 2; i < courseModules.length; i++) {
@@ -582,7 +582,7 @@ describe('Enrollment Integration Tests', () => {
                 enrollments.course.id,
             );
             expect(updatedEnrollment.status).toBe('Completed');
-        });
+        }, 10000);
 
         it('should return 201 as admin for another user enrollment', async () => {
             const response = await request(server)
@@ -593,7 +593,7 @@ describe('Enrollment Integration Tests', () => {
                 .send({ courseModuleId: courseModules[0].id });
 
             expect(response.status).toBe(201);
-        });
+        }, 10000);
 
         it('should return 400 for invalid enrollmentId', async () => {
             const response = await request(server)

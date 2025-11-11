@@ -86,6 +86,8 @@ module.exports = (err, req, res, next) => {
             console.error(err);
         }
 
+        console.log('err.message ==>', err.message);
+
         return res.status(500).json({
             success: false,
             statusCode: 500,

@@ -32,6 +32,15 @@ const {
     certificatePayload,
     certificateUpdate,
 } = require('./schemas/certificate');
+const {
+    discussionQueryParam,
+    discussionPayload,
+    discussionUpdate,
+    commentQueryParam,
+    commentByIdQueryParam,
+    commentPayload,
+    commentUpdate,
+} = require('./schemas/discussion');
 
 // Any auto-increment integer id
 const uniqueIdentifier = Joi.number().integer().positive().required();
@@ -68,4 +77,11 @@ module.exports = {
     validateCertificateQuery: validator(certificateQueryParam),
     validateCertificate: validator(certificatePayload),
     validateUpdateCertificateData: validator(certificateUpdate),
+    validateDiscussionQuery: validator(discussionQueryParam),
+    validateDiscussion: validator(discussionPayload),
+    validateUpdateDiscussionData: validator(discussionUpdate),
+    validateCommentQuery: validator(commentQueryParam),
+    validateCommentByIdQuery: validator(commentByIdQueryParam),
+    validateComment: validator(commentPayload),
+    validateUpdateCommentData: validator(commentUpdate),
 };

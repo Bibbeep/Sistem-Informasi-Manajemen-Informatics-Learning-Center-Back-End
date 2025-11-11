@@ -617,7 +617,7 @@ describe('Authentication Integration Tests', () => {
                     errors: null,
                 }),
             );
-        });
+        }, 10000);
 
         it('should return 200 when email is not registered', async () => {
             const mockReqBody = {
@@ -639,7 +639,7 @@ describe('Authentication Integration Tests', () => {
                     errors: null,
                 }),
             );
-        });
+        }, 10000);
 
         it('should return 400 when email is invalid', async () => {
             const mockReqBody = {

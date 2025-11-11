@@ -10,19 +10,20 @@ const {
 } = require('../middlewares/contentType.middleware.js');
 const { upload } = require('../middlewares/multer.middleware.js');
 const { image } = require('../utils/fileType.js');
+const asyncHandler = require('../utils/asyncHandler');
 
 router.get(
     '/',
     authenticate,
     authorize({ rules: ['admin'] }),
-    UserController.getAll,
+    asyncHandler(UserController.getAll),
 );
 router.get(
     '/:userId',
     authenticate,
     validatePathParameterId('userId'),
     authorize({ rules: ['self', 'admin'] }),
-    UserController.getById,
+    asyncHandler(UserController.getById),
 );
 router.patch(
     '/:userId',
@@ -30,14 +31,14 @@ router.patch(
     requireJsonContent,
     validatePathParameterId('userId'),
     authorize({ rules: ['self', 'admin'] }),
-    UserController.updateById,
+    asyncHandler(UserController.updateById),
 );
 router.delete(
     '/:userId',
     authenticate,
     validatePathParameterId('userId'),
     authorize({ rules: ['self', 'admin'] }),
-    UserController.deleteById,
+    asyncHandler(UserController.deleteById),
 );
 router.put(
     '/:userId/profilePhotos',
@@ -45,7 +46,7 @@ router.put(
     validatePathParameterId('userId'),
     authorize({ rules: ['self', 'admin'] }),
     upload(image).single('photo'),
-    UserController.uploadProfilePhoto,
+    asyncHandler(UserController.uploadProfilePhoto),
 );
 
 module.exports = router;

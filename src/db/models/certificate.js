@@ -64,6 +64,11 @@ module.exports = (sequelize, DataTypes) => {
             foreignKey: 'enrollmentId',
             as: 'enrollment',
         });
+
+        Certificate.belongsTo(models.User, {
+            foreignKet: 'userId',
+            as: 'user',
+        });
     };
 
     return Certificate;

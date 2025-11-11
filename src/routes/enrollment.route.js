@@ -7,12 +7,13 @@ const {
 } = require('../middlewares/auth.middleware');
 const { requireJsonContent } = require('../middlewares/contentType.middleware');
 const { Enrollment } = require('../db/models');
+const asyncHandler = require('../utils/asyncHandler');
 
 router.get(
     '/',
     authenticate,
     authorize({ rules: ['self', 'admin'], ownerQueryParam: 'required' }),
-    EnrollmentController.getAll,
+    asyncHandler(EnrollmentController.getAll),
 );
 router.get(
     '/:enrollmentId',
@@ -25,9 +26,14 @@ router.get(
         ownerForeignKey: 'userId',
         ownerQueryParam: 'prohibited',
     }),
-    EnrollmentController.getById,
+    asyncHandler(EnrollmentController.getById),
 );
-router.post('/', authenticate, requireJsonContent, EnrollmentController.create);
+router.post(
+    '/',
+    authenticate,
+    requireJsonContent,
+    asyncHandler(EnrollmentController.create),
+);
 router.patch(
     '/:enrollmentId',
     authenticate,
@@ -40,14 +46,14 @@ router.patch(
         ownerForeignKey: 'userId',
         ownerQueryParam: 'prohibited',
     }),
-    EnrollmentController.updateById,
+    asyncHandler(EnrollmentController.updateById),
 );
 router.delete(
     '/:enrollmentId',
     authenticate,
     validatePathParameterId('enrollmentId'),
     authorize({ rules: ['admin'] }),
-    EnrollmentController.deleteById,
+    asyncHandler(EnrollmentController.deleteById),
 );
 router.post(
     '/:enrollmentId/completed-modules',
@@ -61,7 +67,7 @@ router.post(
         ownerForeignKey: 'userId',
         ownerQueryParam: 'prohibited',
     }),
-    EnrollmentController.completeModule,
+    asyncHandler(EnrollmentController.completeModule),
 );
 
 module.exports = router;

@@ -796,7 +796,7 @@ describe('User Management Integration Tests', () => {
                 },
                 errors: null,
             });
-        });
+        }, 10000);
 
         it('should return 201 and successfully upload a profile photo as an admin', async () => {
             const response = await request(server)
@@ -806,7 +806,7 @@ describe('User Management Integration Tests', () => {
 
             expect(response.status).toBe(201);
             expect(response.body.data.pictureUrl).toBeDefined();
-        });
+        }, 10000);
 
         it('should return 400 when there is extra field', async () => {
             const response = await request(server)

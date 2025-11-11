@@ -12,7 +12,6 @@ class SchedulerService {
      */
     static start() {
         if (this.cronJob) {
-            console.log(chalk.yellow('[Cron Job]'), 'Job is already running');
             return;
         }
 
