@@ -90,8 +90,10 @@ jobs:
             npm ci --omit=dev
 
             pm2 stop $PM2_APP || true
+            pm2 delete $PM2_APP || true
             pm2 start src/server.js --name $PM2_APP -- -p $APP_PORT
             sleep 10
+            pm2 status
 
             if ! curl -fs "http://localhost:$APP_PORT/health" > /dev/null; then
               echo "Health check failed. Rolling back..."
