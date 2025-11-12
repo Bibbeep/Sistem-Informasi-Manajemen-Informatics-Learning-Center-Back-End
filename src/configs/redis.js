@@ -8,7 +8,7 @@ const chalk = require('chalk');
 const redisClient = createClient({
     url: process.env.REDIS_URL,
     socket: {
-        tls: false,
+        tls: process.env.NODE_ENV === 'production' ? true : false,
     },
 });
 
