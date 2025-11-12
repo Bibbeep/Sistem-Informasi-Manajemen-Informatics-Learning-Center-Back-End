@@ -1,6 +1,6 @@
 {
     "name": "sistem-informasi-manajemen-informatics-learning-center-back-end",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "main": "./src/server.js",
     "type": "commonjs",
     "directories": {
