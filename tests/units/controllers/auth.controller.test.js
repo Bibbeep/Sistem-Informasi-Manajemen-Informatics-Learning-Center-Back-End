@@ -1,0 +1,388 @@
+/* eslint-disable no-undef */
+jest.mock('../../../src/services/auth.service');
+jest.mock('../../../src/validations/validator');
+
+const {
+    validateRegister,
+    validateLogin,
+    validateForgotPassword,
+    validateResetPassword,
+} = require('../../../src/validations/validator');
+const AuthService = require('../../../src/services/auth.service');
+const {
+    register,
+    login,
+    logout,
+    forgotPassword,
+    resetPassword,
+} = require('../../../src/controllers/auth.controller');
+const { ValidationError } = require('joi');
+
+describe('Authentication Controller Unit Tests', () => {
+    let req, res, next;
+
+    beforeEach(() => {
+        req = { body: {} };
+        res = {
+            status: jest.fn().mockReturnThis?.() || { json: jest.fn() },
+            json: jest.fn(),
+        };
+
+        res.status = jest.fn(() => {
+            return res;
+        });
+
+        next = jest.fn();
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+    });
+
+    describe('register Tests', () => {
+        it('should calls next with Joi.ValidationError when validation fails', async () => {
+            req.body = { email: 'invalid', password: 'short' };
+            const mockValidationError = new ValidationError();
+
+            validateRegister.mockReturnValue({ error: mockValidationError });
+
+            await register(req, res, next);
+
+            expect(validateRegister).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockValidationError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should sends 201 on success and does not call next', async () => {
+            req.body = {
+                fullName: 'John Doe',
+                email: 'john@example.com',
+                password: 'abcd1234',
+            };
+
+            const mockDate = new Date(
+                2025,
+                12,
+                12,
+                12,
+                12,
+                12,
+                0,
+            ).toISOString();
+            const mockRegisterServiceData = {
+                user: {
+                    id: 1,
+                    fullName: req.body.fullName,
+                    email: req.body.email,
+                    memberLevel: 'Basic',
+                    role: 'User',
+                    pictureUrl: 'https://mock.pic/999',
+                    createdAt: mockDate,
+                    updatedAt: mockDate,
+                },
+            };
+
+            validateRegister.mockReturnValue({ error: null, value: req.body });
+            AuthService.register.mockResolvedValue(mockRegisterServiceData);
+
+            await register(req, res, next);
+
+            expect(validateRegister).toHaveBeenCalledWith(req.body);
+            expect(AuthService.register).toHaveBeenCalledWith(req.body);
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    data: mockRegisterServiceData,
+                    message: 'Successfully registered a new user account.',
+                    errors: null,
+                }),
+            );
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.body = {
+                fullName: 'John Doe',
+                email: 'john@example.com',
+                password: 'abcd1234',
+            };
+
+            const serviceError = new Error('Boom');
+            validateRegister.mockReturnValue({ error: null, value: req.body });
+            AuthService.register.mockRejectedValue(serviceError);
+
+            await register(req, res, next);
+
+            expect(validateRegister).toHaveBeenCalledWith(req.body);
+            expect(AuthService.register).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('login Tests', () => {
+        it('should calls next with Joi.ValidationError when validation fails', async () => {
+            req.body = {
+                email: 'invalid-email',
+                password: 123,
+            };
+            const mockValidationError = new ValidationError();
+            validateLogin.mockReturnValue({ error: mockValidationError });
+
+            await login(req, res, next);
+
+            expect(validateLogin).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockValidationError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should sends 200 on success and does not call next', async () => {
+            req.body = {
+                email: 'johndoe@mail.com',
+                passwors: 'Password123!',
+            };
+            const mockServiceData = {
+                accessToken: 'jwt-access-token',
+            };
+
+            validateLogin.mockReturnValue({ error: null, value: req.body });
+            AuthService.login.mockResolvedValue(mockServiceData);
+
+            await login(req, res, next);
+
+            expect(validateLogin).toHaveBeenCalledWith(req.body);
+            expect(AuthService.login).toHaveBeenCalledWith(req.body);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    data: mockServiceData,
+                    message: 'Successfully logged in.',
+                    errors: null,
+                }),
+            );
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.body = {
+                email: 'john@example.com',
+                password: 'abcd1234',
+            };
+
+            const serviceError = new Error('Boom');
+            validateLogin.mockReturnValue({ error: null, value: req.body });
+            AuthService.login.mockRejectedValue(serviceError);
+
+            await login(req, res, next);
+
+            expect(validateLogin).toHaveBeenCalledWith(req.body);
+            expect(AuthService.login).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('logout Tests', () => {
+        it('should sends 200 on success and does not call next', async () => {
+            req.tokenPayload = { jti: 'some-jti-string' };
+            AuthService.logout.mockResolvedValue();
+
+            await logout(req, res, next);
+
+            expect(AuthService.logout).toHaveBeenCalledWith(req.tokenPayload);
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully logged out.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.tokenPayload = { jti: 'some-jti-string' };
+            const serviceError = new Error('Boom');
+
+            AuthService.logout.mockRejectedValue(serviceError);
+
+            await logout(req, res, next);
+
+            expect(AuthService.logout).toHaveBeenCalledWith(req.tokenPayload);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('forgotPassword Tests', () => {
+        it('should sends 200 on success and does not call next', async () => {
+            req.body = {
+                email: 'johndoe@mail.com',
+            };
+            const mockValidationReturnData = {
+                error: undefined,
+                value: {
+                    email: req.body.email,
+                },
+            };
+            validateForgotPassword.mockReturnValue(mockValidationReturnData);
+            AuthService.sendResetPasswordMail.mockResolvedValue();
+
+            await forgotPassword(req, res, next);
+
+            expect(validateForgotPassword).toHaveBeenCalledWith(req.body);
+            expect(AuthService.sendResetPasswordMail).toHaveBeenCalledWith(
+                mockValidationReturnData.value,
+            );
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message:
+                        'Successfully sent password reset link to your email.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+        });
+
+        it('should calls next with Joi.ValidationError when validation fails', async () => {
+            req.body = {
+                email: 'invalid-email',
+            };
+            const mockValidationError = new ValidationError();
+            validateForgotPassword.mockReturnValue({
+                error: mockValidationError,
+            });
+
+            await forgotPassword(req, res, next);
+
+            expect(validateForgotPassword).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockValidationError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.body = {
+                email: 'valid@mail.com',
+            };
+            const serviceError = new Error('Boom');
+            const mockValidationReturnData = {
+                error: undefined,
+                value: {
+                    email: req.body.email,
+                },
+            };
+            validateForgotPassword.mockReturnValue(mockValidationReturnData);
+            AuthService.sendResetPasswordMail.mockRejectedValue(serviceError);
+
+            await forgotPassword(req, res, next);
+
+            expect(AuthService.sendResetPasswordMail).toHaveBeenCalledWith(
+                req.body,
+            );
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('resetPassword Tests', () => {
+        it('should sends 200 on success and does not call next', async () => {
+            req.body = {
+                userId: 1,
+                token: 'c0ae8bc1c8ad1eea5d936c622a6850b984459d5bfd999552dc4cbecb54d02efe',
+                newPassword: 'new-password',
+                confirmNewPassword: 'new-password',
+            };
+
+            const mockValidationReturnData = {
+                error: undefined,
+                value: {
+                    userId: req.body.userId,
+                    token: req.body.token,
+                    newPassword: req.body.newPassword,
+                    confirmNewPassword: req.body.confirmNewPassword,
+                },
+            };
+
+            validateResetPassword.mockReturnValue(mockValidationReturnData);
+            AuthService.resetPassword.mockResolvedValue();
+
+            await resetPassword(req, res, next);
+
+            expect(validateResetPassword).toHaveBeenCalledWith(req.body);
+            expect(AuthService.resetPassword).toHaveBeenCalledWith(
+                mockValidationReturnData.value,
+            );
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 200,
+                    message: 'Successfully reset your password.',
+                    data: null,
+                    errors: null,
+                }),
+            );
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should calls next with Joi.ValidationError when validation fails', async () => {
+            req.body = {
+                userId: 1,
+                token: 'blablabla',
+                newPassword: 'new-password',
+                confirmNewPassword: 'new-password',
+            };
+            const mockValidationError = new ValidationError();
+            validateResetPassword.mockReturnValue({
+                error: mockValidationError,
+            });
+
+            await resetPassword(req, res, next);
+
+            expect(validateResetPassword).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(mockValidationError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+
+        it('should forwards service errors to next', async () => {
+            req.body = {
+                userId: 99,
+                token: 'c0ae8bc1c8ad1eea5d936c622a6850b984459d5bfd999552dc4cbecb54d02efe',
+                newPassword: 'new-password',
+                confirmNewPassword: 'new-password',
+            };
+            const serviceError = new Error('Boom');
+            const mockValidationReturnData = {
+                error: undefined,
+                value: req.body,
+            };
+            validateResetPassword.mockReturnValue(mockValidationReturnData);
+            AuthService.resetPassword.mockRejectedValue(serviceError);
+
+            await resetPassword(req, res, next);
+
+            expect(AuthService.resetPassword).toHaveBeenCalledWith(req.body);
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+});
