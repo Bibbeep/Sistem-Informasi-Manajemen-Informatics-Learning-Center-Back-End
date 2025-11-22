@@ -619,6 +619,8 @@ class EnrollmentService {
                         '0',
                     )}-U${String(enrollment.userId).padStart(4, '0')}`;
                     const now = new Date();
+                    const expireDate = new Date(now.valueOf());
+                    expireDate.setFullYear(expireDate.getFullYear() + 3);
 
                     const fileBuffer = await printPdf(
                         {
@@ -632,7 +634,7 @@ class EnrollmentService {
                             }).format(now),
                             expiredAt: new Intl.DateTimeFormat('en-US', {
                                 dateStyle: 'long',
-                            }).format(new Date(now).getFullYear() + 3),
+                            }).format(expireDate),
                         },
                         ['..', 'templates', 'documents', 'certificate.hbs'],
                     );
