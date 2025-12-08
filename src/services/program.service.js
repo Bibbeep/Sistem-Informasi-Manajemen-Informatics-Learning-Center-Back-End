@@ -264,7 +264,7 @@ class ProgramService {
                         returning: true,
                         transaction: t,
                     })
-                )[1][0].toJSON();
+                )[1]?.[0]?.toJSON();
             } else if (program.type === 'Workshop') {
                 details = (
                     await Workshop.update(updateData, {
@@ -274,7 +274,7 @@ class ProgramService {
                         returning: true,
                         transaction: t,
                     })
-                )[1][0].toJSON();
+                )[1]?.[0]?.toJSON();
             } else if (program.type === 'Competition') {
                 details = (
                     await Competition.update(updateData, {
@@ -284,7 +284,7 @@ class ProgramService {
                         returning: true,
                         transaction: t,
                     })
-                )[1][0].toJSON();
+                )[1]?.[0]?.toJSON();
             } else {
                 details.totalModules = await CourseModule.count({
                     include: [
@@ -300,11 +300,11 @@ class ProgramService {
                 });
             }
 
-            delete details.id;
-            delete details.programId;
-            delete details.createdAt;
-            delete details.updatedAt;
-            delete details.deletedAt;
+            delete details?.id;
+            delete details?.programId;
+            delete details?.createdAt;
+            delete details?.updatedAt;
+            delete details?.deletedAt;
 
             return {
                 ...programRows[0].toJSON(),
