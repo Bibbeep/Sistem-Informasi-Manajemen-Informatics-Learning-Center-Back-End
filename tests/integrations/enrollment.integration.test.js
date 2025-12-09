@@ -196,6 +196,22 @@ describe('Enrollment Integration Tests', () => {
             );
         });
 
+        it('should return 200 and filter by an array of statuses', async () => {
+            const response = await request(server)
+                .get('/api/v1/enrollments?status=in progress&status=completed')
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.enrollments.length).toBe(4);
+            const statuses = response.body.data.enrollments.map((e) => {
+                return e.status;
+            });
+            expect(statuses).toEqual(
+                expect.arrayContaining(['In Progress', 'Completed']),
+            );
+            expect(statuses).not.toContain('Unpaid');
+        });
+
         it('should return 200 and sort enrollments by progress in descending order', async () => {
             const response = await request(server)
                 .get(
