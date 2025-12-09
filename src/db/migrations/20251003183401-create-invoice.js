@@ -19,7 +19,7 @@ module.exports = {
                     key: 'id',
                 },
                 onUpdate: 'CASCADE',
-                onDelete: 'CASCADE',
+                onDelete: 'NO ACTION',
             },
             virtualAccountNumber: {
                 allowNull: true,

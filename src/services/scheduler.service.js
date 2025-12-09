@@ -64,6 +64,13 @@ class SchedulerService {
                                 transaction: t,
                             },
                         );
+
+                        await Enrollment.destroy({
+                            where: {
+                                id: enrollmentIds,
+                            },
+                            transaction: t,
+                        });
                     }
                 });
             } catch (err) {

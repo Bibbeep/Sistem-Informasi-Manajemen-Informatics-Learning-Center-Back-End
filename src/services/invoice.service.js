@@ -49,6 +49,7 @@ class InvoiceService {
                     as: 'enrollment',
                     where: enrollmentWhere,
                     attributes: ['userId', 'programId'],
+                    paranoid: false,
                     include: [
                         {
                             model: Program,

@@ -90,6 +90,9 @@ describe('Scheduler Integration Tests', () => {
         });
         const expiredEnrollmentAfter = await Enrollment.findByPk(
             expiredEnrollment.id,
+            {
+                paranoid: false,
+            },
         );
         expect(expiredInvoiceAfter.status).toBe('Expired');
         expect(expiredEnrollmentAfter.status).toBe('Expired');
