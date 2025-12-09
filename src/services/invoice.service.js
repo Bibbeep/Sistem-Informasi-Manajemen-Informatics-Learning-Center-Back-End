@@ -48,7 +48,7 @@ class InvoiceService {
                     model: Enrollment,
                     as: 'enrollment',
                     where: enrollmentWhere,
-                    attributes: ['userId', 'programId'],
+                    attributes: ['id', 'userId', 'programId'],
                     paranoid: false,
                     include: [
                         {
@@ -79,6 +79,7 @@ class InvoiceService {
                 rows[index] = {
                     id: invoice.id,
                     userId: invoice.enrollment?.userId,
+                    enrollmentId: invoice.enrollment?.id,
                     programId: invoice.enrollment?.programId,
                     programTitle: invoice.enrollment?.program?.title,
                     programType: invoice.enrollment?.program?.type,
@@ -125,7 +126,7 @@ class InvoiceService {
                 {
                     model: Enrollment,
                     as: 'enrollment',
-                    attributes: ['userId', 'programId'],
+                    attributes: ['id', 'userId', 'programId'],
                     required: false,
                     include: [
                         {
@@ -162,6 +163,7 @@ class InvoiceService {
         return {
             id: invoice.id,
             userId: invoice.enrollment?.userId,
+            enrollmentId: invoice.enrollment?.id,
             programId: invoice.enrollment?.programId,
             programTitle: invoice.enrollment?.program?.title,
             programType: invoice.enrollment?.program?.type,
