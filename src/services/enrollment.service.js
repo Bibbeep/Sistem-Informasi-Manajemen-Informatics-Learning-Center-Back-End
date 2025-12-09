@@ -495,7 +495,7 @@ class EnrollmentService {
                                 include: [
                                     [
                                         Sequelize.literal(`
-                                            (SELECT COUNT(*) FROM course_modules AS modules WHERE modules.course_id = "program->course".id)
+                                            (SELECT COUNT(*) FROM course_modules AS modules WHERE modules.course_id = "program->course".id AND modules.deleted_at IS NULL)
                                         `),
                                         'totalModules',
                                     ],
