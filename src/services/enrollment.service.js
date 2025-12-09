@@ -620,7 +620,9 @@ class EnrollmentService {
                     )}-U${String(enrollment.userId).padStart(4, '0')}`;
                     const now = new Date();
                     const expireDate = new Date(now.valueOf());
-                    expireDate.setFullYear(expireDate.getFullYear() + 3);
+                    const expiredAt = expireDate.setFullYear(
+                        expireDate.getFullYear() + 3,
+                    );
 
                     const fileBuffer = await printPdf(
                         {
@@ -660,7 +662,7 @@ class EnrollmentService {
                         credential,
                         documentUrl: Location,
                         issuedAt: now,
-                        expiredAt: new Date(now).getFullYear() + 3,
+                        expiredAt,
                     };
 
                     await Certificate.create(payload, {
