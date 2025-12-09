@@ -6961,6 +6961,10 @@
                         "type": "integer",
                         "description": "The unique identifier for the invoice."
                     },
+                    "enrollmentId": {
+                        "type": "integer",
+                        "description": "The ID of the enrollment this invoice is for."
+                    },
                     "userId": {
                         "type": "integer",
                         "description": "The ID of the user associated with the invoice."
@@ -9191,6 +9195,7 @@
                         "invoices": [
                             {
                                 "id": 1,
+                                "enrollmentId": 1,
                                 "userId": 1,
                                 "programId": 1,
                                 "programTitle": "Introduction to Backend Development",
@@ -9255,6 +9260,7 @@
                     "data": {
                         "invoice": {
                             "id": 1,
+                            "enrollmentId": 1,
                             "userId": 1,
                             "programId": 1,
                             "programTitle": "Introduction to Backend Development",
