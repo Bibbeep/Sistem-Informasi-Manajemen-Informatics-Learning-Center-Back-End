@@ -3537,17 +3537,36 @@
                     {
                         "in": "query",
                         "name": "status",
+                        "style": "form",
+                        "explode": true,
                         "schema": {
-                            "type": "string",
-                            "enum": [
-                                "unpaid",
-                                "in progress",
-                                "completed",
-                                "expired",
-                                "all"
-                            ],
-                            "default": "all"
-                        }
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "unpaid",
+                                        "in progress",
+                                        "completed",
+                                        "expired",
+                                        "all"
+                                    ],
+                                    "default": "all"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "unpaid",
+                                            "in progress",
+                                            "completed",
+                                            "expired"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "description": "Filter enrollments by status. Can be a single status or an array of statuses (e.g., `status=in progress&status=completed`). If not provided, it will return all."
                     }
                 ],
                 "responses": {
