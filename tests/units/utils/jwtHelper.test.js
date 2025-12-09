@@ -38,7 +38,10 @@ describe('JWT Helper Utility Unit Tests', () => {
 
             const mockSignOptions = {
                 expiresIn: '7d',
-                audience: 'http://localhost',
+                audience:
+                    process.env.CORS_ORIGIN !== '*'
+                        ? process.env.CORS_ORIGIN
+                        : 'http://localhost',
                 issuer: 'http://localhost',
             };
             const mockSignedJwt = 'mocked-jwt-token';
@@ -60,7 +63,10 @@ describe('JWT Helper Utility Unit Tests', () => {
         it('should return true if token is verified and validated', () => {
             const mockToken = 'mocked-jwt-token';
             const mockVerifyOptions = {
-                audience: 'http://localhost',
+                audience:
+                    process.env.CORS_ORIGIN !== '*'
+                        ? process.env.CORS_ORIGIN
+                        : 'http://localhost',
                 issuer: 'http://localhost',
             };
             const mockDecoded = {
@@ -91,7 +97,10 @@ describe('JWT Helper Utility Unit Tests', () => {
         it('should return false if token signature is invalid', () => {
             const mockToken = 'mocked-jwt-token';
             const mockVerifyOptions = {
-                audience: 'http://localhost',
+                audience:
+                    process.env.CORS_ORIGIN !== '*'
+                        ? process.env.CORS_ORIGIN
+                        : 'http://localhost',
                 issuer: 'http://localhost',
             };
             const mockError = new Error();
@@ -114,7 +123,10 @@ describe('JWT Helper Utility Unit Tests', () => {
         it('should return false if token payload is invalid', () => {
             const mockToken = 'mocked-jwt-token';
             const mockVerifyOptions = {
-                audience: 'http://localhost',
+                audience:
+                    process.env.CORS_ORIGIN !== '*'
+                        ? process.env.CORS_ORIGIN
+                        : 'http://localhost',
                 issuer: 'http://localhost',
             };
             const mockDecoded = {
