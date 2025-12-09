@@ -21,7 +21,18 @@ class EnrollmentService {
         const { page, limit, sort, programType, status } = data;
         let where = {};
 
-        if (status !== 'all') {
+        if (Array.isArray(status)) {
+            where.status = {
+                [Op.in]: status.map((item) => {
+                    return item
+                        .split(' ')
+                        .map((str) => {
+                            return str.charAt(0).toUpperCase() + str.slice(1);
+                        })
+                        .join(' ');
+                }),
+            };
+        } else if (status !== 'all') {
             where.status = status
                 .split(' ')
                 .map((str) => {
