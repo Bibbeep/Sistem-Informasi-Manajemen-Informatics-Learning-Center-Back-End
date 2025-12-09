@@ -495,7 +495,7 @@ class EnrollmentService {
                                 include: [
                                     [
                                         Sequelize.literal(`
-                                            (SELECT COUNT(*) FROM course_modules AS modules WHERE modules.course_id = "program->course".id)
+                                            (SELECT COUNT(*) FROM course_modules AS modules WHERE modules.course_id = "program->course".id AND modules.deleted_at IS NULL)
                                         `),
                                         'totalModules',
                                     ],
@@ -619,6 +619,10 @@ class EnrollmentService {
                         '0',
                     )}-U${String(enrollment.userId).padStart(4, '0')}`;
                     const now = new Date();
+                    const expireDate = new Date(now.valueOf());
+                    const expiredAt = expireDate.setFullYear(
+                        expireDate.getFullYear() + 3,
+                    );
 
                     const fileBuffer = await printPdf(
                         {
@@ -632,7 +636,7 @@ class EnrollmentService {
                             }).format(now),
                             expiredAt: new Intl.DateTimeFormat('en-US', {
                                 dateStyle: 'long',
-                            }).format(new Date(now).getFullYear() + 3),
+                            }).format(expireDate),
                         },
                         ['..', 'templates', 'documents', 'certificate.hbs'],
                     );
@@ -658,7 +662,7 @@ class EnrollmentService {
                         credential,
                         documentUrl: Location,
                         issuedAt: now,
-                        expiredAt: new Date(now).getFullYear() + 3,
+                        expiredAt,
                     };
 
                     await Certificate.create(payload, {
