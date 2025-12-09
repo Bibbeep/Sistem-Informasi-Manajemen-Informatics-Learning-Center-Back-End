@@ -243,6 +243,34 @@ describe('Enrollment Service Unit Tests', () => {
             expect(result).toEqual(mockResult);
         });
 
+        it('should handle an array of statuses', async () => {
+            const { Op } = require('sequelize');
+            const mockData = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                programType: 'all',
+                status: ['in progress', 'completed'],
+            };
+            const mockCount = 10;
+            Enrollment.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows.slice(0, 10),
+            });
+
+            await EnrollmentService.getMany(mockData);
+
+            expect(Enrollment.findAndCountAll).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: {
+                        status: {
+                            [Op.in]: ['In Progress', 'Completed'],
+                        },
+                    },
+                }),
+            );
+        });
+
         it('should return empty enrollment', async () => {
             const mockData = {
                 page: 3,
