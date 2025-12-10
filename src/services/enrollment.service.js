@@ -62,6 +62,11 @@ class EnrollmentService {
                     model: Program,
                     as: 'program',
                     where: programWhere,
+                    paranoid: false,
+                },
+                {
+                    model: Certificate,
+                    as: 'certificate',
                 },
             ],
             limit,
@@ -77,6 +82,7 @@ class EnrollmentService {
                     id: enrollment.id,
                     userId: enrollment.userId,
                     programId: enrollment.programId,
+                    certificateId: enrollment.certificate?.id || null,
                     programTitle: enrollment.program.title,
                     programType: enrollment.program.type,
                     programThumbnailUrl: enrollment.program.thumbnailUrl,
@@ -124,6 +130,11 @@ class EnrollmentService {
                 {
                     model: Program,
                     as: 'program',
+                    paranoid: false,
+                },
+                {
+                    model: Certificate,
+                    as: 'certificate',
                 },
             ],
         });
@@ -144,6 +155,7 @@ class EnrollmentService {
             id: enrollment.id,
             userId: enrollment.userId,
             programId: enrollment.programId,
+            certificateId: enrollment.certificate?.id || null,
             programTitle: enrollment.program.title,
             programType: enrollment.program.type,
             programThumbnailUrl: enrollment.program.thumbnailUrl,
@@ -286,6 +298,7 @@ class EnrollmentService {
                 id: enrollment.id,
                 userId: enrollment.userId,
                 programId: enrollment.programId,
+                certificateId: null,
                 programTitle: program.title,
                 programType: program.type,
                 programThumbnailUrl: program.thumbnailUrl,
