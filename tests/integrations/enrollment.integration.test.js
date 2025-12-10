@@ -411,7 +411,7 @@ describe('Enrollment Integration Tests', () => {
         it('should return 200 and update enrollment status to Completed', async () => {
             const response = await request(server)
                 .patch(`/api/v1/enrollments/${enrollments.workshop.id}`)
-                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
                 .send({ status: 'Completed' });
 
             expect(response.status).toBe(200);
@@ -443,7 +443,7 @@ describe('Enrollment Integration Tests', () => {
         it('should return 400 for invalid request body', async () => {
             const response = await request(server)
                 .patch(`/api/v1/enrollments/${enrollments.workshop.id}`)
-                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
                 .send({ status: 'In Progress' });
 
             expect(response.status).toBe(400);
@@ -452,7 +452,7 @@ describe('Enrollment Integration Tests', () => {
         it('should return 400 for an already completed enrollment', async () => {
             const response = await request(server)
                 .patch(`/api/v1/enrollments/${enrollments.completed.id}`)
-                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
                 .send({ status: 'Completed' });
 
             expect(response.status).toBe(400);
@@ -461,7 +461,7 @@ describe('Enrollment Integration Tests', () => {
         it('should return 400 for an unpaid enrollment', async () => {
             const response = await request(server)
                 .patch(`/api/v1/enrollments/${enrollments.unpaid.id}`)
-                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
                 .send({ status: 'Completed' });
 
             expect(response.status).toBe(400);
@@ -470,7 +470,7 @@ describe('Enrollment Integration Tests', () => {
         it('should return 400 for a course enrollment', async () => {
             const response = await request(server)
                 .patch(`/api/v1/enrollments/${enrollments.course.id}`)
-                .set('Authorization', `Bearer ${tokens.regular}`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
                 .send({ status: 'Completed' });
 
             expect(response.status).toBe(400);
