@@ -64,7 +64,7 @@ module.exports = {
 
             const discussion = await DiscussionService.create({
                 ...value,
-                adminUserId: parseInt(req.tokenPayload.sub),
+                userId: parseInt(req.tokenPayload.sub),
             });
 
             return res.status(201).json({

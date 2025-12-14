@@ -3,7 +3,7 @@ const models = require('../../models');
 
 const data = async (props = {}) => {
     const defaultProps = {
-        adminUserId: props.adminUserId,
+        userId: props.userId,
         title: faker.lorem.sentence(),
         mainContent: faker.lorem.paragraphs(),
     };

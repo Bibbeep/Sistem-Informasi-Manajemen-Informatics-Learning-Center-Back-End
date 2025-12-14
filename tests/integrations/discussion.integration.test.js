@@ -49,7 +49,7 @@ describe('Discussion Integration Tests', () => {
         discussions = [];
         for (let i = 0; i < 3; i++) {
             const discussion = await discussionFactory({
-                adminUserId: users.admin.id,
+                userId: users.admin.id,
                 title: `Discussion ${i + 1}`,
             });
             discussions.push(discussion);
@@ -345,19 +345,6 @@ describe('Discussion Integration Tests', () => {
                 .send({ title: 'Unauthorized Discussion' });
 
             expect(response.status).toBe(401);
-        });
-
-        it('should return 403 for a regular user trying to create a discussion', async () => {
-            const newDiscussion = {
-                title: 'Forbidden Discussion',
-            };
-            const response = await request(server)
-                .post('/api/v1/discussions')
-                .set('Authorization', `Bearer ${tokens.regular}`)
-                .send(newDiscussion);
-
-            expect(response.status).toBe(403);
-            expect(response.body.message).toBe('Forbidden.');
         });
 
         it('should return 415 for incorrect content type', async () => {

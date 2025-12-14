@@ -9,10 +9,10 @@ module.exports = (sequelize, DataTypes) => {
                 primaryKey: true,
                 type: DataTypes.INTEGER,
             },
-            adminUserId: {
+            userId: {
                 allowNull: true,
                 type: DataTypes.INTEGER,
-                field: 'admin_user_id',
+                field: 'user_id',
             },
             title: {
                 allowNull: false,
@@ -41,7 +41,7 @@ module.exports = (sequelize, DataTypes) => {
 
     Discussion.associate = (models) => {
         Discussion.belongsTo(models.User, {
-            foreignKey: 'adminUserId',
+            foreignKey: 'userId',
             as: 'user',
         });
 

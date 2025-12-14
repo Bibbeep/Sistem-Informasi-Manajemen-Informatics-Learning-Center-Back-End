@@ -23,6 +23,7 @@ class DiscussionService {
             rows.forEach((discussion, index) => {
                 rows[index] = {
                     id: discussion.id,
+                    userId: discussion.userId,
                     title: discussion.title,
                     createdAt: discussion.createdAt,
                     updatedAt: discussion.updatedAt,
@@ -63,6 +64,7 @@ class DiscussionService {
 
         return {
             id: discussion.id,
+            userId: discussion.userId,
             title: discussion.title,
             mainContent: discussion.mainContent,
             createdAt: discussion.createdAt,
@@ -75,6 +77,7 @@ class DiscussionService {
 
         return {
             id: discussion.id,
+            userId: discussion.userId,
             title: discussion.title,
             mainContent: discussion.mainContent,
             createdAt: discussion.createdAt,
@@ -115,6 +118,7 @@ class DiscussionService {
         return {
             id: rows[0].id,
             title: rows[0].title,
+            userId: rows[0].userId,
             mainContent: rows[0].mainContent,
             createdAt: rows[0].createdAt,
             updatedAt: rows[0].updatedAt,

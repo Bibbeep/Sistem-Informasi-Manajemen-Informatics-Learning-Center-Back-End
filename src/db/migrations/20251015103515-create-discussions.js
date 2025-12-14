@@ -10,10 +10,10 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            adminUserId: {
+            userId: {
                 allowNull: true,
                 type: Sequelize.INTEGER,
-                field: 'admin_user_id',
+                field: 'user_id',
                 references: {
                     model: 'users',
                     key: 'id',

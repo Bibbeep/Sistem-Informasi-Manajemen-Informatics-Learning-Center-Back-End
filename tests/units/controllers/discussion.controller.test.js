@@ -159,7 +159,7 @@ describe('Discussion Controller Unit Tests', () => {
             expect(validateDiscussion).toHaveBeenCalledWith(req.body);
             expect(DiscussionService.create).toHaveBeenCalledWith({
                 ...mockValue,
-                adminUserId: 1,
+                userId: 1,
             });
             expect(res.status).toHaveBeenCalledWith(201);
             expect(res.json).toHaveBeenCalledWith({
@@ -202,7 +202,7 @@ describe('Discussion Controller Unit Tests', () => {
             expect(validateDiscussion).toHaveBeenCalledWith(req.body);
             expect(DiscussionService.create).toHaveBeenCalledWith({
                 ...mockValue,
-                adminUserId: 1,
+                userId: 1,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
         });
