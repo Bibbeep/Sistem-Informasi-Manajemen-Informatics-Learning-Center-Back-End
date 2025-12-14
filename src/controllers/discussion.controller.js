@@ -64,7 +64,7 @@ module.exports = {
 
             const discussion = await DiscussionService.create({
                 ...value,
-                userId: parseInt(req.tokenPayload.sub),
+                userId: parseInt(req.tokenPayload.sub, 10),
             });
 
             return res.status(201).json({
@@ -134,6 +134,7 @@ module.exports = {
             const { pagination, comments } =
                 await DiscussionService.getManyComments({
                     discussionId: parseInt(req.params.discussionId, 10),
+                    userId: parseInt(req.tokenPayload.sub, 10),
                     ...value,
                 });
 
@@ -162,6 +163,7 @@ module.exports = {
             const comment = await DiscussionService.getOneComment({
                 discussionId: parseInt(req.params.discussionId, 10),
                 commentId: parseInt(req.params.commentId, 10),
+                userId: parseInt(req.tokenPayload.sub, 10),
                 ...value,
             });
 

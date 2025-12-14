@@ -144,7 +144,7 @@ class DiscussionService {
     }
 
     static async getManyComments(data) {
-        const { page, limit, sort, discussionId } = data;
+        const { page, limit, sort, discussionId, userId } = data;
         const discussion = await Discussion.findByPk(discussionId);
 
         if (!discussion) {
@@ -187,6 +187,12 @@ class DiscussionService {
                         )`),
                         'repliesCount',
                     ],
+                    [
+                        sequelize.literal(
+                            `(SELECT COUNT(*) > 0 FROM comment_likes WHERE comment_id = "Comment".id AND user_id = ${userId})`,
+                        ),
+                        'isLiked',
+                    ],
                 ],
             },
             include: [
@@ -214,6 +220,7 @@ class DiscussionService {
                     likesCount: Number(comment.getDataValue('likesCount')) || 0,
                     repliesCount:
                         Number(comment.getDataValue('repliesCount')) || 0,
+                    isLiked: !!comment.getDataValue('isLiked'),
                     createdAt: comment.createdAt,
                     updatedAt: comment.updatedAt,
                 };
@@ -237,7 +244,7 @@ class DiscussionService {
     }
 
     static async getOneComment(data) {
-        const { discussionId, commentId, includeReplies } = data;
+        const { discussionId, commentId, includeReplies, userId } = data;
         const discussion = await Discussion.findByPk(discussionId);
 
         if (!discussion) {
@@ -252,27 +259,35 @@ class DiscussionService {
             ]);
         }
 
-        let options = {
-            attributes: {
-                include: [
-                    [
-                        sequelize.literal(`(
+        const attributes = {
+            include: [
+                [
+                    sequelize.literal(`(
                             SELECT COUNT(*)
                             FROM comment_likes AS l
                             WHERE l.comment_id = "Comment".id
                         )`),
-                        'likesCount',
-                    ],
-                    [
-                        sequelize.literal(`(
+                    'likesCount',
+                ],
+                [
+                    sequelize.literal(`(
                             SELECT COUNT(*) 
                             FROM comments AS r 
                             WHERE r.parent_comment_id = "Comment".id
                         )`),
-                        'repliesCount',
-                    ],
+                    'repliesCount',
                 ],
-            },
+                [
+                    sequelize.literal(
+                        `(SELECT COUNT(*) > 0 FROM comment_likes WHERE comment_id = "Comment".id AND user_id = ${userId})`,
+                    ),
+                    'isLiked',
+                ],
+            ],
+        };
+
+        let options = {
+            attributes,
             include: [
                 {
                     model: User,
@@ -284,31 +299,38 @@ class DiscussionService {
         };
 
         if (includeReplies) {
+            const repliesAttributes = {
+                include: [
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*)
+                            FROM comment_likes AS l
+                            WHERE l.comment_id = replies.id
+                        )`),
+                        'likesCount',
+                    ],
+                    [
+                        sequelize.literal(`(
+                            SELECT COUNT(*) 
+                            FROM comments AS r 
+                            WHERE r.parent_comment_id = replies.id
+                        )`),
+                        'repliesCount',
+                    ],
+                    [
+                        sequelize.literal(
+                            `(SELECT COUNT(*) > 0 FROM comment_likes WHERE comment_id = "replies".id AND user_id = ${userId})`,
+                        ),
+                        'isLiked',
+                    ],
+                ],
+            };
             options.include = [
                 {
                     model: Comment,
                     as: 'replies',
                     required: false,
-                    attributes: {
-                        include: [
-                            [
-                                sequelize.literal(`(
-                            SELECT COUNT(*)
-                            FROM comment_likes AS l
-                            WHERE l.comment_id = replies.id
-                        )`),
-                                'likesCount',
-                            ],
-                            [
-                                sequelize.literal(`(
-                            SELECT COUNT(*) 
-                            FROM comments AS r 
-                            WHERE r.parent_comment_id = replies.id
-                        )`),
-                                'repliesCount',
-                            ],
-                        ],
-                    },
+                    attributes: repliesAttributes,
                     include: [
                         {
                             model: User,
@@ -357,6 +379,7 @@ class DiscussionService {
                     likesCount: Number(reply.getDataValue('likesCount')) || 0,
                     repliesCount:
                         Number(reply.getDataValue('repliesCount')) || 0,
+                    isLiked: !!reply.getDataValue('isLiked'),
                     createdAt: reply.createdAt,
                     updatedAt: reply.updatedAt,
                     deletedAt: reply.deletedAt,
@@ -372,6 +395,7 @@ class DiscussionService {
             message: comment.message,
             likesCount: Number(comment.getDataValue('likesCount')) || 0,
             repliesCount: Number(comment.getDataValue('repliesCount')) || 0,
+            isLiked: !!comment.getDataValue('isLiked'),
             createdAt: comment.createdAt,
             updatedAt: comment.updatedAt,
             deletedAt: comment.deletedAt,
