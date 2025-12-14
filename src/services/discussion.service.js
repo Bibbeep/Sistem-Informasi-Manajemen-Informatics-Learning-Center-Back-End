@@ -64,6 +64,7 @@ class DiscussionService {
         return {
             id: discussion.id,
             title: discussion.title,
+            mainContent: discussion.mainContent,
             createdAt: discussion.createdAt,
             updatedAt: discussion.updatedAt,
         };
@@ -75,6 +76,7 @@ class DiscussionService {
         return {
             id: discussion.id,
             title: discussion.title,
+            mainContent: discussion.mainContent,
             createdAt: discussion.createdAt,
             updatedAt: discussion.updatedAt,
         };
@@ -113,6 +115,7 @@ class DiscussionService {
         return {
             id: rows[0].id,
             title: rows[0].title,
+            mainContent: rows[0].mainContent,
             createdAt: rows[0].createdAt,
             updatedAt: rows[0].updatedAt,
         };
