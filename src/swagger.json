@@ -6188,6 +6188,7 @@
                                                 "message": "This is a top-level comment on the discussion.",
                                                 "likesCount": 3,
                                                 "repliesCount": 2,
+                                                "isLiked": false,
                                                 "createdAt": "2025-10-18T09:12:34.000Z",
                                                 "updatedAt": "2025-10-18T09:12:34.000Z"
                                             },
@@ -6199,6 +6200,7 @@
                                                 "message": "This is a reply to the top-level comment.",
                                                 "likesCount": 1,
                                                 "repliesCount": 0,
+                                                "isLiked": false,
                                                 "createdAt": "2025-10-18T10:00:00.000Z",
                                                 "updatedAt": "2025-10-18T10:00:00.000Z"
                                             }
@@ -6339,6 +6341,7 @@
                                             "message": "This is a top-level comment on the discussion.",
                                             "likesCount": 3,
                                             "repliesCount": 2,
+                                            "isLiked": false,
                                             "createdAt": "2025-10-18T09:12:34.000Z",
                                             "updatedAt": "2025-10-18T09:12:34.000Z"
                                         }
@@ -7148,6 +7151,10 @@
                     },
                     "repliesCount": {
                         "type": "integer"
+                    },
+                    "isLiked": {
+                        "type": "boolean",
+                        "description": "Indicates if the current user has liked this comment."
                     },
                     "createdAt": {
                         "type": "string",
