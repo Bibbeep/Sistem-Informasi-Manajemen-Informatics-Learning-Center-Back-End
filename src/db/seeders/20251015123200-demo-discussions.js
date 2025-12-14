@@ -20,6 +20,7 @@ async function createDiscussions() {
         const discussion = {
             admin_user_id: faker.helpers.arrayElement(adminUsers).id,
             title: faker.lorem.sentence(),
+            main_content: faker.lorem.paragraphs(),
             created_at: createdAt,
             updated_at: faker.date.between({
                 from: createdAt,

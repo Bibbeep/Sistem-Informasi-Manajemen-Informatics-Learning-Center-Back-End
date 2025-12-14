@@ -18,6 +18,11 @@ module.exports = (sequelize, DataTypes) => {
                 allowNull: false,
                 type: DataTypes.STRING,
             },
+            mainContent: {
+                allowNull: false,
+                type: DataTypes.TEXT,
+                field: 'main_content',
+            },
             createdAt: {
                 allowNull: false,
                 type: DataTypes.DATE,
