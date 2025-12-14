@@ -215,11 +215,19 @@ describe('Discussion Service Unit Tests', () => {
     describe('updateOne Tests', () => {
         it('should update a discussion and return it', async () => {
             const mockDiscussionId = 1;
-            const mockUpdateData = { title: 'Updated Title' };
-            const mockDiscussion = { id: mockDiscussionId, title: 'Old Title' };
+            const mockUpdateData = {
+                title: 'Updated Title',
+                mainContent: 'Updated Main Content',
+            };
+            const mockDiscussion = {
+                id: mockDiscussionId,
+                title: 'Old Title',
+                mainContent: 'Old main content',
+            };
             const mockUpdatedDiscussion = {
                 id: mockDiscussionId,
                 title: 'Updated Title',
+                mainContent: 'Updated Main Content',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             };
@@ -234,12 +242,21 @@ describe('Discussion Service Unit Tests', () => {
 
             expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
             expect(Discussion.update).toHaveBeenCalledWith(
-                { title: 'Updated Title' },
-                { where: { id: mockDiscussionId }, returning: true },
+                {
+                    title: 'Updated Title',
+                    mainContent: 'Updated Main Content',
+                },
+                {
+                    where: {
+                        id: mockDiscussionId,
+                    },
+                    returning: true,
+                },
             );
             expect(result).toEqual({
                 id: mockUpdatedDiscussion.id,
                 title: mockUpdatedDiscussion.title,
+                mainContent: mockUpdatedDiscussion.mainContent,
                 createdAt: mockUpdatedDiscussion.createdAt,
                 updatedAt: mockUpdatedDiscussion.updatedAt,
             });

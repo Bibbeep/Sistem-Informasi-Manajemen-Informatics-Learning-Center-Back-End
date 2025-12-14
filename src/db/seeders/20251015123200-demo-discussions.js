@@ -4,13 +4,9 @@ const { fakerID_ID: faker } = require('@faker-js/faker');
 const { User } = require('../models');
 
 async function createDiscussions() {
-    const adminUsers = await User.findAll({
-        where: {
-            role: 'Admin',
-        },
-    });
+    const users = await User.findAll();
 
-    if (adminUsers.length === 0) {
+    if (users.length === 0) {
         return [];
     }
 
@@ -18,8 +14,9 @@ async function createDiscussions() {
     for (let i = 0; i < 50; i++) {
         const createdAt = faker.date.past();
         const discussion = {
-            admin_user_id: faker.helpers.arrayElement(adminUsers).id,
+            user_id: faker.helpers.arrayElement(users).id,
             title: faker.lorem.sentence(),
+            main_content: faker.lorem.paragraphs(),
             created_at: createdAt,
             updated_at: faker.date.between({
                 from: createdAt,

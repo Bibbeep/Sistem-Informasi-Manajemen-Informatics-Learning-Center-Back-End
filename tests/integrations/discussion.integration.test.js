@@ -49,7 +49,7 @@ describe('Discussion Integration Tests', () => {
         discussions = [];
         for (let i = 0; i < 3; i++) {
             const discussion = await discussionFactory({
-                adminUserId: users.admin.id,
+                userId: users.admin.id,
                 title: `Discussion ${i + 1}`,
             });
             discussions.push(discussion);
@@ -310,6 +310,7 @@ describe('Discussion Integration Tests', () => {
         it('should return 201 and create a new discussion for an admin user', async () => {
             const newDiscussion = {
                 title: 'New Discussion by Admin',
+                mainContent: 'Quick brown fox jumps over the white bear.',
             };
             const response = await request(server)
                 .post('/api/v1/discussions')
@@ -319,6 +320,9 @@ describe('Discussion Integration Tests', () => {
             expect(response.status).toBe(201);
             expect(response.body.data.discussion.title).toBe(
                 newDiscussion.title,
+            );
+            expect(response.body.data.discussion.mainContent).toBe(
+                newDiscussion.mainContent,
             );
             expect(response.body.message).toBe(
                 'Successfully created a discussion forum.',
@@ -343,19 +347,6 @@ describe('Discussion Integration Tests', () => {
             expect(response.status).toBe(401);
         });
 
-        it('should return 403 for a regular user trying to create a discussion', async () => {
-            const newDiscussion = {
-                title: 'Forbidden Discussion',
-            };
-            const response = await request(server)
-                .post('/api/v1/discussions')
-                .set('Authorization', `Bearer ${tokens.regular}`)
-                .send(newDiscussion);
-
-            expect(response.status).toBe(403);
-            expect(response.body.message).toBe('Forbidden.');
-        });
-
         it('should return 415 for incorrect content type', async () => {
             const response = await request(server)
                 .post('/api/v1/discussions')
@@ -372,6 +363,7 @@ describe('Discussion Integration Tests', () => {
             const discussionId = discussions[0].id;
             const updateData = {
                 title: 'Updated Discussion Title',
+                mainContent: 'Updated Main Content',
             };
             const response = await request(server)
                 .patch(`/api/v1/discussions/${discussionId}`)
@@ -380,6 +372,9 @@ describe('Discussion Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.data.discussion.title).toBe(updateData.title);
+            expect(response.body.data.discussion.mainContent).toBe(
+                updateData.mainContent,
+            );
             expect(response.body.message).toBe(
                 'Successfully updated a discussion forum.',
             );
