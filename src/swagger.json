@@ -5814,6 +5814,7 @@
                                         "discussion": {
                                             "id": 26,
                                             "title": "New Discussion on DevOps",
+                                            "mainContent": "This is the main content of the discussion.",
                                             "adminUserId": 1,
                                             "updatedAt": "2025-10-16T10:47:00.000Z",
                                             "createdAt": "2025-10-16T10:47:00.000Z"
@@ -5939,6 +5940,7 @@
                                             "id": 1,
                                             "adminUserId": 1,
                                             "title": "General Discussion about Web Development",
+                                            "mainContent": "This is the main content of the discussion.",
                                             "createdAt": "2025-10-16T10:00:00.000Z",
                                             "updatedAt": "2025-10-16T10:00:00.000Z"
                                         }
@@ -6021,6 +6023,7 @@
                                         "discussion": {
                                             "id": 1,
                                             "title": "Updated: Discussion on Advanced Web Topics",
+                                            "mainContent": "This is the updated main content.",
                                             "createdAt": "2025-10-16T10:00:00.000Z",
                                             "updatedAt": "2025-10-16T10:55:00.000Z"
                                         }
@@ -7127,6 +7130,10 @@
                         "type": "string",
                         "example": "General Discussion about Web Development"
                     },
+                    "mainContent": {
+                        "type": "string",
+                        "example": "This is the main content of the discussion."
+                    },
                     "createdAt": {
                         "type": "string",
                         "format": "date-time",
@@ -7770,23 +7777,31 @@
                 "properties": {
                     "title": {
                         "type": "string"
+                    },
+                    "mainContent": {
+                        "type": "string"
                     }
                 },
-                "required": ["title"],
+                "required": ["title", "mainContent"],
                 "example": {
-                    "title": "New Discussion on DevOps"
+                    "title": "New Discussion on DevOps",
+                    "mainContent": "This is the main content of the discussion."
                 }
             },
             "DiscussionUpdateRequestBody": {
                 "type": "object",
+                "description": "At least one of the properties is required.",
                 "properties": {
                     "title": {
                         "type": "string"
+                    },
+                    "mainContent": {
+                        "type": "string"
                     }
                 },
-                "required": ["title"],
                 "example": {
-                    "title": "Updated: Discussion on Advanced Web Topics"
+                    "title": "Updated: Discussion on Advanced Web Topics",
+                    "mainContent": "This is the updated main content."
                 }
             },
             "CompletedModuleSuccessResponse201": {

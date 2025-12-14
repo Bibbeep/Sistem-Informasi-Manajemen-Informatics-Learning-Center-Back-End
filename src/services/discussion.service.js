@@ -83,7 +83,7 @@ class DiscussionService {
     }
 
     static async updateOne(data) {
-        const { discussionId, title } = data;
+        const { discussionId, title, mainContent } = data;
 
         const discussion = await Discussion.findByPk(discussionId);
 
@@ -99,18 +99,18 @@ class DiscussionService {
             ]);
         }
 
+        const updateData = {
+            ...(title && { title }),
+            ...(mainContent && { mainContent }),
+        };
+
         // eslint-disable-next-line no-unused-vars
-        const [count, rows] = await Discussion.update(
-            {
-                title,
+        const [count, rows] = await Discussion.update(updateData, {
+            where: {
+                id: discussionId,
             },
-            {
-                where: {
-                    id: discussionId,
-                },
-                returning: true,
-            },
-        );
+            returning: true,
+        });
 
         return {
             id: rows[0].id,

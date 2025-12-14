@@ -376,6 +376,7 @@ describe('Discussion Integration Tests', () => {
             const discussionId = discussions[0].id;
             const updateData = {
                 title: 'Updated Discussion Title',
+                mainContent: 'Updated Main Content',
             };
             const response = await request(server)
                 .patch(`/api/v1/discussions/${discussionId}`)
@@ -384,6 +385,9 @@ describe('Discussion Integration Tests', () => {
 
             expect(response.status).toBe(200);
             expect(response.body.data.discussion.title).toBe(updateData.title);
+            expect(response.body.data.discussion.mainContent).toBe(
+                updateData.mainContent,
+            );
             expect(response.body.message).toBe(
                 'Successfully updated a discussion forum.',
             );
