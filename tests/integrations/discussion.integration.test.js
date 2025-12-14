@@ -310,6 +310,7 @@ describe('Discussion Integration Tests', () => {
         it('should return 201 and create a new discussion for an admin user', async () => {
             const newDiscussion = {
                 title: 'New Discussion by Admin',
+                mainContent: 'Quick brown fox jumps over the white bear.',
             };
             const response = await request(server)
                 .post('/api/v1/discussions')
@@ -319,6 +320,9 @@ describe('Discussion Integration Tests', () => {
             expect(response.status).toBe(201);
             expect(response.body.data.discussion.title).toBe(
                 newDiscussion.title,
+            );
+            expect(response.body.data.discussion.mainContent).toBe(
+                newDiscussion.mainContent,
             );
             expect(response.body.message).toBe(
                 'Successfully created a discussion forum.',
