@@ -539,6 +539,14 @@
                             "format": "email"
                         },
                         "description": "Filter users by email."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on user full names and emails."
                     }
                 ],
                 "responses": {
