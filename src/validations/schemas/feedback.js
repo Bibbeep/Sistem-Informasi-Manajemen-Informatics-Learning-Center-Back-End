@@ -8,6 +8,7 @@ const feedbackQueryParam = Joi.object({
         .regex(/^-?(id|createdAt)$/)
         .default('id'),
     email: Joi.string().email().allow(null).default(null),
+    q: Joi.string(),
 });
 
 // Request body of POST /api/v1/feedbacks

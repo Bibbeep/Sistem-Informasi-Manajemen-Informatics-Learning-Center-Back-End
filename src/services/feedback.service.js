@@ -1,3 +1,4 @@
+const { Op, fn } = require('sequelize');
 const { Feedback, FeedbackResponse } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 const mailer = require('../utils/mailer');
@@ -12,6 +13,12 @@ class FeedbackService {
 
         if (email) {
             where.email = email;
+        }
+
+        if (data.q) {
+            where._search = {
+                [Op.match]: fn('plainto_tsquery', 'english', data.q),
+            };
         }
 
         const { count, rows } = await Feedback.findAndCountAll({
