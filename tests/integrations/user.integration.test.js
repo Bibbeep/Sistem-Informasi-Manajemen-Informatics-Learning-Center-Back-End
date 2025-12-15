@@ -12,6 +12,7 @@ const jwtOptions = require('../../src/configs/jsonwebtoken');
 const truncate = require('../../scripts/db/truncate');
 const userFactory = require('../../src/db/seeders/factories/user');
 const { createPublicTestBucket } = require('../../src/configs/s3TestSetup');
+const user = require('../../src/db/seeders/factories/user');
 
 describe('User Management Integration Tests', () => {
     const mockUserPassword = 'password123';
@@ -125,6 +126,17 @@ describe('User Management Integration Tests', () => {
             expect(response.body).toHaveProperty('data.users');
             expect(response.body).toHaveProperty('pagination');
             expect(response.body).toHaveProperty('errors', null);
+        });
+
+        it('should return 200 and fetches users filtered by search query', async () => {
+            const response = await request(server)
+                .get(`/api/v1/users?q=${users.user[0].fullName.split(' ')[0]}`)
+                .set('Authorization', `Bearer ${tokens.validAdmin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.users[0].fullName).toBe(
+                users.user[0].fullName,
+            );
         });
 
         it('should return 200 and fetches all user data with filter role admin and member level basic', async () => {
