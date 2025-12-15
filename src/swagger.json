@@ -5716,6 +5716,14 @@
                             "type": "string"
                         },
                         "description": "Filter discussions by title (case-insensitive)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on discussion titles and main content."
                     }
                 ],
                 "responses": {
