@@ -1765,6 +1765,14 @@
                     },
                     {
                         "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on program titles and descriptions."
+                    },
+                    {
+                        "in": "query",
                         "name": "type",
                         "schema": {
                             "type": "string",
