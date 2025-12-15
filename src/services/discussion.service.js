@@ -1,3 +1,4 @@
+const { Op, fn } = require('sequelize');
 const { Discussion, Comment, User, Like, sequelize } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 
@@ -8,6 +9,12 @@ class DiscussionService {
 
         if (data.title) {
             where.title = data.title;
+        }
+
+        if (data.q) {
+            where._search = {
+                [Op.match]: fn('plainto_tsquery', 'english', data.q),
+            };
         }
 
         const { count, rows } = await Discussion.findAndCountAll({

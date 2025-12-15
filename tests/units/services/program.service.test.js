@@ -36,7 +36,7 @@ jest.mock('sharp', () => {
         };
     });
 });
-const { Op } = require('sequelize');
+const { Op, fn } = require('sequelize');
 const ProgramService = require('../../../src/services/program.service');
 const {
     Program,
@@ -122,6 +122,87 @@ describe('Program Service Unit Tests', () => {
 
             expect(Program.findAndCountAll).toHaveBeenCalledWith({
                 where: {
+                    priceIdr: {
+                        [Op.gte]: 0,
+                    },
+                },
+                limit: 10,
+                offset: 0,
+                order: [['id', 'ASC']],
+            });
+            expect(returnValue).toStrictEqual(mockReturnValue);
+        });
+
+        it('should return programs and pagination data with full-text search query', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                type: 'all',
+                'price.gte': 0,
+                q: 'query',
+            };
+            const mockCount = 100;
+            const mockRows = [
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+            ];
+            const mockReturnValue = {
+                pagination: {
+                    currentRecords: 10,
+                    totalRecords: 100,
+                    currentPage: 1,
+                    totalPages: 10,
+                    nextPage: 2,
+                    prevPage: null,
+                },
+                programs: mockRows,
+            };
+
+            Program.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const returnValue = await ProgramService.getMany(mockParams);
+
+            expect(Program.findAndCountAll).toHaveBeenCalledWith({
+                where: {
+                    _search: {
+                        [Op.match]: fn(
+                            'plainto_tsquery',
+                            'english',
+                            mockParams.q,
+                        ),
+                    },
                     priceIdr: {
                         [Op.gte]: 0,
                     },

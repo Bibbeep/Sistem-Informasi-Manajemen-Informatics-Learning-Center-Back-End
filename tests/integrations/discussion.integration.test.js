@@ -188,6 +188,20 @@ describe('Discussion Integration Tests', () => {
             );
         });
 
+        it('should return 200 and fetches discussions filtered by search query', async () => {
+            const response = await request(server)
+                .get(
+                    `/api/v1/discussions?q=${discussions[0].title.split(' ')[1]}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.discussions.length).toBe(1);
+            expect(response.body.data.discussions[0].title).toBe(
+                discussions[0].title,
+            );
+        });
+
         it('should return 200 and fetch all discussions for an admin user with limit 1 and page 2', async () => {
             const response = await request(server)
                 .get('/api/v1/discussions?limit=1&page=2')

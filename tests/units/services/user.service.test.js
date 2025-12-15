@@ -44,6 +44,7 @@ jest.mock('bcrypt', () => {
         compare: jest.fn(),
     };
 });
+const { Op, fn } = require('sequelize');
 const UserService = require('../../../src/services/user.service');
 const AuthService = require('../../../src/services/auth.service');
 const { User } = require('../../../src/db/models');
@@ -104,6 +105,70 @@ describe('User Service Unit Tests', () => {
             expect(User.findAndCountAll).toHaveBeenCalledWith(
                 expect.objectContaining({
                     where: {},
+                    limit: mockParams.limit,
+                    offset: (mockParams.page - 1) * mockParams.limit,
+                    order: [['id', 'ASC']],
+                    attributes: {
+                        exclude: ['hashedPassword'],
+                    },
+                }),
+            );
+            expect(result).toEqual(
+                expect.objectContaining({
+                    pagination: {
+                        currentRecords: 10,
+                        totalRecords: 20,
+                        currentPage: 1,
+                        totalPages: 2,
+                        nextPage: 2,
+                        prevPage: null,
+                    },
+                    users: mockFetchRows,
+                }),
+            );
+        });
+
+        it('should return user data with search query parameter', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                role: 'all',
+                level: 'all',
+                q: 'search',
+            };
+            const mockFetchCount = 20;
+            const mockFetchRows = [
+                { mock: 'mock' },
+                { mock: 'mock' },
+                { mock: 'mock' },
+                { mock: 'mock' },
+                { mock: 'mock' },
+                { mock: 'mock' },
+                { mock: 'mock' },
+                { mock: 'mock' },
+                { mock: 'mock' },
+                { mock: 'mock' },
+            ];
+
+            User.findAndCountAll.mockResolvedValue({
+                count: mockFetchCount,
+                rows: mockFetchRows,
+            });
+
+            const result = await UserService.getMany(mockParams);
+
+            expect(User.findAndCountAll).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    where: {
+                        _search: {
+                            [Op.match]: fn(
+                                'plainto_tsquery',
+                                'english',
+                                mockParams.q,
+                            ),
+                        },
+                    },
                     limit: mockParams.limit,
                     offset: (mockParams.page - 1) * mockParams.limit,
                     order: [['id', 'ASC']],

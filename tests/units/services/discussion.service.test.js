@@ -9,6 +9,7 @@ const {
     sequelize,
 } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
+const { Op, fn } = require('sequelize');
 
 describe('Discussion Service Unit Tests', () => {
     afterEach(() => {
@@ -47,6 +48,54 @@ describe('Discussion Service Unit Tests', () => {
 
             expect(Discussion.findAndCountAll).toHaveBeenCalledWith({
                 where: {},
+                limit: 10,
+                offset: 0,
+                order: [['id', 'ASC']],
+            });
+            expect(result.pagination).toEqual(expectedPagination);
+            expect(result.discussions).toHaveLength(10);
+        });
+
+        it('should return discussions and pagination data with full-text search query parameters', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                q: 'query',
+            };
+            const mockCount = 25;
+            const mockRows = Array(10).fill({
+                id: 1,
+                title: 'Test Discussion',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+            const expectedPagination = {
+                currentRecords: 10,
+                totalRecords: 25,
+                currentPage: 1,
+                totalPages: 3,
+                nextPage: 2,
+                prevPage: null,
+            };
+
+            Discussion.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const result = await DiscussionService.getMany(mockParams);
+
+            expect(Discussion.findAndCountAll).toHaveBeenCalledWith({
+                where: {
+                    _search: {
+                        [Op.match]: fn(
+                            'plainto_tsquery',
+                            'english',
+                            mockParams.q,
+                        ),
+                    },
+                },
                 limit: 10,
                 offset: 0,
                 order: [['id', 'ASC']],

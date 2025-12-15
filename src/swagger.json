@@ -539,6 +539,14 @@
                             "format": "email"
                         },
                         "description": "Filter users by email."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on user full names and emails."
                     }
                 ],
                 "responses": {
@@ -1251,6 +1259,14 @@
                         },
                         "description": "Filter feedbacks by email. Accepts null.",
                         "nullable": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on feedback full names, emails, and messages."
                     }
                 ],
                 "responses": {
@@ -1762,6 +1778,14 @@
                             "type": "boolean"
                         },
                         "description": "Filter by availability (true/false)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on program titles and descriptions."
                     },
                     {
                         "in": "query",
@@ -5708,6 +5732,14 @@
                             "type": "string"
                         },
                         "description": "Filter discussions by title (case-insensitive)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on discussion titles and main content."
                     }
                 ],
                 "responses": {

@@ -8,6 +8,7 @@ const discussionQueryParam = Joi.object({
         .regex(/^-?(id|createdAt|updatedAt)$/)
         .default('id'),
     title: Joi.string(),
+    q: Joi.string(),
 });
 
 // Request body for POST /api/v1/discussions
