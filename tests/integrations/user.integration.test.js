@@ -12,7 +12,6 @@ const jwtOptions = require('../../src/configs/jsonwebtoken');
 const truncate = require('../../scripts/db/truncate');
 const userFactory = require('../../src/db/seeders/factories/user');
 const { createPublicTestBucket } = require('../../src/configs/s3TestSetup');
-const user = require('../../src/db/seeders/factories/user');
 
 describe('User Management Integration Tests', () => {
     const mockUserPassword = 'password123';
