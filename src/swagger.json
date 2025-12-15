@@ -1251,6 +1251,14 @@
                         },
                         "description": "Filter feedbacks by email. Accepts null.",
                         "nullable": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on feedback full names, emails, and messages."
                     }
                 ],
                 "responses": {
