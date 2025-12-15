@@ -1402,4 +1402,81 @@ describe('Program Management Integration Tests', () => {
             expect(response.status).toBe(415);
         });
     });
+
+    describe('PUT /api/v1/programs/:programId/modules/:moduleId/texts', () => {
+        let module;
+        const testFilePath = path.join(__dirname, 'fixtures', 'test.md');
+
+        beforeEach(async () => {
+            const course = await Course.findOne({
+                where: { programId: programs.course.id },
+            });
+            module = await CourseModule.findOne({
+                where: { courseId: course.id },
+            });
+        });
+
+        it('should return 201 and upload a text material for a module', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/texts`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('text', testFilePath);
+
+            expect(response.status).toBe(201);
+            expect(response.body).toEqual(
+                expect.objectContaining({
+                    success: true,
+                    statusCode: 201,
+                    message: 'Successfully uploaded a text material.',
+                    data: {
+                        markdownUrl: expect.stringContaining('.md'),
+                    },
+                    errors: null,
+                }),
+            );
+        }, 10000);
+
+        it('should return 400 when no file is attached', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/texts`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(400);
+        });
+
+        it('should return 404 when program does not exist', async () => {
+            const response = await request(server)
+                .put(`/api/v1/programs/9999/modules/${module.id}/texts`)
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('text', testFilePath);
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 404 when module does not exist', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/9999/texts`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`)
+                .attach('text', testFilePath);
+
+            expect(response.status).toBe(404);
+        });
+
+        it('should return 403 for non-admin user', async () => {
+            const response = await request(server)
+                .put(
+                    `/api/v1/programs/${programs.course.id}/modules/${module.id}/texts`,
+                )
+                .set('Authorization', `Bearer ${tokens.regular}`)
+                .attach('text', testFilePath);
+
+            expect(response.status).toBe(403);
+        });
+    });
 });
