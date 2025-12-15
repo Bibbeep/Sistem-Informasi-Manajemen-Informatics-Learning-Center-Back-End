@@ -576,6 +576,7 @@ class ProgramService {
             id: module.id,
             numberCode: module.numberCode,
             materialUrl: module.materialUrl,
+            markdownUrl: module.markdownUrl,
             youtubeUrl: module.youtubeUrl,
             updatedAt: module.updatedAt,
             createdAt: module.createdAt,
@@ -643,6 +644,7 @@ class ProgramService {
             id: moduleRows[0].id,
             numberCode: moduleRows[0].numberCode,
             materialUrl: moduleRows[0].materialUrl,
+            markdownUrl: moduleRows[0].markdownUrl,
             youtubeUrl: moduleRows[0].youtubeUrl,
             updatedAt: moduleRows[0].updatedAt,
             createdAt: moduleRows[0].createdAt,
@@ -843,6 +845,106 @@ class ProgramService {
 
         return {
             materialUrl: Location,
+        };
+    }
+
+    static async uploadTextMaterial(data) {
+        if (!data.file) {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: '"text" is empty',
+                    context: {
+                        key: 'text',
+                        value: null,
+                    },
+                },
+            ]);
+        }
+
+        const programData = await Program.findByPk(data.programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            where: {
+                                id: data.moduleId,
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!programData) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: data.programId,
+                    },
+                },
+            ]);
+        }
+
+        if (!programData.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: data.moduleId,
+                    },
+                },
+            ]);
+        }
+
+        const { file } = data;
+        const fileName = `documents/programs/${data.programId}-${data.moduleId}-markdown-${Date.now().toString()}.md`;
+
+        const client = new Upload({
+            client: s3,
+            params: {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: file.buffer,
+                ContentType: 'text/markdown',
+                ACL: 'public-read',
+            },
+        });
+
+        const { Location } = await client.done();
+
+        if (programData.course.modules[0].markdownUrl) {
+            const oldKey = programData.course.modules[0].markdownUrl
+                .split('/')
+                .pop();
+
+            await s3.send(
+                new DeleteObjectCommand({
+                    Bucket: process.env.S3_BUCKET_NAME,
+                    Key: `documents/programs/${oldKey}`,
+                }),
+            );
+        }
+
+        if (Location) {
+            await CourseModule.update(
+                { markdownUrl: Location },
+                {
+                    where: {
+                        id: data.moduleId,
+                    },
+                },
+            );
+        }
+
+        return {
+            markdownUrl: Location,
         };
     }
 }

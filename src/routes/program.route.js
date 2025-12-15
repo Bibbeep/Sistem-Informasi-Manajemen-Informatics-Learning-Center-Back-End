@@ -9,7 +9,7 @@ const {
 } = require('../middlewares/auth.middleware');
 const { requireJsonContent } = require('../middlewares/contentType.middleware');
 const { upload } = require('../middlewares/multer.middleware.js');
-const { image, document } = require('../utils/fileType.js');
+const { image, document, markdown } = require('../utils/fileType.js');
 const asyncHandler = require('../utils/asyncHandler');
 
 router.get('/', asyncHandler(ProgramController.getAll));
@@ -116,6 +116,15 @@ router.put(
     authorize({ rules: ['admin'] }),
     upload(document, 25).single('material'),
     asyncHandler(ProgramController.uploadMaterial),
+);
+router.put(
+    '/:programId/modules/:moduleId/texts',
+    authenticate,
+    validatePathParameterId('programId'),
+    validatePathParameterId('moduleId'),
+    authorize({ rules: ['admin'] }),
+    upload(markdown, 5).single('text'),
+    asyncHandler(ProgramController.uploadTextMaterial),
 );
 
 module.exports = router;

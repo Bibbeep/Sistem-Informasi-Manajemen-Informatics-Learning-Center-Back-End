@@ -14,6 +14,7 @@ const {
     updateModuleById,
     deleteModuleById,
     uploadMaterial,
+    uploadTextMaterial,
 } = require('../../../src/controllers/program.controller');
 const {
     validateProgramQuery,
@@ -867,6 +868,55 @@ describe('Program Controller Unit Tests', () => {
             await uploadMaterial(req, res, next);
 
             expect(ProgramService.uploadMaterial).toHaveBeenCalledWith({
+                file: req.file,
+                programId: 1,
+                moduleId: 1,
+            });
+            expect(next).toHaveBeenCalledWith(serviceError);
+            expect(res.status).not.toHaveBeenCalled();
+            expect(res.json).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('uploadTextMaterial Tests', () => {
+        it('should upload a text material and return 201', async () => {
+            req.params = { programId: '1', moduleId: '1' };
+            req.file = { buffer: 'mock-text-material-buffer' };
+            const mockServiceResponse = {
+                materialUrl: 'https://example.com/new-text-material.md',
+            };
+
+            ProgramService.uploadTextMaterial.mockResolvedValue(
+                mockServiceResponse,
+            );
+
+            await uploadTextMaterial(req, res, next);
+
+            expect(ProgramService.uploadTextMaterial).toHaveBeenCalledWith({
+                file: req.file,
+                programId: 1,
+                moduleId: 1,
+            });
+            expect(res.status).toHaveBeenCalledWith(201);
+            expect(res.json).toHaveBeenCalledWith({
+                success: true,
+                statusCode: 201,
+                message: 'Successfully uploaded a text material.',
+                data: mockServiceResponse,
+                errors: null,
+            });
+            expect(next).not.toHaveBeenCalled();
+        });
+
+        it('should forward service errors to next', async () => {
+            req.params = { programId: '1', moduleId: '1' };
+            req.file = { buffer: 'mock-text-material-buffer' };
+            const serviceError = new Error('Upload failed');
+            ProgramService.uploadTextMaterial.mockRejectedValue(serviceError);
+
+            await uploadTextMaterial(req, res, next);
+
+            expect(ProgramService.uploadTextMaterial).toHaveBeenCalledWith({
                 file: req.file,
                 programId: 1,
                 moduleId: 1,
