@@ -181,6 +181,20 @@ describe('Program Management Integration Tests', () => {
             expect(response.body.data.programs.length).toBe(0);
         });
 
+        it('should return 200 and fetches programs filtered by search query', async () => {
+            const response = await request(server)
+                .get(
+                    `/api/v1/programs?q=${programs.course.title.split(' ')[0]}`,
+                )
+                .set('Authorization', `Bearer ${tokens.admin}`);
+
+            expect(response.status).toBe(200);
+            expect(response.body.data.programs.length).toBe(1);
+            expect(response.body.data.programs[0].title).toBe(
+                programs.course.title,
+            );
+        });
+
         it('should return 400 with invalid query params', async () => {
             const response = await request(server).get(
                 '/api/v1/programs?sort=abc&limit=0&page=0&type=backend&price.gte=-1&price.lte=0',

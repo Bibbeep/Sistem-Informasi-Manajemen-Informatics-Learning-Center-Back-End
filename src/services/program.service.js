@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Op, fn } = require('sequelize');
 const { fromBuffer } = require('file-type');
 const sharp = require('sharp');
 const { Upload } = require('@aws-sdk/lib-storage');
@@ -47,6 +47,12 @@ class ProgramService {
                     [Op.gt]: new Date(),
                 };
             }
+        }
+
+        if (data.q) {
+            where._search = {
+                [Op.match]: fn('plainto_tsquery', 'english', data.q),
+            };
         }
 
         const { count, rows } = await Program.findAndCountAll({
