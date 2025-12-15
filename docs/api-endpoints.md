@@ -49,6 +49,7 @@ An internal Node.js/Express API for the Informatics Learning Center project. It 
 | `PATCH`  | `/api/v1/programs/{programId}/modules/{moduleId}`               | Updates a module                             | Required       | Admin         |
 | `DELETE` | `/api/v1/programs/{programId}/modules/{moduleId}`               | Deletes a module                             | Required       | Admin         |
 | `PUT`    | `/api/v1/programs/{programId}/modules/{moduleId}/materials`     | Uploads a module material                    | Required       | Admin         |
+| `PUT`    | `/api/v1/programs/{programId}/modules/{moduleId}/texts`         | Uploads a markdown text material             | Required       | Admin         |
 
 ### Enrollment Management
 
