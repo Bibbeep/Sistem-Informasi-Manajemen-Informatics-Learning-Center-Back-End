@@ -76,16 +76,33 @@ class UserService {
             ]);
         }
 
-        return {
-            id: user.id,
-            email: tokenPayload.admin ? user.email : undefined,
-            fullName: user.fullName,
-            memberLevel: tokenPayload.admin ? user.memberLevel : undefined,
-            role: tokenPayload.admin ? user.role : undefined,
-            pictureUrl: user.pictureUrl,
-            createdAt: tokenPayload.admin ? user.createdAt : undefined,
-            updatedAt: tokenPayload.admin ? user.updatedAt : undefined,
-        };
+        let payload;
+
+        if (tokenPayload.admin || tokenPayload.sub === user.id) {
+            payload = {
+                id: user.id,
+                email: user.email,
+                fullName: user.fullName,
+                memberLevel: user.memberLevel,
+                role: user.role,
+                pictureUrl: user.pictureUrl,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+            };
+        } else {
+            payload = {
+                id: user.id,
+                email: tokenPayload.admin ? user.email : undefined,
+                fullName: user.fullName,
+                memberLevel: tokenPayload.admin ? user.memberLevel : undefined,
+                role: tokenPayload.admin ? user.role : undefined,
+                pictureUrl: user.pictureUrl,
+                createdAt: tokenPayload.admin ? user.createdAt : undefined,
+                updatedAt: tokenPayload.admin ? user.updatedAt : undefined,
+            };
+        }
+
+        return payload;
     }
 
     static async updateOne(data) {
