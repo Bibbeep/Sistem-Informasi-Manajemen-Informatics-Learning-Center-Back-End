@@ -936,9 +936,11 @@ class ProgramService {
             );
         }
 
+        const publicUrl = `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`;
+
         if (Location) {
             await CourseModule.update(
-                { markdownUrl: Location },
+                { markdownUrl: publicUrl },
                 {
                     where: {
                         id: data.moduleId,
@@ -948,7 +950,7 @@ class ProgramService {
         }
 
         return {
-            markdownUrl: Location,
+            markdownUrl: publicUrl,
         };
     }
 }
