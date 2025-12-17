@@ -14,7 +14,7 @@ COPY scripts/docker-entrypoint.sh ./scripts/
 
 FROM node:${NODE_VERSION}-alpine
 
-RUN apk add --no-cache netcat-openbsd curl
+RUN apk add --no-cache netcat-openbsd curl postgresql-client
 
 WORKDIR /usr/src/app
 

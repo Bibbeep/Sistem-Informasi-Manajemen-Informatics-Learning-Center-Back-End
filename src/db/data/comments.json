@@ -1,0 +1,8 @@
+[
+  { "id": 1, "discussionId": 1, "userId": 3, "message": "Glad to be here!", "parentCommentId": null },
+  { "id": 2, "discussionId": 2, "userId": 8, "message": "I recommend using a feature-based directory structure.", "parentCommentId": null },
+  { "id": 3, "discussionId": 2, "userId": 2, "message": "Interesting! Can you elaborate on that?", "parentCommentId": 2 },
+  { "id": 4, "discussionId": 2, "userId": 8, "message": "Sure! It helps to keep related files together, making the codebase easier to navigate.", "parentCommentId": 3 },
+  { "id": 5, "discussionId": 3, "userId": 6, "message": "The section on threat modeling was eye-opening for me.", "parentCommentId": null },
+  { "id": 6, "discussionId": 3, "userId": 4, "message": "I agree. It's something I'll definitely be applying to my own projects.", "parentCommentId": 5 }
+]

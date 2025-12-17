@@ -1,0 +1,5 @@
+[
+  { "id": 1, "userId": 1, "title": "Welcome to the ILC Forums!", "mainContent": "Welcome everyone! Feel free to ask questions and share your knowledge." },
+  { "id": 2, "userId": 2, "title": "Best practices for React development?", "mainContent": "I'm looking for tips on how to structure a large React application. Any advice?" },
+  { "id": 3, "userId": 4, "title": "Thoughts on the new Cybersecurity Workshop?", "mainContent": "I found the workshop very informative. What were your key takeaways?" }
+]
