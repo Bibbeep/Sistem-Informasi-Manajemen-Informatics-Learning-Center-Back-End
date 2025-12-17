@@ -39,6 +39,7 @@ module.exports = {
                     number_code: i,
                     material_url: `${faker.internet.url({ appendSlash: true })}${faker.system.commonFileName(faker.helpers.arrayElement(['pdf', 'pptx', 'docx', 'xlsx', 'mp4', 'mkv', 'mov']))}`,
                     youtube_url: `https://www.youtube.com/watch?v=${faker.string.alphanumeric(11)}`,
+                    markdown_url: faker.internet.url(),
                     created_at: createdAt,
                     updated_at: faker.date.between({
                         from: createdAt,

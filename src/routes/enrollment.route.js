@@ -39,13 +39,7 @@ router.patch(
     authenticate,
     validatePathParameterId('enrollmentId'),
     requireJsonContent,
-    authorize({
-        rules: ['self', 'admin'],
-        model: Enrollment,
-        param: 'enrollmentId',
-        ownerForeignKey: 'userId',
-        ownerQueryParam: 'prohibited',
-    }),
+    authorize({ rules: ['admin'] }),
     asyncHandler(EnrollmentController.updateById),
 );
 router.delete(

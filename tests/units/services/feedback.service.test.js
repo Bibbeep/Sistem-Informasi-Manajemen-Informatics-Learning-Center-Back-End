@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 jest.mock('../../../src/db/models');
 jest.mock('../../../src/utils/mailer');
+const { Op, fn } = require('sequelize');
 const FeedbackService = require('../../../src/services/feedback.service');
 const { Feedback, FeedbackResponse } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
@@ -74,6 +75,93 @@ describe('Feedback Service Unit Tests', () => {
 
             expect(Feedback.findAndCountAll).toHaveBeenCalledWith({
                 where: {},
+                include: [
+                    {
+                        model: FeedbackResponse,
+                        as: 'responses',
+                        attributes: {
+                            exclude: ['feedbackId'],
+                        },
+                    },
+                ],
+                limit: 10,
+                offset: 0,
+                order: [['id', 'ASC']],
+            });
+            expect(returnValue).toStrictEqual(mockReturnValue);
+        });
+
+        it('should return feedbacks and pagination data with full-text search query parameter value', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                email: null,
+                q: 'query',
+            };
+
+            const mockCount = 50;
+            const mockRows = [
+                {
+                    dummy: 'feedback',
+                },
+                {
+                    dummy: 'feedback',
+                },
+                {
+                    dummy: 'feedback',
+                },
+                {
+                    dummy: 'feedback',
+                },
+                {
+                    dummy: 'feedback',
+                },
+                {
+                    dummy: 'feedback',
+                },
+                {
+                    dummy: 'feedback',
+                },
+                {
+                    dummy: 'feedback',
+                },
+                {
+                    dummy: 'feedback',
+                },
+                {
+                    dummy: 'feedback',
+                },
+            ];
+            const mockReturnValue = {
+                pagination: {
+                    currentRecords: 10,
+                    totalRecords: 50,
+                    currentPage: 1,
+                    totalPages: 5,
+                    nextPage: 2,
+                    prevPage: null,
+                },
+                feedbacks: mockRows,
+            };
+
+            Feedback.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const returnValue = await FeedbackService.getMany(mockParams);
+
+            expect(Feedback.findAndCountAll).toHaveBeenCalledWith({
+                where: {
+                    _search: {
+                        [Op.match]: fn(
+                            'plainto_tsquery',
+                            'english',
+                            mockParams.q,
+                        ),
+                    },
+                },
                 include: [
                     {
                         model: FeedbackResponse,

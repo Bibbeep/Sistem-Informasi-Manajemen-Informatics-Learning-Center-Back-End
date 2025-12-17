@@ -3,6 +3,7 @@ const sharp = require('sharp');
 const { fromBuffer } = require('file-type');
 const { Upload } = require('@aws-sdk/lib-storage');
 const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { Op, fn } = require('sequelize');
 const { User } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 const AuthService = require('./auth.service');
@@ -24,6 +25,12 @@ class UserService {
 
         if (data.email) {
             where.email = data.email;
+        }
+
+        if (data.q) {
+            where._search = {
+                [Op.match]: fn('plainto_tsquery', 'english', data.q),
+            };
         }
 
         const { count, rows } = await User.findAndCountAll({

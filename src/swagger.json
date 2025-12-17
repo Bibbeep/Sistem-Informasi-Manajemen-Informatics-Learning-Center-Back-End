@@ -539,6 +539,14 @@
                             "format": "email"
                         },
                         "description": "Filter users by email."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on user full names and emails."
                     }
                 ],
                 "responses": {
@@ -1251,6 +1259,14 @@
                         },
                         "description": "Filter feedbacks by email. Accepts null.",
                         "nullable": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on feedback full names, emails, and messages."
                     }
                 ],
                 "responses": {
@@ -1762,6 +1778,14 @@
                             "type": "boolean"
                         },
                         "description": "Filter by availability (true/false)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on program titles and descriptions."
                     },
                     {
                         "in": "query",
@@ -3537,17 +3561,36 @@
                     {
                         "in": "query",
                         "name": "status",
+                        "style": "form",
+                        "explode": true,
                         "schema": {
-                            "type": "string",
-                            "enum": [
-                                "unpaid",
-                                "in progress",
-                                "completed",
-                                "expired",
-                                "all"
-                            ],
-                            "default": "all"
-                        }
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "unpaid",
+                                        "in progress",
+                                        "completed",
+                                        "expired",
+                                        "all"
+                                    ],
+                                    "default": "all"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "unpaid",
+                                            "in progress",
+                                            "completed",
+                                            "expired"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "description": "Filter enrollments by status. Can be a single status or an array of statuses (e.g., `status=in progress&status=completed`). If not provided, it will return all."
                     }
                 ],
                 "responses": {
@@ -5689,6 +5732,14 @@
                             "type": "string"
                         },
                         "description": "Filter discussions by title (case-insensitive)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on discussion titles and main content."
                     }
                 ],
                 "responses": {
@@ -5707,14 +5758,14 @@
                                         "discussions": [
                                             {
                                                 "id": 1,
-                                                "adminUserId": 1,
+                                                "userId": 1,
                                                 "title": "General Discussion about Web Development",
                                                 "createdAt": "2025-10-16T10:00:00.000Z",
                                                 "updatedAt": "2025-10-16T10:00:00.000Z"
                                             },
                                             {
                                                 "id": 2,
-                                                "adminUserId": 1,
+                                                "userId": 1,
                                                 "title": "Frontend Frameworks: React vs Vue",
                                                 "createdAt": "2025-10-15T14:30:00.000Z",
                                                 "updatedAt": "2025-10-15T14:30:00.000Z"
@@ -5762,7 +5813,7 @@
                 "description": "API for discussion management — GET /api/v1/discussions"
             },
             "post": {
-                "summary": "Creates a new discussion forum (Admin only)",
+                "summary": "Creates a new discussion forum",
                 "tags": ["Discussion Management"],
                 "security": [
                     {
@@ -5795,8 +5846,8 @@
                                         "discussion": {
                                             "id": 26,
                                             "title": "New Discussion on DevOps",
-                                            "adminUserId": 1,
-                                            "updatedAt": "2025-10-16T10:47:00.000Z",
+                                                            "mainContent": "This is the main content of the discussion.",
+                                                            "userId": 1,                                            "updatedAt": "2025-10-16T10:47:00.000Z",
                                             "createdAt": "2025-10-16T10:47:00.000Z"
                                         }
                                     },
@@ -5853,31 +5904,6 @@
                                 }
                             }
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden access for non-admin users.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "example": {
-                                    "success": false,
-                                    "statusCode": 403,
-                                    "message": "Forbidden.",
-                                    "data": null,
-                                    "errors": [
-                                        {
-                                            "message": "You do not have the necessary permissions to access this resource.",
-                                            "context": {
-                                                "key": "role",
-                                                "value": "User"
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        }
                     }
                 },
                 "description": "API for discussion management — POST /api/v1/discussions"
@@ -5918,8 +5944,9 @@
                                     "data": {
                                         "discussion": {
                                             "id": 1,
-                                            "adminUserId": 1,
+                                            "userId": 1,
                                             "title": "General Discussion about Web Development",
+                                            "mainContent": "This is the main content of the discussion.",
                                             "createdAt": "2025-10-16T10:00:00.000Z",
                                             "updatedAt": "2025-10-16T10:00:00.000Z"
                                         }
@@ -6001,7 +6028,9 @@
                                     "data": {
                                         "discussion": {
                                             "id": 1,
+                                            "userId": 1,
                                             "title": "Updated: Discussion on Advanced Web Topics",
+                                            "mainContent": "This is the updated main content.",
                                             "createdAt": "2025-10-16T10:00:00.000Z",
                                             "updatedAt": "2025-10-16T10:55:00.000Z"
                                         }
@@ -6191,6 +6220,7 @@
                                                 "message": "This is a top-level comment on the discussion.",
                                                 "likesCount": 3,
                                                 "repliesCount": 2,
+                                                "isLiked": false,
                                                 "createdAt": "2025-10-18T09:12:34.000Z",
                                                 "updatedAt": "2025-10-18T09:12:34.000Z"
                                             },
@@ -6202,6 +6232,7 @@
                                                 "message": "This is a reply to the top-level comment.",
                                                 "likesCount": 1,
                                                 "repliesCount": 0,
+                                                "isLiked": false,
                                                 "createdAt": "2025-10-18T10:00:00.000Z",
                                                 "updatedAt": "2025-10-18T10:00:00.000Z"
                                             }
@@ -6342,6 +6373,7 @@
                                             "message": "This is a top-level comment on the discussion.",
                                             "likesCount": 3,
                                             "repliesCount": 2,
+                                            "isLiked": false,
                                             "createdAt": "2025-10-18T09:12:34.000Z",
                                             "updatedAt": "2025-10-18T09:12:34.000Z"
                                         }
@@ -6942,6 +6974,10 @@
                         "type": "integer",
                         "description": "The unique identifier for the invoice."
                     },
+                    "enrollmentId": {
+                        "type": "integer",
+                        "description": "The ID of the enrollment this invoice is for."
+                    },
                     "userId": {
                         "type": "integer",
                         "description": "The ID of the user associated with the invoice."
@@ -7096,13 +7132,18 @@
                         "type": "integer",
                         "example": 1
                     },
-                    "adminUserId": {
+                    "userId": {
                         "type": "integer",
+                        "description": "The ID of the user who created the discussion.",
                         "example": 1
                     },
                     "title": {
                         "type": "string",
                         "example": "General Discussion about Web Development"
+                    },
+                    "mainContent": {
+                        "type": "string",
+                        "example": "This is the main content of the discussion."
                     },
                     "createdAt": {
                         "type": "string",
@@ -7142,6 +7183,10 @@
                     },
                     "repliesCount": {
                         "type": "integer"
+                    },
+                    "isLiked": {
+                        "type": "boolean",
+                        "description": "Indicates if the current user has liked this comment."
                     },
                     "createdAt": {
                         "type": "string",
@@ -7747,23 +7792,31 @@
                 "properties": {
                     "title": {
                         "type": "string"
+                    },
+                    "mainContent": {
+                        "type": "string"
                     }
                 },
-                "required": ["title"],
+                "required": ["title", "mainContent"],
                 "example": {
-                    "title": "New Discussion on DevOps"
+                    "title": "New Discussion on DevOps",
+                    "mainContent": "This is the main content of the discussion."
                 }
             },
             "DiscussionUpdateRequestBody": {
                 "type": "object",
+                "description": "At least one of the properties is required.",
                 "properties": {
                     "title": {
                         "type": "string"
+                    },
+                    "mainContent": {
+                        "type": "string"
                     }
                 },
-                "required": ["title"],
                 "example": {
-                    "title": "Updated: Discussion on Advanced Web Topics"
+                    "title": "Updated: Discussion on Advanced Web Topics",
+                    "mainContent": "This is the updated main content."
                 }
             },
             "CompletedModuleSuccessResponse201": {
@@ -9172,6 +9225,7 @@
                         "invoices": [
                             {
                                 "id": 1,
+                                "enrollmentId": 1,
                                 "userId": 1,
                                 "programId": 1,
                                 "programTitle": "Introduction to Backend Development",
@@ -9236,6 +9290,7 @@
                     "data": {
                         "invoice": {
                             "id": 1,
+                            "enrollmentId": 1,
                             "userId": 1,
                             "programId": 1,
                             "programTitle": "Introduction to Backend Development",

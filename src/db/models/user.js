@@ -77,7 +77,7 @@ module.exports = (sequelize, DataTypes) => {
         });
 
         User.hasMany(models.Discussion, {
-            foreignKey: 'adminUserId',
+            foreignKey: 'userId',
             as: 'discussions',
         });
 

@@ -21,6 +21,7 @@ const programQueryParam = Joi.object({
         .default('all'),
     'price.gte': Joi.number().integer().min(0).default(0),
     'price.lte': Joi.number().integer().positive(),
+    q: Joi.string(),
 });
 
 // Request body for POST /api/v1/programs

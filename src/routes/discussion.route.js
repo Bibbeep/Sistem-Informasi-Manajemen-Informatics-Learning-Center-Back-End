@@ -20,9 +20,6 @@ router.post(
     '/',
     authenticate,
     requireJsonContent,
-    authorize({
-        rules: ['admin'],
-    }),
     asyncHandler(DiscussionController.create),
 );
 router.patch(

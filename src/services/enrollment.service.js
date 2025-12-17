@@ -21,7 +21,18 @@ class EnrollmentService {
         const { page, limit, sort, programType, status } = data;
         let where = {};
 
-        if (status !== 'all') {
+        if (Array.isArray(status)) {
+            where.status = {
+                [Op.in]: status.map((item) => {
+                    return item
+                        .split(' ')
+                        .map((str) => {
+                            return str.charAt(0).toUpperCase() + str.slice(1);
+                        })
+                        .join(' ');
+                }),
+            };
+        } else if (status !== 'all') {
             where.status = status
                 .split(' ')
                 .map((str) => {
@@ -51,6 +62,11 @@ class EnrollmentService {
                     model: Program,
                     as: 'program',
                     where: programWhere,
+                    paranoid: false,
+                },
+                {
+                    model: Certificate,
+                    as: 'certificate',
                 },
             ],
             limit,
@@ -66,6 +82,7 @@ class EnrollmentService {
                     id: enrollment.id,
                     userId: enrollment.userId,
                     programId: enrollment.programId,
+                    certificateId: enrollment.certificate?.id || null,
                     programTitle: enrollment.program.title,
                     programType: enrollment.program.type,
                     programThumbnailUrl: enrollment.program.thumbnailUrl,
@@ -113,6 +130,11 @@ class EnrollmentService {
                 {
                     model: Program,
                     as: 'program',
+                    paranoid: false,
+                },
+                {
+                    model: Certificate,
+                    as: 'certificate',
                 },
             ],
         });
@@ -133,6 +155,7 @@ class EnrollmentService {
             id: enrollment.id,
             userId: enrollment.userId,
             programId: enrollment.programId,
+            certificateId: enrollment.certificate?.id || null,
             programTitle: enrollment.program.title,
             programType: enrollment.program.type,
             programThumbnailUrl: enrollment.program.thumbnailUrl,
@@ -275,6 +298,7 @@ class EnrollmentService {
                 id: enrollment.id,
                 userId: enrollment.userId,
                 programId: enrollment.programId,
+                certificateId: null,
                 programTitle: program.title,
                 programType: program.type,
                 programThumbnailUrl: program.thumbnailUrl,
@@ -495,7 +519,7 @@ class EnrollmentService {
                                 include: [
                                     [
                                         Sequelize.literal(`
-                                            (SELECT COUNT(*) FROM course_modules AS modules WHERE modules.course_id = "program->course".id)
+                                            (SELECT COUNT(*) FROM course_modules AS modules WHERE modules.course_id = "program->course".id AND modules.deleted_at IS NULL)
                                         `),
                                         'totalModules',
                                     ],
@@ -619,6 +643,10 @@ class EnrollmentService {
                         '0',
                     )}-U${String(enrollment.userId).padStart(4, '0')}`;
                     const now = new Date();
+                    const expireDate = new Date(now.valueOf());
+                    const expiredAt = expireDate.setFullYear(
+                        expireDate.getFullYear() + 3,
+                    );
 
                     const fileBuffer = await printPdf(
                         {
@@ -632,7 +660,7 @@ class EnrollmentService {
                             }).format(now),
                             expiredAt: new Intl.DateTimeFormat('en-US', {
                                 dateStyle: 'long',
-                            }).format(new Date(now).getFullYear() + 3),
+                            }).format(expireDate),
                         },
                         ['..', 'templates', 'documents', 'certificate.hbs'],
                     );
@@ -658,7 +686,7 @@ class EnrollmentService {
                         credential,
                         documentUrl: Location,
                         issuedAt: now,
-                        expiredAt: new Date(now).getFullYear() + 3,
+                        expiredAt,
                     };
 
                     await Certificate.create(payload, {

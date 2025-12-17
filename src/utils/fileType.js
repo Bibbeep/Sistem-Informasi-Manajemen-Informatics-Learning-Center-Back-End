@@ -75,4 +75,24 @@ module.exports = {
             false,
         );
     },
+    markdown: (req, file, cb) => {
+        const allowedMimeTypes = ['text/markdown'];
+
+        if (allowedMimeTypes.includes(file.mimetype)) {
+            return cb(null, true);
+        }
+
+        cb(
+            new HTTPError(415, 'Unsupported Media Type.', [
+                {
+                    message: 'File MIME type must be "text/markdown"',
+                    context: {
+                        key: 'File MIME Type',
+                        value: file.mimetype,
+                    },
+                },
+            ]),
+            false,
+        );
+    },
 };

@@ -24,6 +24,11 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.TEXT,
                 field: 'material_url',
             },
+            markdownUrl: {
+                allowNull: true,
+                type: DataTypes.TEXT,
+                field: 'markdown_url',
+            },
             youtubeUrl: {
                 allowNull: false,
                 type: DataTypes.TEXT,

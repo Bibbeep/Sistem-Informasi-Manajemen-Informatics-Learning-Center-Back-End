@@ -31,6 +31,11 @@ module.exports = {
                 type: Sequelize.TEXT,
                 field: 'material_url',
             },
+            markdownUrl: {
+                allowNull: true,
+                type: Sequelize.TEXT,
+                field: 'markdown_url',
+            },
             youtubeUrl: {
                 allowNull: false,
                 type: Sequelize.TEXT,

@@ -1,5 +1,5 @@
 /* eslint-disable no-undef */
-const { image, document } = require('../../../src/utils/fileType');
+const { image, document, markdown } = require('../../../src/utils/fileType');
 const HTTPError = require('../../../src/utils/httpError');
 
 describe('File Type Utility Unit Tests', () => {
@@ -120,6 +120,39 @@ describe('File Type Utility Unit Tests', () => {
                         context: {
                             key: 'File MIME Type',
                             value: null,
+                        },
+                    },
+                ]),
+                false,
+            );
+        });
+    });
+
+    describe('markdown Tests', () => {
+        it('should call cb with null and true', async () => {
+            const mockFile = {
+                mimetype: 'text/markdown',
+            };
+
+            await markdown(req, mockFile, cb);
+
+            expect(cb).toHaveBeenCalledWith(null, true);
+        });
+
+        it('should call cb with error and false', async () => {
+            const mockFile = {
+                mimetype: 'application/pdf',
+            };
+
+            await markdown(req, mockFile, cb);
+
+            expect(cb).toHaveBeenCalledWith(
+                new HTTPError(415, 'Unsupported Media Type.', [
+                    {
+                        message: 'File MIME type must be "text/markdown"',
+                        context: {
+                            key: 'File MIME Type',
+                            value: mockFile.mimetype,
                         },
                     },
                 ]),

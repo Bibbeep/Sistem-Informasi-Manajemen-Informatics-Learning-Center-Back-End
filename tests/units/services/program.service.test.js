@@ -36,7 +36,7 @@ jest.mock('sharp', () => {
         };
     });
 });
-const { Op } = require('sequelize');
+const { Op, fn } = require('sequelize');
 const ProgramService = require('../../../src/services/program.service');
 const {
     Program,
@@ -122,6 +122,87 @@ describe('Program Service Unit Tests', () => {
 
             expect(Program.findAndCountAll).toHaveBeenCalledWith({
                 where: {
+                    priceIdr: {
+                        [Op.gte]: 0,
+                    },
+                },
+                limit: 10,
+                offset: 0,
+                order: [['id', 'ASC']],
+            });
+            expect(returnValue).toStrictEqual(mockReturnValue);
+        });
+
+        it('should return programs and pagination data with full-text search query', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                type: 'all',
+                'price.gte': 0,
+                q: 'query',
+            };
+            const mockCount = 100;
+            const mockRows = [
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+            ];
+            const mockReturnValue = {
+                pagination: {
+                    currentRecords: 10,
+                    totalRecords: 100,
+                    currentPage: 1,
+                    totalPages: 10,
+                    nextPage: 2,
+                    prevPage: null,
+                },
+                programs: mockRows,
+            };
+
+            Program.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const returnValue = await ProgramService.getMany(mockParams);
+
+            expect(Program.findAndCountAll).toHaveBeenCalledWith({
+                where: {
+                    _search: {
+                        [Op.match]: fn(
+                            'plainto_tsquery',
+                            'english',
+                            mockParams.q,
+                        ),
+                    },
                     priceIdr: {
                         [Op.gte]: 0,
                     },
@@ -1841,6 +1922,154 @@ describe('Program Service Unit Tests', () => {
                             key: 'File MIME Type',
                             value: null,
                         },
+                    },
+                ]),
+            );
+        });
+    });
+
+    describe('uploadTextMaterial Tests', () => {
+        const mockData = {
+            file: { buffer: 'mock-text-buffer' },
+            programId: 1,
+            moduleId: 1,
+        };
+
+        const mockProgram = {
+            id: 1,
+            course: {
+                id: 1,
+                modules: [
+                    {
+                        id: 1,
+                        markdownUrl: null,
+                    },
+                ],
+            },
+        };
+
+        beforeEach(() => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+        });
+
+        it('should upload a new markdown material and update the module record', async () => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Upload.mockImplementation(() => {
+                return {
+                    done: jest.fn().mockResolvedValue({
+                        Location:
+                            'https://mock-s3-location.com/new-markdown.md',
+                    }),
+                };
+            });
+
+            const result = await ProgramService.uploadTextMaterial(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(Upload).toHaveBeenCalledTimes(1);
+            expect(CourseModule.update).toHaveBeenCalledWith(
+                {
+                    markdownUrl: 'https://mock-s3-location.com/new-markdown.md',
+                },
+                { where: { id: mockData.moduleId } },
+            );
+            expect(s3.send).not.toHaveBeenCalled();
+            expect(result).toEqual({
+                markdownUrl: 'https://mock-s3-location.com/new-markdown.md',
+            });
+        });
+
+        it('should upload a new markdown material and not throw error even if failed to update to database', async () => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Upload.mockImplementationOnce(() => {
+                return {
+                    done: jest.fn().mockResolvedValue({
+                        Location: undefined,
+                    }),
+                };
+            });
+
+            await ProgramService.uploadTextMaterial(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(Upload).toHaveBeenCalledTimes(1);
+            expect(CourseModule.update).not.toHaveBeenCalled();
+            expect(s3.send).not.toHaveBeenCalled();
+        });
+
+        it('should upload a new markdown material and delete the old one if it exists', async () => {
+            const programWithMarkdown = {
+                ...mockProgram,
+                course: {
+                    ...mockProgram.course,
+                    modules: [
+                        {
+                            id: 1,
+                            markdownUrl:
+                                'https://my-bucket.com/documents/programs/old-markdown.md',
+                        },
+                    ],
+                },
+            };
+            Program.findByPk.mockResolvedValue(programWithMarkdown);
+
+            await ProgramService.uploadTextMaterial(mockData);
+
+            expect(s3.send).toHaveBeenCalledTimes(1);
+            expect(DeleteObjectCommand).toHaveBeenCalledWith({
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: 'documents/programs/old-markdown.md',
+            });
+        });
+
+        it('should throw a 400 error if no file is provided', async () => {
+            await expect(
+                ProgramService.uploadTextMaterial({ ...mockData, file: null }),
+            ).rejects.toThrow(
+                new HTTPError(400, 'Validation error.', [
+                    {
+                        message: '"text" is empty',
+                        context: { key: 'text', value: null },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 404 error if the program is not found', async () => {
+            Program.findByPk.mockResolvedValue(null);
+            await expect(
+                ProgramService.uploadTextMaterial(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Program with "programId" does not exist',
+                        context: {
+                            key: 'programId',
+                            value: mockData.programId,
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 404 error if the module is not found', async () => {
+            Program.findByPk.mockResolvedValue({
+                ...mockProgram,
+                course: null,
+            });
+            await expect(
+                ProgramService.uploadTextMaterial(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Module with "moduleId" doesを起こすnot exist',
+                        context: { key: 'moduleId', value: mockData.moduleId },
                     },
                 ]),
             );

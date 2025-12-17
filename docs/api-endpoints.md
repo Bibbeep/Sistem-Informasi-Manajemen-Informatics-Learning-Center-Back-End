@@ -49,6 +49,7 @@ An internal Node.js/Express API for the Informatics Learning Center project. It 
 | `PATCH`  | `/api/v1/programs/{programId}/modules/{moduleId}`               | Updates a module                             | Required       | Admin         |
 | `DELETE` | `/api/v1/programs/{programId}/modules/{moduleId}`               | Deletes a module                             | Required       | Admin         |
 | `PUT`    | `/api/v1/programs/{programId}/modules/{moduleId}/materials`     | Uploads a module material                    | Required       | Admin         |
+| `PUT`    | `/api/v1/programs/{programId}/modules/{moduleId}/texts`         | Uploads a markdown text material             | Required       | Admin         |
 
 ### Enrollment Management
 
@@ -57,7 +58,7 @@ An internal Node.js/Express API for the Informatics Learning Center project. It 
 | `GET`    | `/api/v1/enrollments`                                           | Retrieves all enrollments                    | Required       | Self          |
 | `GET`    | `/api/v1/enrollments/{enrollmentId}`                            | Retrieves an enrollment details              | Required       | Self          |
 | `POST`   | `/api/v1/enrollments`                                           | Creates an enrollment/enroll to a program    | Required       | Self          |
-| `PATCH`  | `/api/v1/enrollments/{enrollmentId}`                            | Updates an enrollment                        | Required       | Self          |
+| `PATCH`  | `/api/v1/enrollments/{enrollmentId}`                            | Updates an enrollment                        | Required       | Admin         |
 | `DELETE` | `/api/v1/enrollments/{enrollmentId}`                            | Deletes an enrollment                        | Required       | Admin         |
 | `POST`   | `/api/v1/enrollments/{enrollmentId}/completed-modules`          | Mark a module as completed                   | Required       | Self          |
 
