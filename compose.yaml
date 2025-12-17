@@ -84,6 +84,8 @@ services:
       S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
       S3_BUCKET_NAME: ${S3_BUCKET_NAME}
       DOCRAPTOR_API_KEY: ${DOCRAPTOR_API_KEY}
+      RATE_LIMITER_MAX_REQ: ${RATE_LIMITER_MAX_REQ}
+      RATE_LIMITER_WINDOW_SEC: ${RATE_LIMITER_WINDOW_SEC}
     depends_on:
       db:
         condition: service_healthy
