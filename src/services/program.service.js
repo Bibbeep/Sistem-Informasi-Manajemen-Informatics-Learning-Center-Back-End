@@ -415,9 +415,11 @@ class ProgramService {
             );
         }
 
+        const publicUrl = `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`;
+
         if (Location) {
             await Program.update(
-                { thumbnailUrl: Location },
+                { thumbnailUrl: publicUrl },
                 {
                     where: {
                         id: data.programId,
@@ -427,7 +429,7 @@ class ProgramService {
         }
 
         return {
-            thumbnailUrl: Location,
+            thumbnailUrl: publicUrl,
         };
     }
 
@@ -832,9 +834,11 @@ class ProgramService {
             );
         }
 
+        const publicUrl = `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`;
+
         if (Location) {
             await CourseModule.update(
-                { materialUrl: Location },
+                { materialUrl: publicUrl },
                 {
                     where: {
                         id: data.moduleId,
@@ -844,7 +848,7 @@ class ProgramService {
         }
 
         return {
-            materialUrl: Location,
+            materialUrl: publicUrl,
         };
     }
 
