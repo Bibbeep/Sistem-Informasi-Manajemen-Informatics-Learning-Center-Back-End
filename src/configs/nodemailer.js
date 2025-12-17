@@ -8,11 +8,13 @@ const chalk = require('chalk');
 const transportConfig = {
     host: process.env.NODEMAILER_HOST,
     port: process.env.NODEMAILER_PORT,
-    secure: process.env.NODE_ENV === 'production' ? true : false,
+    secure: process.env.SMTP_SECURE === 'true' ? true : false,
     auth: {
         user: process.env.NODEMAILER_USER,
         pass: process.env.NODEMAILER_PASS,
     },
+    debug: process.env.NODE_ENV === 'development' ? true : false,
+    logger: process.env.NODE_ENV === 'development' ? true : false,
 };
 
 const transporter = nodemailer.createTransport(transportConfig);
