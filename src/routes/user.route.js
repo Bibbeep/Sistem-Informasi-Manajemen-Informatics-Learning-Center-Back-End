@@ -22,7 +22,7 @@ router.get(
     '/:userId',
     authenticate,
     validatePathParameterId('userId'),
-    authorize({ rules: ['self', 'admin'] }),
+    // authorize({ rules: ['self', 'admin'] }),
     asyncHandler(UserController.getById),
 );
 router.patch(

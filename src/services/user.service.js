@@ -61,7 +61,7 @@ class UserService {
         };
     }
 
-    static async getOne(userId) {
+    static async getOne(tokenPayload, userId) {
         const user = await User.findByPk(userId);
 
         if (!user) {
@@ -78,13 +78,13 @@ class UserService {
 
         return {
             id: user.id,
-            email: user.email,
+            email: tokenPayload.admin ? user.email : undefined,
             fullName: user.fullName,
-            memberLevel: user.memberLevel,
-            role: user.role,
+            memberLevel: tokenPayload.admin ? user.memberLevel : undefined,
+            role: tokenPayload.admin ? user.role : undefined,
             pictureUrl: user.pictureUrl,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
+            createdAt: tokenPayload.admin ? user.createdAt : undefined,
+            updatedAt: tokenPayload.admin ? user.updatedAt : undefined,
         };
     }
 
