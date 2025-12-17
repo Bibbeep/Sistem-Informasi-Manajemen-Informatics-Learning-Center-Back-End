@@ -232,9 +232,11 @@ class UserService {
             );
         }
 
+        const publicUrl = `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`;
+
         if (Location) {
             await User.update(
-                { pictureUrl: Location },
+                { pictureUrl: publicUrl },
                 {
                     where: {
                         id: data.userId,
@@ -244,7 +246,7 @@ class UserService {
         }
 
         return {
-            pictureUrl: Location,
+            pictureUrl: publicUrl,
         };
     }
 }

@@ -406,13 +406,14 @@ class EnrollmentService {
             },
         });
 
+        // eslint-disable-next-line no-unused-vars
         const { Location } = await client.done();
         const payload = {
             enrollmentId,
             userId: enrollment.userId,
             title,
             credential,
-            documentUrl: Location,
+            documentUrl: `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`,
             issuedAt: new Date(),
         };
 
@@ -678,13 +679,14 @@ class EnrollmentService {
                         },
                     });
 
+                    // eslint-disable-next-line no-unused-vars
                     const { Location } = await client.done();
                     const payload = {
                         enrollmentId,
                         userId: enrollment.userId,
                         title,
                         credential,
-                        documentUrl: Location,
+                        documentUrl: `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`,
                         issuedAt: now,
                         expiredAt,
                     };
