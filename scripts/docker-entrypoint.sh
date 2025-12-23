@@ -18,7 +18,7 @@ USER_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM users;")
 
 if [ -z "$USER_COUNT" ] || [ "$(echo $USER_COUNT | tr -d '[:space:]')" = "0" ]; then
   echo "Users table is empty. Seeding database..."
-  node src/db/seeders/seed.js
+  node scripts/db/seed.js
 else
   echo "Database already seeded."
 fi
