@@ -112,7 +112,7 @@ const programUpdate = Joi.object({
             otherwise: Joi.optional(),
         }),
     locationAddress: Joi.string().when('isOnline', {
-        not: Joi.exist(),
+        is: Joi.exist(),
         then: Joi.when('isOnline', {
             is: false,
             then: Joi.required(),
