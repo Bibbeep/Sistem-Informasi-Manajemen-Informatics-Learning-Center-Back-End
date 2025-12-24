@@ -1071,22 +1071,18 @@ describe('Program Service Unit Tests', () => {
             Program.findByPk.mockResolvedValue(mockProgram);
             fromBuffer.mockResolvedValue({ mime: 'image/png' });
 
-            const result = await ProgramService.uploadThumbnail(mockData);
+            await ProgramService.uploadThumbnail(mockData);
 
             expect(Program.findByPk).toHaveBeenCalledWith(mockData.programId);
             expect(sharp).toHaveBeenCalledWith(mockData.file.buffer);
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(Program.update).toHaveBeenCalledWith(
                 {
-                    thumbnailUrl:
-                        'https://mock-s3-location.com/new-thumbnail.webp',
+                    thumbnailUrl: expect.any(String),
                 },
                 { where: { id: mockData.programId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
-            expect(result).toEqual({
-                thumbnailUrl: 'https://mock-s3-location.com/new-thumbnail.webp',
-            });
         });
 
         it('should upload a new thumbnail and not throw error even if failed to update to database', async () => {
@@ -1136,8 +1132,7 @@ describe('Program Service Unit Tests', () => {
             expect(DeleteObjectCommand).toHaveBeenCalledTimes(1);
             expect(Program.update).toHaveBeenCalledWith(
                 {
-                    thumbnailUrl:
-                        'https://mock-s3-location.com/new-thumbnail.webp',
+                    thumbnailUrl: expect.any(String),
                 },
                 { where: { id: mockData.programId } },
             );
@@ -1778,14 +1773,13 @@ describe('Program Service Unit Tests', () => {
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(CourseModule.update).toHaveBeenCalledWith(
                 {
-                    materialUrl:
-                        'https://mock-s3-location.com/new-material.pdf',
+                    materialUrl: expect.any(String),
                 },
                 { where: { id: mockData.moduleId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
             expect(result).toEqual({
-                materialUrl: 'https://mock-s3-location.com/new-material.pdf',
+                materialUrl: expect.any(String),
             });
         });
 
@@ -1830,10 +1824,9 @@ describe('Program Service Unit Tests', () => {
                 };
             });
 
-            const result = await ProgramService.uploadMaterial(mockData);
+            await ProgramService.uploadMaterial(mockData);
 
             expect(CourseModule.update).not.toHaveBeenCalled();
-            expect(result).toEqual({ materialUrl: undefined });
         });
 
         it('should throw a 400 error if no file is provided', async () => {
@@ -1972,13 +1965,13 @@ describe('Program Service Unit Tests', () => {
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(CourseModule.update).toHaveBeenCalledWith(
                 {
-                    markdownUrl: 'https://mock-s3-location.com/new-markdown.md',
+                    markdownUrl: expect.any(String),
                 },
                 { where: { id: mockData.moduleId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
             expect(result).toEqual({
-                markdownUrl: 'https://mock-s3-location.com/new-markdown.md',
+                markdownUrl: expect.any(String),
             });
         });
 

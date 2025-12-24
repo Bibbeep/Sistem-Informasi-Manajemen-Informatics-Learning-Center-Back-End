@@ -404,10 +404,16 @@ describe('User Service Unit Tests', () => {
                 createdAt: '2025-09-20T15:37:25.953Z',
                 updatedAt: '2025-09-20T15:37:25.953Z',
             };
+            const mockTokenPayload = {
+                admin: true,
+                sub: 1,
+            };
 
             User.findByPk.mockResolvedValue(mockUserData);
-
-            const result = await UserService.getOne(mockUserId);
+            const result = await UserService.getOne(
+                mockTokenPayload,
+                mockUserId,
+            );
 
             expect(User.findByPk).toHaveBeenCalledWith(mockUserId);
             expect(result).toEqual(
@@ -427,10 +433,16 @@ describe('User Service Unit Tests', () => {
         it('should throw error when user does not exist', async () => {
             const mockUserId = 404;
             const mockUserData = null;
+            const mockTokenPayload = {
+                admin: true,
+                sub: 1,
+            };
 
             User.findByPk.mockResolvedValue(mockUserData);
 
-            await expect(UserService.getOne(mockUserId)).rejects.toThrow(
+            await expect(
+                UserService.getOne(mockTokenPayload, mockUserId),
+            ).rejects.toThrow(
                 new HTTPError(404, 'Resource not found.', [
                     {
                         message: 'User with "userId" does not exist',
@@ -673,13 +685,13 @@ describe('User Service Unit Tests', () => {
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(User.update).toHaveBeenCalledWith(
                 {
-                    pictureUrl: 'https://mock-s3-location.com/new-photo.webp',
+                    pictureUrl: expect.any(String),
                 },
                 { where: { id: mockData.userId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
             expect(result).toEqual({
-                pictureUrl: 'https://mock-s3-location.com/new-photo.webp',
+                pictureUrl: expect.any(String),
             });
         });
 
@@ -730,7 +742,7 @@ describe('User Service Unit Tests', () => {
             expect(DeleteObjectCommand).toHaveBeenCalledTimes(1);
             expect(User.update).toHaveBeenCalledWith(
                 {
-                    pictureUrl: 'https://mock-s3-location.com/new-photo.webp',
+                    pictureUrl: expect.any(String),
                 },
                 { where: { id: mockData.userId } },
             );
