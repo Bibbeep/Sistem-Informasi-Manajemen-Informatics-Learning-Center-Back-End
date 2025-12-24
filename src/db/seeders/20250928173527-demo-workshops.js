@@ -15,10 +15,13 @@ module.exports = {
         const workshops = workshopPrograms.map((program) => {
             const createdAt = faker.date.past();
             const isOnline = faker.datatype.boolean();
+            const startDate = faker.date.past();
 
             return {
                 program_id: program.id,
                 is_online: isOnline,
+                start_date: startDate,
+                end_date: faker.date.future({ refDate: startDate }),
                 video_conference_url: isOnline ? faker.internet.url() : null,
                 location_address: isOnline
                     ? null

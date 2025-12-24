@@ -38,6 +38,18 @@ const program = Joi.object({
         then: Joi.required(),
         otherwise: Joi.forbidden(),
     }),
+    startDate: Joi.date().iso().when('type', {
+        not: 'Course',
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+    }),
+    endDate: Joi.date()
+        .iso()
+        .when('type', {
+            not: 'Course',
+            then: Joi.date().iso().greater(Joi.ref('startDate')),
+            otherwise: Joi.forbidden(),
+        }),
     videoConferenceUrl: Joi.string()
         .uri()
         .when('type', {
@@ -101,6 +113,24 @@ const programUpdate = Joi.object({
             then: Joi.forbidden(),
         })
         .optional(),
+    startDate: Joi.date().iso().when('type', {
+        is: 'Course',
+        then: Joi.forbidden(),
+        otherwise: Joi.optional(),
+    }),
+    endDate: Joi.date()
+        .iso()
+        .when('type', {
+            is: 'Course',
+            then: Joi.forbidden(),
+            otherwise: Joi.date()
+                .iso()
+                .when('startDate', {
+                    is: Joi.exist(),
+                    then: Joi.date().iso().greater(Joi.ref('startDate')),
+                }),
+        })
+        .allow(null),
     videoConferenceUrl: Joi.string()
         .uri()
         .when('isOnline', {

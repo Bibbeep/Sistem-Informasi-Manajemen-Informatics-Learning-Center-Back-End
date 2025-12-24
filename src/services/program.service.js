@@ -112,6 +112,8 @@ class ProgramService {
             const workshop = await program.getWorkshop();
 
             details = {
+                startDate: workshop.startDate,
+                endDate: workshop.endDate,
                 isOnline: workshop.isOnline,
                 videoConferenceUrl: workshop.videoConferenceUrl,
                 locationAddress: workshop.locationAddress,
@@ -121,6 +123,8 @@ class ProgramService {
             const seminar = await program.getSeminar();
 
             details = {
+                startDate: seminar.startDate,
+                endDate: seminar.endDate,
                 isOnline: seminar.isOnline,
                 videoConferenceUrl: seminar.videoConferenceUrl,
                 locationAddress: seminar.locationAddress,
@@ -130,6 +134,8 @@ class ProgramService {
             const competition = await program.getCompetition();
 
             details = {
+                startDate: competition.startDate,
+                endDate: competition.endDate,
                 isOnline: competition.isOnline,
                 videoConferenceUrl: competition.videoConferenceUrl,
                 contestRoomUrl: competition.contestRoomUrl,
@@ -160,6 +166,8 @@ class ProgramService {
 
         if (['Seminar', 'Workshop', 'Competition'].includes(type)) {
             details = {
+                startDate: data.startDate,
+                endDate: data.endDate || null,
                 isOnline: data.isOnline,
                 videoConferenceUrl: data.videoConferenceUrl,
                 locationAddress: data.locationAddress,

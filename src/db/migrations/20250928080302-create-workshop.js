@@ -27,6 +27,17 @@ module.exports = {
                 defaultValue: true,
                 field: 'is_online',
             },
+            startDate: {
+                allowNull: false,
+                type: Sequelize.DATE,
+                defaultValue: Sequelize.NOW,
+                field: 'start_date',
+            },
+            endDate: {
+                allowNull: true,
+                type: Sequelize.DATE,
+                field: 'end_date',
+            },
             videoConferenceUrl: {
                 allowNull: true,
                 type: Sequelize.TEXT,
