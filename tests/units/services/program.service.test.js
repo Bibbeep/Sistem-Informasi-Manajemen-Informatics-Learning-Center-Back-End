@@ -696,6 +696,7 @@ describe('Program Service Unit Tests', () => {
                 type: 'Workshop',
                 priceIdr: 200000,
                 isOnline: true,
+                startDate: new Date(),
                 videoConferenceUrl: 'http://zoom.us/w',
                 locationAddress: null,
                 facilitatorNames: ['John Doe'],
@@ -718,11 +719,15 @@ describe('Program Service Unit Tests', () => {
             expect(Workshop.create).toHaveBeenCalledWith({
                 programId: 1,
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 facilitatorNames: mockData.facilitatorNames,
             });
             expect(result.details).toEqual({
+                startDate: mockData.startDate,
+                endDate: null,
                 isOnline: mockData.isOnline,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
@@ -738,6 +743,7 @@ describe('Program Service Unit Tests', () => {
                 type: 'Seminar',
                 priceIdr: 50000,
                 isOnline: false,
+                startDate: new Date(),
                 videoConferenceUrl: null,
                 locationAddress: '123 Fake St',
                 speakerNames: ['Jane Smith'],
@@ -759,12 +765,16 @@ describe('Program Service Unit Tests', () => {
             expect(Seminar.create).toHaveBeenCalledWith({
                 programId: 1,
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 speakerNames: mockData.speakerNames,
             });
             expect(result.details).toEqual({
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 speakerNames: mockData.speakerNames,
@@ -779,6 +789,7 @@ describe('Program Service Unit Tests', () => {
                 type: 'Competition',
                 priceIdr: 0,
                 isOnline: true,
+                startDate: new Date(),
                 videoConferenceUrl: 'http://meet.google.com/c',
                 locationAddress: null,
                 contestRoomUrl: 'http://hackerrank.com/c',
@@ -804,6 +815,8 @@ describe('Program Service Unit Tests', () => {
             expect(Competition.create).toHaveBeenCalledWith({
                 programId: 1,
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 contestRoomUrl: mockData.contestRoomUrl,
@@ -813,6 +826,8 @@ describe('Program Service Unit Tests', () => {
 
             expect(result.details).toEqual({
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 contestRoomUrl: mockData.contestRoomUrl,
