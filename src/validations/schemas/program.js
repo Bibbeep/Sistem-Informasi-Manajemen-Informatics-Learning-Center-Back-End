@@ -188,7 +188,7 @@ const moduleQueryParam = Joi.object({
 // Request body for POST /api/v1/programs/:programId/modules/:moduleId
 const modulePayload = Joi.object({
     title: Joi.string().required(),
-    youtubeUrl: Joi.string().uri().optional(),
+    youtubeUrl: Joi.string().uri().allow(null).optional(),
 }).unknown(false);
 
 // Request body for PATCH /api/v1/programs/:programId/modules/:moduleId
