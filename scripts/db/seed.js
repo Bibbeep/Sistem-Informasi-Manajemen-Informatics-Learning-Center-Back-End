@@ -8,49 +8,49 @@ const {
     Discussion,
     Comment,
     Certificate,
-} = require('../models');
+} = require('../../src/db/models');
 
 const seedDatabase = async () => {
     try {
         const users = JSON.parse(
             fs.readFileSync(
-                path.join(__dirname, '../data/users.json'),
+                path.join(__dirname, '../../src/db/data/users.json'),
                 'utf-8',
             ),
         );
         const programs = JSON.parse(
             fs.readFileSync(
-                path.join(__dirname, '../data/programs.json'),
+                path.join(__dirname, '../../src/db/data/programs.json'),
                 'utf-8',
             ),
         );
         const enrollments = JSON.parse(
             fs.readFileSync(
-                path.join(__dirname, '../data/enrollments.json'),
+                path.join(__dirname, '../../src/db/data/enrollments.json'),
                 'utf-8',
             ),
         );
         const invoices = JSON.parse(
             fs.readFileSync(
-                path.join(__dirname, '../data/invoices.json'),
+                path.join(__dirname, '../../src/db/data/invoices.json'),
                 'utf-8',
             ),
         );
         const discussions = JSON.parse(
             fs.readFileSync(
-                path.join(__dirname, '../data/discussions.json'),
+                path.join(__dirname, '../../src/db/data/discussions.json'),
                 'utf-8',
             ),
         );
         const comments = JSON.parse(
             fs.readFileSync(
-                path.join(__dirname, '../data/comments.json'),
+                path.join(__dirname, '../../src/db/data/comments.json'),
                 'utf-8',
             ),
         );
         const certificates = JSON.parse(
             fs.readFileSync(
-                path.join(__dirname, '../data/certificates.json'),
+                path.join(__dirname, '../../src/db/data/certificates.json'),
                 'utf-8',
             ),
         );

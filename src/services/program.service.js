@@ -112,6 +112,8 @@ class ProgramService {
             const workshop = await program.getWorkshop();
 
             details = {
+                startDate: workshop.startDate,
+                endDate: workshop.endDate,
                 isOnline: workshop.isOnline,
                 videoConferenceUrl: workshop.videoConferenceUrl,
                 locationAddress: workshop.locationAddress,
@@ -121,6 +123,8 @@ class ProgramService {
             const seminar = await program.getSeminar();
 
             details = {
+                startDate: seminar.startDate,
+                endDate: seminar.endDate,
                 isOnline: seminar.isOnline,
                 videoConferenceUrl: seminar.videoConferenceUrl,
                 locationAddress: seminar.locationAddress,
@@ -130,6 +134,8 @@ class ProgramService {
             const competition = await program.getCompetition();
 
             details = {
+                startDate: competition.startDate,
+                endDate: competition.endDate,
                 isOnline: competition.isOnline,
                 videoConferenceUrl: competition.videoConferenceUrl,
                 contestRoomUrl: competition.contestRoomUrl,
@@ -160,6 +166,8 @@ class ProgramService {
 
         if (['Seminar', 'Workshop', 'Competition'].includes(type)) {
             details = {
+                startDate: data.startDate,
+                endDate: data.endDate || null,
                 isOnline: data.isOnline,
                 videoConferenceUrl: data.videoConferenceUrl,
                 locationAddress: data.locationAddress,
@@ -545,7 +553,7 @@ class ProgramService {
     }
 
     static async createModule(data) {
-        const { numberCode, youtubeUrl, programId } = data;
+        const { title, youtubeUrl, programId } = data;
 
         const program = await Program.findByPk(programId, {
             include: [
@@ -570,13 +578,13 @@ class ProgramService {
 
         const module = await CourseModule.create({
             courseId: program.course.id,
-            numberCode,
+            title,
             youtubeUrl,
         });
 
         return {
             id: module.id,
-            numberCode: module.numberCode,
+            title: module.title,
             materialUrl: module.materialUrl,
             markdownUrl: module.markdownUrl,
             youtubeUrl: module.youtubeUrl,
@@ -644,7 +652,7 @@ class ProgramService {
 
         return {
             id: moduleRows[0].id,
-            numberCode: moduleRows[0].numberCode,
+            title: moduleRows[0].title,
             materialUrl: moduleRows[0].materialUrl,
             markdownUrl: moduleRows[0].markdownUrl,
             youtubeUrl: moduleRows[0].youtubeUrl,

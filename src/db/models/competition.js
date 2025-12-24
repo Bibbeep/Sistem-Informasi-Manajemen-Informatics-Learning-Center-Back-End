@@ -20,6 +20,17 @@ module.exports = (sequelize, DataTypes) => {
                 defaultValue: true,
                 field: 'is_online',
             },
+            startDate: {
+                allowNull: false,
+                type: DataTypes.DATE,
+                defaultValue: DataTypes.NOW,
+                field: 'start_date',
+            },
+            endDate: {
+                allowNull: true,
+                type: DataTypes.DATE,
+                field: 'end_date',
+            },
             videoConferenceUrl: {
                 allowNull: true,
                 type: DataTypes.TEXT,

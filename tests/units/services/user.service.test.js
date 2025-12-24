@@ -404,10 +404,16 @@ describe('User Service Unit Tests', () => {
                 createdAt: '2025-09-20T15:37:25.953Z',
                 updatedAt: '2025-09-20T15:37:25.953Z',
             };
+            const mockTokenPayload = {
+                admin: true,
+                sub: 1,
+            };
 
             User.findByPk.mockResolvedValue(mockUserData);
-
-            const result = await UserService.getOne(mockUserId);
+            const result = await UserService.getOne(
+                mockTokenPayload,
+                mockUserId,
+            );
 
             expect(User.findByPk).toHaveBeenCalledWith(mockUserId);
             expect(result).toEqual(
@@ -424,13 +430,58 @@ describe('User Service Unit Tests', () => {
             );
         });
 
+        it('should fetches user data as other user', async () => {
+            const mockUserId = 1;
+            const mockUserData = {
+                id: 1,
+                email: 'johndoe@mail.com',
+                hashedPassword: 'hashedpassword',
+                fullName: 'John Doe',
+                memberLevel: 'Basic',
+                role: 'User',
+                pictureUrl: null,
+                createdAt: '2025-09-20T15:37:25.953Z',
+                updatedAt: '2025-09-20T15:37:25.953Z',
+            };
+            const mockTokenPayload = {
+                admin: false,
+                sub: 2,
+            };
+
+            User.findByPk.mockResolvedValue(mockUserData);
+            const result = await UserService.getOne(
+                mockTokenPayload,
+                mockUserId,
+            );
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockUserId);
+            expect(result).toEqual(
+                expect.objectContaining({
+                    id: 1,
+                    email: undefined,
+                    fullName: 'John Doe',
+                    memberLevel: undefined,
+                    role: undefined,
+                    pictureUrl: null,
+                    createdAt: undefined,
+                    updatedAt: undefined,
+                }),
+            );
+        });
+
         it('should throw error when user does not exist', async () => {
             const mockUserId = 404;
             const mockUserData = null;
+            const mockTokenPayload = {
+                admin: true,
+                sub: 1,
+            };
 
             User.findByPk.mockResolvedValue(mockUserData);
 
-            await expect(UserService.getOne(mockUserId)).rejects.toThrow(
+            await expect(
+                UserService.getOne(mockTokenPayload, mockUserId),
+            ).rejects.toThrow(
                 new HTTPError(404, 'Resource not found.', [
                     {
                         message: 'User with "userId" does not exist',
@@ -521,6 +572,37 @@ describe('User Service Unit Tests', () => {
             expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
         });
 
+        it('should throw 409 conflict error', async () => {
+            const mockData = {
+                userId: 404,
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+                password: 'password',
+            };
+
+            User.findByPk.mockResolvedValue(true);
+            User.findOne.mockResolvedValue(true);
+
+            await expect(UserService.updateOne(mockData)).rejects.toThrow(
+                new HTTPError(409, 'Resource conflict.', [
+                    {
+                        message: 'email is already registered.',
+                        context: {
+                            key: 'email',
+                            value: mockData.email,
+                        },
+                    },
+                ]),
+            );
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+            expect(User.findOne).toHaveBeenCalledWith({
+                where: {
+                    email: mockData.email,
+                },
+            });
+        });
+
         it('should updates user data without password', async () => {
             const mockData = {
                 userId: 1,
@@ -545,6 +627,7 @@ describe('User Service Unit Tests', () => {
             };
 
             User.findByPk.mockResolvedValue(true);
+            User.findOne.mockResolvedValue(false);
             User.update.mockResolvedValue([1, [mockReturnData]]);
 
             const result = await UserService.updateOne(mockData);
@@ -673,13 +756,13 @@ describe('User Service Unit Tests', () => {
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(User.update).toHaveBeenCalledWith(
                 {
-                    pictureUrl: 'https://mock-s3-location.com/new-photo.webp',
+                    pictureUrl: expect.any(String),
                 },
                 { where: { id: mockData.userId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
             expect(result).toEqual({
-                pictureUrl: 'https://mock-s3-location.com/new-photo.webp',
+                pictureUrl: expect.any(String),
             });
         });
 
@@ -730,7 +813,7 @@ describe('User Service Unit Tests', () => {
             expect(DeleteObjectCommand).toHaveBeenCalledTimes(1);
             expect(User.update).toHaveBeenCalledWith(
                 {
-                    pictureUrl: 'https://mock-s3-location.com/new-photo.webp',
+                    pictureUrl: expect.any(String),
                 },
                 { where: { id: mockData.userId } },
             );

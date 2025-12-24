@@ -21,10 +21,9 @@ module.exports = {
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
             },
-            numberCode: {
+            title: {
                 allowNull: false,
-                type: Sequelize.INTEGER,
-                field: 'number_code',
+                type: Sequelize.STRING,
             },
             materialUrl: {
                 allowNull: true,
@@ -37,7 +36,7 @@ module.exports = {
                 field: 'markdown_url',
             },
             youtubeUrl: {
-                allowNull: false,
+                allowNull: true,
                 type: Sequelize.TEXT,
                 field: 'youtube_url',
             },
