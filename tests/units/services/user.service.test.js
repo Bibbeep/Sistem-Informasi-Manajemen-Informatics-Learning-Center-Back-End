@@ -430,6 +430,45 @@ describe('User Service Unit Tests', () => {
             );
         });
 
+        it('should fetches user data as other user', async () => {
+            const mockUserId = 1;
+            const mockUserData = {
+                id: 1,
+                email: 'johndoe@mail.com',
+                hashedPassword: 'hashedpassword',
+                fullName: 'John Doe',
+                memberLevel: 'Basic',
+                role: 'User',
+                pictureUrl: null,
+                createdAt: '2025-09-20T15:37:25.953Z',
+                updatedAt: '2025-09-20T15:37:25.953Z',
+            };
+            const mockTokenPayload = {
+                admin: false,
+                sub: 2,
+            };
+
+            User.findByPk.mockResolvedValue(mockUserData);
+            const result = await UserService.getOne(
+                mockTokenPayload,
+                mockUserId,
+            );
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockUserId);
+            expect(result).toEqual(
+                expect.objectContaining({
+                    id: 1,
+                    email: undefined,
+                    fullName: 'John Doe',
+                    memberLevel: undefined,
+                    role: undefined,
+                    pictureUrl: null,
+                    createdAt: undefined,
+                    updatedAt: undefined,
+                }),
+            );
+        });
+
         it('should throw error when user does not exist', async () => {
             const mockUserId = 404;
             const mockUserData = null;
@@ -533,6 +572,37 @@ describe('User Service Unit Tests', () => {
             expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
         });
 
+        it('should throw 409 conflict error', async () => {
+            const mockData = {
+                userId: 404,
+                fullName: 'John Doe',
+                email: 'johndoe@mail.com',
+                password: 'password',
+            };
+
+            User.findByPk.mockResolvedValue(true);
+            User.findOne.mockResolvedValue(true);
+
+            await expect(UserService.updateOne(mockData)).rejects.toThrow(
+                new HTTPError(409, 'Resource conflict.', [
+                    {
+                        message: 'email is already registered.',
+                        context: {
+                            key: 'email',
+                            value: mockData.email,
+                        },
+                    },
+                ]),
+            );
+
+            expect(User.findByPk).toHaveBeenCalledWith(mockData.userId);
+            expect(User.findOne).toHaveBeenCalledWith({
+                where: {
+                    email: mockData.email,
+                },
+            });
+        });
+
         it('should updates user data without password', async () => {
             const mockData = {
                 userId: 1,
@@ -557,6 +627,7 @@ describe('User Service Unit Tests', () => {
             };
 
             User.findByPk.mockResolvedValue(true);
+            User.findOne.mockResolvedValue(false);
             User.update.mockResolvedValue([1, [mockReturnData]]);
 
             const result = await UserService.updateOne(mockData);

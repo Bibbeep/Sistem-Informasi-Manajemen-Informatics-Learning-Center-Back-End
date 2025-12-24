@@ -92,13 +92,13 @@ class UserService {
         } else {
             payload = {
                 id: user.id,
-                email: tokenPayload.admin ? user.email : undefined,
+                email: undefined,
                 fullName: user.fullName,
-                memberLevel: tokenPayload.admin ? user.memberLevel : undefined,
-                role: tokenPayload.admin ? user.role : undefined,
+                memberLevel: undefined,
+                role: undefined,
                 pictureUrl: user.pictureUrl,
-                createdAt: tokenPayload.admin ? user.createdAt : undefined,
-                updatedAt: tokenPayload.admin ? user.updatedAt : undefined,
+                createdAt: undefined,
+                updatedAt: undefined,
             };
         }
 
