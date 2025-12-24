@@ -1470,7 +1470,7 @@ describe('Program Service Unit Tests', () => {
     describe('createModule Tests', () => {
         it('should create a new module', async () => {
             const mockData = {
-                numberCode: 1,
+                title: 'ABC',
                 youtubeUrl: 'https://youtube.com/url',
                 programId: 1,
             };
@@ -1481,9 +1481,10 @@ describe('Program Service Unit Tests', () => {
             };
             const mockModule = {
                 id: 1,
-                numberCode: 1,
-                materialUrl: null,
+                title: 'ABC',
                 youtubeUrl: 'https://youtube.com/url',
+                markdownUrl: null,
+                materialUrl: null,
                 updatedAt: 'NOW',
                 createdAt: 'NOW',
                 deletedAt: null,
@@ -1551,8 +1552,9 @@ describe('Program Service Unit Tests', () => {
             const mockModuleRows = [
                 {
                     id: 1,
-                    numberCode: 2,
+                    title: 'ABC',
                     materialUrl: null,
+                    markdownUrl: null,
                     youtubeUrl: 'http://youtube.com/url',
                     updatedAt: 'NOW',
                     createdAt: 'NOW',

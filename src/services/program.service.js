@@ -545,7 +545,7 @@ class ProgramService {
     }
 
     static async createModule(data) {
-        const { numberCode, youtubeUrl, programId } = data;
+        const { title, youtubeUrl, programId } = data;
 
         const program = await Program.findByPk(programId, {
             include: [
@@ -570,13 +570,13 @@ class ProgramService {
 
         const module = await CourseModule.create({
             courseId: program.course.id,
-            numberCode,
+            title,
             youtubeUrl,
         });
 
         return {
             id: module.id,
-            numberCode: module.numberCode,
+            title: module.title,
             materialUrl: module.materialUrl,
             markdownUrl: module.markdownUrl,
             youtubeUrl: module.youtubeUrl,
@@ -644,7 +644,7 @@ class ProgramService {
 
         return {
             id: moduleRows[0].id,
-            numberCode: moduleRows[0].numberCode,
+            title: moduleRows[0].title,
             materialUrl: moduleRows[0].materialUrl,
             markdownUrl: moduleRows[0].markdownUrl,
             youtubeUrl: moduleRows[0].youtubeUrl,

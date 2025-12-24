@@ -185,28 +185,6 @@ describe('Authentication Validation Unit Tests', () => {
             expect(result.error.details[0].type).toBe('string.email');
         });
 
-        it('should fail validation when password is too short', () => {
-            const invalidData = {
-                email: 'john.doe@example.com',
-                password: 'short',
-            };
-
-            const result = validateLogin(invalidData);
-
-            expect(result.error).toBeDefined();
-        });
-
-        it('should fail validation when password is too long', () => {
-            const invalidData = {
-                email: 'john.doe@example.com',
-                password: 'a'.repeat(73),
-            };
-
-            const result = validateLogin(invalidData);
-
-            expect(result.error).toBeDefined();
-        });
-
         it('should fail validation with multiple missing fields', () => {
             const invalidData = {};
 

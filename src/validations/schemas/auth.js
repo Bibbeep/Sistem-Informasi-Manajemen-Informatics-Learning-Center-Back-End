@@ -24,16 +24,7 @@ const register = Joi.object({
 // Request body of POST /api/v1/auth/login
 const login = Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string()
-        .pattern(
-            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/,
-        )
-        .message(
-            '"password" must includes uppercase and lowercase letters, numbers, and symbols',
-        )
-        .min(12)
-        .max(72)
-        .required(),
+    password: Joi.string().required(),
 });
 
 // JWT access token payload
