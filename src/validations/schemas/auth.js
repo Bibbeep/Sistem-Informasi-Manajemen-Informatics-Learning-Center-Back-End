@@ -63,12 +63,12 @@ const forgotPassword = Joi.object({
 const resetPassword = Joi.object({
     userId: Joi.number().integer().positive().required(),
     token: Joi.string().hex().length(64).required(),
-    password: Joi.string()
+    newPassword: Joi.string()
         .pattern(
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/,
         )
         .message(
-            '"password" must includes uppercase and lowercase letters, numbers, and symbols',
+            '"newPassword" must includes uppercase and lowercase letters, numbers, and symbols',
         )
         .min(12)
         .max(72)
