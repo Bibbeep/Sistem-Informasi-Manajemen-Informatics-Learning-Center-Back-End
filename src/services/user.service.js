@@ -125,6 +125,25 @@ class UserService {
             ...(email && { email }),
         };
 
+        if (
+            email &&
+            (await User.findOne({
+                where: {
+                    email,
+                },
+            }))
+        ) {
+            throw new HTTPError(409, 'Resource conflict.', [
+                {
+                    message: 'email is already registered.',
+                    context: {
+                        key: 'email',
+                        value: email,
+                    },
+                },
+            ]);
+        }
+
         if (password) {
             const salt = await bcrypt.genSalt(10);
             updateData.hashedPassword = await bcrypt.hash(password, salt);
