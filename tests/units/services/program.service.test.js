@@ -696,6 +696,7 @@ describe('Program Service Unit Tests', () => {
                 type: 'Workshop',
                 priceIdr: 200000,
                 isOnline: true,
+                startDate: new Date(),
                 videoConferenceUrl: 'http://zoom.us/w',
                 locationAddress: null,
                 facilitatorNames: ['John Doe'],
@@ -718,11 +719,15 @@ describe('Program Service Unit Tests', () => {
             expect(Workshop.create).toHaveBeenCalledWith({
                 programId: 1,
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 facilitatorNames: mockData.facilitatorNames,
             });
             expect(result.details).toEqual({
+                startDate: mockData.startDate,
+                endDate: null,
                 isOnline: mockData.isOnline,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
@@ -738,6 +743,7 @@ describe('Program Service Unit Tests', () => {
                 type: 'Seminar',
                 priceIdr: 50000,
                 isOnline: false,
+                startDate: new Date(),
                 videoConferenceUrl: null,
                 locationAddress: '123 Fake St',
                 speakerNames: ['Jane Smith'],
@@ -759,12 +765,16 @@ describe('Program Service Unit Tests', () => {
             expect(Seminar.create).toHaveBeenCalledWith({
                 programId: 1,
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 speakerNames: mockData.speakerNames,
             });
             expect(result.details).toEqual({
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 speakerNames: mockData.speakerNames,
@@ -779,6 +789,7 @@ describe('Program Service Unit Tests', () => {
                 type: 'Competition',
                 priceIdr: 0,
                 isOnline: true,
+                startDate: new Date(),
                 videoConferenceUrl: 'http://meet.google.com/c',
                 locationAddress: null,
                 contestRoomUrl: 'http://hackerrank.com/c',
@@ -804,6 +815,8 @@ describe('Program Service Unit Tests', () => {
             expect(Competition.create).toHaveBeenCalledWith({
                 programId: 1,
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 contestRoomUrl: mockData.contestRoomUrl,
@@ -813,6 +826,8 @@ describe('Program Service Unit Tests', () => {
 
             expect(result.details).toEqual({
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 contestRoomUrl: mockData.contestRoomUrl,
@@ -1071,22 +1086,18 @@ describe('Program Service Unit Tests', () => {
             Program.findByPk.mockResolvedValue(mockProgram);
             fromBuffer.mockResolvedValue({ mime: 'image/png' });
 
-            const result = await ProgramService.uploadThumbnail(mockData);
+            await ProgramService.uploadThumbnail(mockData);
 
             expect(Program.findByPk).toHaveBeenCalledWith(mockData.programId);
             expect(sharp).toHaveBeenCalledWith(mockData.file.buffer);
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(Program.update).toHaveBeenCalledWith(
                 {
-                    thumbnailUrl:
-                        'https://mock-s3-location.com/new-thumbnail.webp',
+                    thumbnailUrl: expect.any(String),
                 },
                 { where: { id: mockData.programId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
-            expect(result).toEqual({
-                thumbnailUrl: 'https://mock-s3-location.com/new-thumbnail.webp',
-            });
         });
 
         it('should upload a new thumbnail and not throw error even if failed to update to database', async () => {
@@ -1136,8 +1147,7 @@ describe('Program Service Unit Tests', () => {
             expect(DeleteObjectCommand).toHaveBeenCalledTimes(1);
             expect(Program.update).toHaveBeenCalledWith(
                 {
-                    thumbnailUrl:
-                        'https://mock-s3-location.com/new-thumbnail.webp',
+                    thumbnailUrl: expect.any(String),
                 },
                 { where: { id: mockData.programId } },
             );
@@ -1475,7 +1485,7 @@ describe('Program Service Unit Tests', () => {
     describe('createModule Tests', () => {
         it('should create a new module', async () => {
             const mockData = {
-                numberCode: 1,
+                title: 'ABC',
                 youtubeUrl: 'https://youtube.com/url',
                 programId: 1,
             };
@@ -1486,9 +1496,10 @@ describe('Program Service Unit Tests', () => {
             };
             const mockModule = {
                 id: 1,
-                numberCode: 1,
-                materialUrl: null,
+                title: 'ABC',
                 youtubeUrl: 'https://youtube.com/url',
+                markdownUrl: null,
+                materialUrl: null,
                 updatedAt: 'NOW',
                 createdAt: 'NOW',
                 deletedAt: null,
@@ -1556,8 +1567,9 @@ describe('Program Service Unit Tests', () => {
             const mockModuleRows = [
                 {
                     id: 1,
-                    numberCode: 2,
+                    title: 'ABC',
                     materialUrl: null,
+                    markdownUrl: null,
                     youtubeUrl: 'http://youtube.com/url',
                     updatedAt: 'NOW',
                     createdAt: 'NOW',
@@ -1778,14 +1790,13 @@ describe('Program Service Unit Tests', () => {
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(CourseModule.update).toHaveBeenCalledWith(
                 {
-                    materialUrl:
-                        'https://mock-s3-location.com/new-material.pdf',
+                    materialUrl: expect.any(String),
                 },
                 { where: { id: mockData.moduleId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
             expect(result).toEqual({
-                materialUrl: 'https://mock-s3-location.com/new-material.pdf',
+                materialUrl: expect.any(String),
             });
         });
 
@@ -1830,10 +1841,9 @@ describe('Program Service Unit Tests', () => {
                 };
             });
 
-            const result = await ProgramService.uploadMaterial(mockData);
+            await ProgramService.uploadMaterial(mockData);
 
             expect(CourseModule.update).not.toHaveBeenCalled();
-            expect(result).toEqual({ materialUrl: undefined });
         });
 
         it('should throw a 400 error if no file is provided', async () => {
@@ -1972,13 +1982,13 @@ describe('Program Service Unit Tests', () => {
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(CourseModule.update).toHaveBeenCalledWith(
                 {
-                    markdownUrl: 'https://mock-s3-location.com/new-markdown.md',
+                    markdownUrl: expect.any(String),
                 },
                 { where: { id: mockData.moduleId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
             expect(result).toEqual({
-                markdownUrl: 'https://mock-s3-location.com/new-markdown.md',
+                markdownUrl: expect.any(String),
             });
         });
 

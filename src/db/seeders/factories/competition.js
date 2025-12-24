@@ -3,9 +3,12 @@ const models = require('../../models');
 
 const data = async (props = {}) => {
     const isOnline = faker.datatype.boolean();
+    const startDate = faker.date.past();
     const defaultProps = {
         programId: props.programId,
         isOnline: isOnline,
+        startDate: startDate,
+        endDate: faker.date.future({ refDate: startDate }),
         videoConferenceUrl: isOnline ? faker.internet.url() : null,
         contestRoomUrl: isOnline ? faker.internet.url() : null,
         locationAddress: isOnline ? null : faker.location.streetAddress(),

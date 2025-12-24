@@ -92,13 +92,13 @@ class UserService {
         } else {
             payload = {
                 id: user.id,
-                email: tokenPayload.admin ? user.email : undefined,
+                email: undefined,
                 fullName: user.fullName,
-                memberLevel: tokenPayload.admin ? user.memberLevel : undefined,
-                role: tokenPayload.admin ? user.role : undefined,
+                memberLevel: undefined,
+                role: undefined,
                 pictureUrl: user.pictureUrl,
-                createdAt: tokenPayload.admin ? user.createdAt : undefined,
-                updatedAt: tokenPayload.admin ? user.updatedAt : undefined,
+                createdAt: undefined,
+                updatedAt: undefined,
             };
         }
 
@@ -124,6 +124,25 @@ class UserService {
             ...(fullName && { fullName }),
             ...(email && { email }),
         };
+
+        if (
+            email &&
+            (await User.findOne({
+                where: {
+                    email,
+                },
+            }))
+        ) {
+            throw new HTTPError(409, 'Resource conflict.', [
+                {
+                    message: 'email is already registered.',
+                    context: {
+                        key: 'email',
+                        value: email,
+                    },
+                },
+            ]);
+        }
 
         if (password) {
             const salt = await bcrypt.genSalt(10);

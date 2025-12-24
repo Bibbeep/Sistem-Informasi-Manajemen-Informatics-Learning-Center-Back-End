@@ -36,9 +36,11 @@ module.exports = {
 
                 courseModules.push({
                     course_id: course.id,
-                    number_code: i,
+                    title: faker.lorem.words(5),
                     material_url: `${faker.internet.url({ appendSlash: true })}${faker.system.commonFileName(faker.helpers.arrayElement(['pdf', 'pptx', 'docx', 'xlsx', 'mp4', 'mkv', 'mov']))}`,
-                    youtube_url: `https://www.youtube.com/watch?v=${faker.string.alphanumeric(11)}`,
+                    youtube_url: faker.datatype.boolean()
+                        ? `https://www.youtube.com/watch?v=${faker.string.alphanumeric(11)}`
+                        : null,
                     markdown_url: faker.internet.url(),
                     created_at: createdAt,
                     updated_at: faker.date.between({

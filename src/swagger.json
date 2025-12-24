@@ -6878,8 +6878,8 @@
                     "id": {
                         "type": "integer"
                     },
-                    "numberCode": {
-                        "type": "integer"
+                    "title": {
+                        "type": "string"
                     },
                     "materialUrl": {
                         "type": "string",
@@ -7670,27 +7670,25 @@
             "ModuleCreateRequestBody": {
                 "type": "object",
                 "properties": {
-                    "numberCode": {
-                        "type": "integer",
-                        "minimum": 1
+                    "title": {
+                        "type": "string"
                     },
                     "youtubeUrl": {
                         "type": "string",
                         "format": "uri"
                     }
                 },
-                "required": ["numberCode", "youtubeUrl"],
+                "required": ["title"],
                 "example": {
-                    "numberCode": 21,
+                    "title": "Introduction to Course",
                     "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                 }
             },
             "ModuleUpdateRequestBody": {
                 "type": "object",
                 "properties": {
-                    "numberCode": {
-                        "type": "integer",
-                        "minimum": 1
+                    "title": {
+                        "type": "string"
                     },
                     "youtubeUrl": {
                         "type": "string",
@@ -7698,7 +7696,7 @@
                     }
                 },
                 "example": {
-                    "numberCode": 100
+                    "title": "Advanced Topics"
                 }
             },
             "EnrollmentCreateRequestBody": {
@@ -8758,7 +8756,7 @@
                         "modules": [
                             {
                                 "id": 1,
-                                "numberCode": 1,
+                                "title": "First Module",
                                 "materialUrl": "https://example.com/module1.pdf",
                                 "youtubeUrl": "https://youtube.com/watch?v=12345",
                                 "createdAt": "2025-10-01T10:00:00.000Z",
@@ -8809,7 +8807,7 @@
                     "data": {
                         "module": {
                             "id": 1,
-                            "numberCode": 1,
+                            "title": "First Module",
                             "materialUrl": "https://example.com/module1.pdf",
                             "youtubeUrl": "https://youtube.com/watch?v=12345",
                             "createdAt": "2025-10-01T10:00:00.000Z",
@@ -8851,7 +8849,7 @@
                     "data": {
                         "module": {
                             "id": 21,
-                            "numberCode": 21,
+                            "title": "New Module",
                             "materialUrl": null,
                             "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                             "updatedAt": "2025-10-02T02:30:00.000Z",
@@ -8894,7 +8892,7 @@
                     "data": {
                         "module": {
                             "id": 1,
-                            "numberCode": 100,
+                            "title": "Updated Module Title",
                             "materialUrl": "https://example.com/module1.pdf",
                             "youtubeUrl": "https://youtube.com/watch?v=12345",
                             "createdAt": "2025-10-01T10:00:00.000Z",

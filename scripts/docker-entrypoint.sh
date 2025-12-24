@@ -13,15 +13,15 @@ echo "Running database migrations..."
 npx sequelize-cli db:migrate
 
 
-# Check if the users table is empty and seed if necessary
-USER_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM users;")
+# # Check if the users table is empty and seed if necessary
+# USER_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM users;")
 
-if [ -z "$USER_COUNT" ] || [ "$(echo $USER_COUNT | tr -d '[:space:]')" = "0" ]; then
-  echo "Users table is empty. Seeding database..."
-  node src/db/seeders/seed.js
-else
-  echo "Database already seeded."
-fi
+# if [ -z "$USER_COUNT" ] || [ "$(echo $USER_COUNT | tr -d '[:space:]')" = "0" ]; then
+#   echo "Users table is empty. Seeding database..."
+#   node scripts/db/seed.js
+# else
+#   echo "Database already seeded."
+# fi
 
 # Start the application
 exec "$@"

@@ -17,7 +17,16 @@ const userQueryParam = Joi.object({
 const userUpdate = Joi.object({
     fullName: Joi.string().optional(),
     email: Joi.string().email().optional(),
-    password: Joi.string().min(8).max(72).optional(),
+    password: Joi.string()
+        .pattern(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/,
+        )
+        .message(
+            '"password" must includes uppercase and lowercase letters, numbers, and symbols',
+        )
+        .min(12)
+        .max(72)
+        .optional(),
 })
     .min(1)
     .unknown(false);
