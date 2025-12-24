@@ -9,13 +9,31 @@ const Joi = require('joi');
 const register = Joi.object({
     fullName: Joi.string().required(),
     email: Joi.string().email().required(),
-    password: Joi.string().min(8).max(72).required(),
+    password: Joi.string()
+        .pattern(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/,
+        )
+        .message(
+            '"password" must includes uppercase and lowercase letters, numbers, and symbols',
+        )
+        .min(12)
+        .max(72)
+        .required(),
 });
 
 // Request body of POST /api/v1/auth/login
 const login = Joi.object({
     email: Joi.string().email().required(),
-    password: Joi.string().min(8).max(72).required(),
+    password: Joi.string()
+        .pattern(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/,
+        )
+        .message(
+            '"password" must includes uppercase and lowercase letters, numbers, and symbols',
+        )
+        .min(12)
+        .max(72)
+        .required(),
 });
 
 // JWT access token payload
@@ -45,7 +63,16 @@ const forgotPassword = Joi.object({
 const resetPassword = Joi.object({
     userId: Joi.number().integer().positive().required(),
     token: Joi.string().hex().length(64).required(),
-    newPassword: Joi.string().min(8).max(72).required(),
+    password: Joi.string()
+        .pattern(
+            /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/,
+        )
+        .message(
+            '"password" must includes uppercase and lowercase letters, numbers, and symbols',
+        )
+        .min(12)
+        .max(72)
+        .required(),
     confirmNewPassword: Joi.string().valid(Joi.ref('newPassword')).required(),
 });
 
