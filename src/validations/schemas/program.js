@@ -90,7 +90,7 @@ const program = Joi.object({
 const programUpdate = Joi.object({
     title: Joi.string().optional(),
     description: Joi.string().optional(),
-    availableDate: Joi.date().iso().greater('now').optional(),
+    availableDate: Joi.date().iso().optional(),
     type: Joi.string()
         .valid('Course', 'Seminar', 'Workshop', 'Competition')
         .required(),
