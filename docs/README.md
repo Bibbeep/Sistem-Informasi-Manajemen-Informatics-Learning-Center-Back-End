@@ -19,7 +19,7 @@ This project is designed to be a comprehensive management system for a learning 
 
 *   **User Authentication & Management**: Secure user registration, login (with JWT), password reset, and profile management.
 
-*   **Program & Module Management**: Create, read, update, and delete learning programs (Courses, Seminars, Workshops) and their associated modules.
+*   **Program & Module Management**: Create, read, update, and delete learning programs (Courses, Seminars, Workshops, and Competitions) and their associated modules.
     
 *   **Enrollment & Progress Tracking**: Allow users to enroll in programs and track their progress by marking modules as complete.
     
@@ -47,9 +47,9 @@ These instructions will get you a copy of the project up and running on your loc
 
 You will need to have the following software installed on your machine:
 
-*   **Node.js**: v22.19.0 or higher
+*   **Node.js**
     
-*   **npm**: v10.8.1 or higher
+*   **npm**
     
 *   **Git**
     
@@ -59,7 +59,7 @@ You will need to have the following software installed on your machine:
     
 *   **MinIO**: A running instance of MinIO or another S3-compatible object storage service.
    
-*   **DocRaptor API Key**: A third-party service for generating pdf.
+*   **DocRaptor API Key**: A third-party service for generating pdf. Get here https://app.docraptor.com/signup
 
 *   **Mail service API Key**: A third-party service for sending emails.
 
@@ -91,29 +91,38 @@ The application requires several environment variables to run correctly.
 | **Variable** | **Description** | **Example Value** |
 | --- | --- | --- |
 | **API Server** | | |
-| `PORT` | The port the application will run on. | `3000` |
+| `PORT` | The port the application will run on. | `8080` |
 | `HOST_NAME` | The public-facing URL of the application. | `http://localhost` |
-| `CORS_ORIGIN` | The URL of the front-end client that will be making requests. | `http://localhost:5173` |
+| `CORS_ORIGIN` | The URL of the front-end client that will be making requests. | `http://localhost:5500` |
+| **Rate Limiter** | | |
+| `RATE_LIMITER_WINDOW_SEC` | The time window for rate limiting in seconds. | `60` |
+| `RATE_LIMITER_MAX_REQ` | Maximum number of requests allowed per window per IP address. | `60` |
 | **PostgreSQL** | | |
-| `DATABASE_URL` | Connection URL to connect to the database. | `postgresql://postgres:root@localhost:5432/sim_ilc` |
+| `DATABASE_URL` | Connection URL to connect to the database. | `postgresql://user:pass@localhost:5432/dbname` |
 | **JWT** | | |
 | `JWT_SECRET_KEY` | A long, random, secret string used to sign tokens. **Generate one using `openssl rand -hex 32`**. | `a1b2c3...` |
 | `JWT_EXP` | How long a token is valid for (e.g., "7d", "24h"). | `7d` |
 | **Redis** | | |
-| `REDIS_URL` | Connection URL to connect to redis database. | `redis://default:root@localhost:6379/0` |
-| **Nodemailer (Gmail)** | | |
-| `NODEMAILER_SENDER` | Verified sender identity. | `mail@similc.co` |
-| `NODEMAILER_USER` | Mailer service credential. | `youremail@mail.com` |
-| `NODEMAILER_PASS` | Mailer service credential (usually secret key). | `your_secret_key` |
-| `NODEMAILER_HOST` | Hostname for your mailer service. | `smtp.sendgrid.net` |
-| `NODEMAILER_PORT` | Mailer service port. | `587` or `465` |
+| `REDIS_URL` | Connection URL to connect to redis database. | `redis://user:pass@localhost:6379/0` |
+| `REDIS_USE_TLS` | Set to `"true"` if your Redis server uses a TLS connection. | `false` |
+| **Nodemailer** | | |
+| `NODEMAILER_SENDER` | The sender's name and email address for outgoing emails. | `"Informatics Learning Center <noreply@similc.co>"` |
+| `NODEMAILER_USER` | Username for your email service provider (e.g., SendGrid). | `apikey` |
+| `NODEMAILER_PASS` | Password or API key for your email service provider. | `your_secret_key` |
+| `NODEMAILER_HOST` | Hostname for your email service provider's SMTP server. | `smtp.sendgrid.net` |
+| `NODEMAILER_PORT` | Port for the SMTP server. | `587` |
+| `SMTP_SECURE` | Set to `"true"` if the SMTP connection uses TLS. | `false` |
 | **S3 (MinIO)** | | |
+| `S3_ENDPOINT` | The full URL for your S3-compatible service (internal for Docker). | `http://localhost:9000` |
+| `S3_PUBLIC_ENDPOINT` | The public-facing URL for your S3 service. | `http://localhost:9000` |
+| `MINIO_BROWSER_REDIRECT_URL` | Redirect URL for the MinIO browser. | `http://localhost:9001` |
 | `S3_REGION` | The default region for your S3 bucket. | `us-east-1` |
-| `S3_ENDPOINT` | The full URL for your S3-compatible service. | `http://localhost:9000` |
 | `S3_ACCESS_KEY_ID` | The access key for your MinIO/S3 service. | `minioadmin` |
 | `S3_SECRET_ACCESS_KEY` | The secret key for your MinIO/S3 service. | `minioadmin` |
 | `S3_BUCKET_NAME` | The name of the bucket where files will be stored. | `sim-ilc` |
 | `S3_TEST_BUCKET_NAME` | A separate bucket name for running tests. | `sim-ilc-test` |
+| **External APIs** | | |
+| `DOCRAPTOR_API_KEY` | Your API key for the DocRaptor PDF generation service. | `your_docraptor_api_key` |
 
 ### 3\. Set Up the Database
 
@@ -121,7 +130,8 @@ After configuring your `.env` file with your database credentials, you need to c
 
 ```bash
 # Create the database defined in your .env file
-# with psql
+npm run db:create
+# or with psql
 CREATE DATABASE sim_ilc;
 
 # Run all pending migrations to create the tables
@@ -136,19 +146,21 @@ You can now start the application in development mode. This will use `nodemon` t
 npm run start:dev
 ```
 
-The server will be running at [**http://localhost:3000**](http://localhost:3000) (or the port you specified in `.env`).
+The server will be running at [**http://localhost:8080**](http://localhost:8080) (or the port you specified in `.env`).
 
 Running Tests
 -------------
 
 The project includes a comprehensive suite of unit and integration tests.
 
-*   **Run all tests:**
+*   **Run all tests (verbose):**
     ```bash
-    npm run test
+    npm test
+    ```
 
-    # or the silent version
-    npm run -s test:clean
+*   **Run all tests (silent):**
+    ```bash
+    npm run test:clean
     ```
 
 *   **Run only unit tests:**
@@ -159,9 +171,6 @@ The project includes a comprehensive suite of unit and integration tests.
 *   **Run only integration tests:**    
     ```bash
     npm run test:integration
-
-    # or the silent version
-    npm run -s test:integration:clean
     ```
 
 API Documentation
@@ -173,7 +182,7 @@ API Documentation
         
 *   **Swagger**: Once the application is running, you can view the Swagger UI documentation at:
     
-    *   [**http://localhost:3000/api/v1/docs**](http://localhost:3000/api/v1/docs)
+    *   [**http://localhost:8080/api/v1/docs**](http://localhost:3000/api/v1/docs)
         
 
 Project Structure
@@ -196,6 +205,7 @@ Project Structure
     │   ├── routes/           # Express routes
     │   ├── services/         # Business logic
     │   ├── templates/        # HTML templates
+    │   │   └── documents/    # Document templates
     │   ├── utils/            # Utility/helper functions
     │   ├── validations/      # Joi validation schemas
     │   ├── app.js            # Express application setup
