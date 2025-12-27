@@ -21,6 +21,7 @@ const programQueryParam = Joi.object({
         .default('all'),
     'price.gte': Joi.number().integer().min(0).default(0),
     'price.lte': Joi.number().integer().positive(),
+    q: Joi.string(),
 });
 
 // Request body for POST /api/v1/programs
@@ -37,6 +38,16 @@ const program = Joi.object({
         then: Joi.required(),
         otherwise: Joi.forbidden(),
     }),
+    startDate: Joi.date().iso().when('type', {
+        not: 'Course',
+        then: Joi.required(),
+        otherwise: Joi.forbidden(),
+    }),
+    endDate: Joi.when('type', {
+        not: 'Course',
+        then: Joi.date().iso().greater(Joi.ref('startDate')),
+        otherwise: Joi.forbidden(),
+    }).allow(null),
     videoConferenceUrl: Joi.string()
         .uri()
         .when('type', {
@@ -89,7 +100,7 @@ const program = Joi.object({
 const programUpdate = Joi.object({
     title: Joi.string().optional(),
     description: Joi.string().optional(),
-    availableDate: Joi.date().iso().greater('now').optional(),
+    availableDate: Joi.date().iso().optional(),
     type: Joi.string()
         .valid('Course', 'Seminar', 'Workshop', 'Competition')
         .required(),
@@ -100,6 +111,21 @@ const programUpdate = Joi.object({
             then: Joi.forbidden(),
         })
         .optional(),
+    startDate: Joi.date().iso().when('type', {
+        is: 'Course',
+        then: Joi.forbidden(),
+        otherwise: Joi.optional(),
+    }),
+    endDate: Joi.when('type', {
+        is: 'Course',
+        then: Joi.forbidden(),
+        otherwise: Joi.date()
+            .iso()
+            .when('startDate', {
+                is: Joi.exist(),
+                then: Joi.date().iso().greater(Joi.ref('startDate')),
+            }),
+    }).allow(null),
     videoConferenceUrl: Joi.string()
         .uri()
         .when('isOnline', {
@@ -111,7 +137,7 @@ const programUpdate = Joi.object({
             otherwise: Joi.optional(),
         }),
     locationAddress: Joi.string().when('isOnline', {
-        not: Joi.exist(),
+        is: Joi.exist(),
         then: Joi.when('isOnline', {
             is: false,
             then: Joi.required(),
@@ -161,13 +187,13 @@ const moduleQueryParam = Joi.object({
 
 // Request body for POST /api/v1/programs/:programId/modules/:moduleId
 const modulePayload = Joi.object({
-    numberCode: Joi.number().integer().positive().required(),
-    youtubeUrl: Joi.string().uri().required(),
+    title: Joi.string().required(),
+    youtubeUrl: Joi.string().uri().allow(null).optional(),
 }).unknown(false);
 
 // Request body for PATCH /api/v1/programs/:programId/modules/:moduleId
 const moduleUpdate = Joi.object({
-    numberCode: Joi.number().integer().positive().optional(),
+    title: Joi.string().optional(),
     youtubeUrl: Joi.string().uri().optional(),
 })
     .unknown(false)

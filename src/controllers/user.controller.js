@@ -32,6 +32,7 @@ module.exports = {
     getById: async (req, res, next) => {
         try {
             const user = await UserService.getOne(
+                req.tokenPayload,
                 parseInt(req.params.userId, 10),
             );
 

@@ -3,6 +3,7 @@ const sharp = require('sharp');
 const { fromBuffer } = require('file-type');
 const { Upload } = require('@aws-sdk/lib-storage');
 const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+const { Op, fn } = require('sequelize');
 const { User } = require('../db/models');
 const HTTPError = require('../utils/httpError');
 const AuthService = require('./auth.service');
@@ -24,6 +25,12 @@ class UserService {
 
         if (data.email) {
             where.email = data.email;
+        }
+
+        if (data.q) {
+            where._search = {
+                [Op.match]: fn('plainto_tsquery', 'english', data.q),
+            };
         }
 
         const { count, rows } = await User.findAndCountAll({
@@ -54,7 +61,7 @@ class UserService {
         };
     }
 
-    static async getOne(userId) {
+    static async getOne(tokenPayload, userId) {
         const user = await User.findByPk(userId);
 
         if (!user) {
@@ -69,16 +76,33 @@ class UserService {
             ]);
         }
 
-        return {
-            id: user.id,
-            email: user.email,
-            fullName: user.fullName,
-            memberLevel: user.memberLevel,
-            role: user.role,
-            pictureUrl: user.pictureUrl,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt,
-        };
+        let payload;
+
+        if (tokenPayload.admin || tokenPayload.sub === user.id) {
+            payload = {
+                id: user.id,
+                email: user.email,
+                fullName: user.fullName,
+                memberLevel: user.memberLevel,
+                role: user.role,
+                pictureUrl: user.pictureUrl,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt,
+            };
+        } else {
+            payload = {
+                id: user.id,
+                email: undefined,
+                fullName: user.fullName,
+                memberLevel: undefined,
+                role: undefined,
+                pictureUrl: user.pictureUrl,
+                createdAt: undefined,
+                updatedAt: undefined,
+            };
+        }
+
+        return payload;
     }
 
     static async updateOne(data) {
@@ -100,6 +124,25 @@ class UserService {
             ...(fullName && { fullName }),
             ...(email && { email }),
         };
+
+        if (
+            email &&
+            (await User.findOne({
+                where: {
+                    email,
+                },
+            }))
+        ) {
+            throw new HTTPError(409, 'Resource conflict.', [
+                {
+                    message: 'email is already registered.',
+                    context: {
+                        key: 'email',
+                        value: email,
+                    },
+                },
+            ]);
+        }
 
         if (password) {
             const salt = await bcrypt.genSalt(10);
@@ -225,9 +268,11 @@ class UserService {
             );
         }
 
+        const publicUrl = `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`;
+
         if (Location) {
             await User.update(
-                { pictureUrl: Location },
+                { pictureUrl: publicUrl },
                 {
                     where: {
                         id: data.userId,
@@ -237,7 +282,7 @@ class UserService {
         }
 
         return {
-            pictureUrl: Location,
+            pictureUrl: publicUrl,
         };
     }
 }

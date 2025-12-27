@@ -1,4 +1,4 @@
-ARG NODE_VERSION=22.19.0
+ARG NODE_VERSION=22
 
 FROM node:${NODE_VERSION}-alpine AS builder
 
@@ -14,7 +14,7 @@ COPY scripts/docker-entrypoint.sh ./scripts/
 
 FROM node:${NODE_VERSION}-alpine
 
-RUN apk add --no-cache netcat-openbsd
+RUN apk add --no-cache netcat-openbsd curl postgresql-client
 
 WORKDIR /usr/src/app
 
@@ -29,7 +29,8 @@ COPY --from=builder /usr/src/app .
 
 USER node
 
-EXPOSE 3000
+ARG PORT=3000
+EXPOSE ${PORT}
 
 ENTRYPOINT ["/entrypoint.sh"]
 

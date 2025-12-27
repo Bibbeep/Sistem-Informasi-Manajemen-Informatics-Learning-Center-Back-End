@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "enrollmentId": 2,
+    "userId": 3,
+    "title": "Cybersecurity Workshop Certificate of Completion",
+    "credential": "WKS0003-U0003",
+    "documentUrl": "https://example.com/certificates/WKS0003-U0003.pdf",
+    "issuedAt": "2025-06-02T00:00:00.000Z",
+    "expiredAt": null
+  },
+  {
+    "id": 2,
+    "enrollmentId": 6,
+    "userId": 6,
+    "title": "AI and Machine Learning Seminar Certificate of Completion",
+    "credential": "SMN0005-U0006",
+    "documentUrl": "https://example.com/certificates/SMN0005-U0006.pdf",
+    "issuedAt": "2025-07-16T00:00:00.000Z",
+    "expiredAt": "2028-07-16T00:00:00.000Z"
+  }
+]

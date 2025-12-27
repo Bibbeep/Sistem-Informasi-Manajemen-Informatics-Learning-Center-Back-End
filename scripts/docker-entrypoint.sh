@@ -1,16 +1,27 @@
 #!/bin/sh
+set -e
 
-echo "Waiting for database to be ready..."
-until nc -z $POSTGRES_HOST $POSTGRES_PORT; do
-  echo "Database is unavailable - sleeping"
-  sleep 1
+# Wait for the database to be ready
+echo "Waiting for database..."
+while ! nc -z $POSTGRES_HOST $POSTGRES_PORT; do
+  sleep 0.1
 done
+echo "Database started"
 
-echo "Database is ready!"
+# Run migrations first to ensure tables are created
+echo "Running database migrations..."
+npx sequelize-cli db:migrate
 
-echo "Creating database and running migrations..."
-npx sequelize-cli db:create --env production || echo "Database already exists or creation failed"
-npx sequelize-cli db:migrate --env production
 
-echo "Starting application..."
+# # Check if the users table is empty and seed if necessary
+# USER_COUNT=$(psql "$DATABASE_URL" -t -c "SELECT COUNT(*) FROM users;")
+
+# if [ -z "$USER_COUNT" ] || [ "$(echo $USER_COUNT | tr -d '[:space:]')" = "0" ]; then
+#   echo "Users table is empty. Seeding database..."
+#   node scripts/db/seed.js
+# else
+#   echo "Database already seeded."
+# fi
+
+# Start the application
 exec "$@"

@@ -1,4 +1,4 @@
-const { Op } = require('sequelize');
+const { Op, fn } = require('sequelize');
 const { fromBuffer } = require('file-type');
 const sharp = require('sharp');
 const { Upload } = require('@aws-sdk/lib-storage');
@@ -47,6 +47,12 @@ class ProgramService {
                     [Op.gt]: new Date(),
                 };
             }
+        }
+
+        if (data.q) {
+            where._search = {
+                [Op.match]: fn('plainto_tsquery', 'english', data.q),
+            };
         }
 
         const { count, rows } = await Program.findAndCountAll({
@@ -106,6 +112,8 @@ class ProgramService {
             const workshop = await program.getWorkshop();
 
             details = {
+                startDate: workshop.startDate,
+                endDate: workshop.endDate,
                 isOnline: workshop.isOnline,
                 videoConferenceUrl: workshop.videoConferenceUrl,
                 locationAddress: workshop.locationAddress,
@@ -115,6 +123,8 @@ class ProgramService {
             const seminar = await program.getSeminar();
 
             details = {
+                startDate: seminar.startDate,
+                endDate: seminar.endDate,
                 isOnline: seminar.isOnline,
                 videoConferenceUrl: seminar.videoConferenceUrl,
                 locationAddress: seminar.locationAddress,
@@ -124,6 +134,8 @@ class ProgramService {
             const competition = await program.getCompetition();
 
             details = {
+                startDate: competition.startDate,
+                endDate: competition.endDate,
                 isOnline: competition.isOnline,
                 videoConferenceUrl: competition.videoConferenceUrl,
                 contestRoomUrl: competition.contestRoomUrl,
@@ -154,6 +166,8 @@ class ProgramService {
 
         if (['Seminar', 'Workshop', 'Competition'].includes(type)) {
             details = {
+                startDate: data.startDate,
+                endDate: data.endDate || null,
                 isOnline: data.isOnline,
                 videoConferenceUrl: data.videoConferenceUrl,
                 locationAddress: data.locationAddress,
@@ -264,7 +278,7 @@ class ProgramService {
                         returning: true,
                         transaction: t,
                     })
-                )[1][0].toJSON();
+                )[1]?.[0]?.toJSON();
             } else if (program.type === 'Workshop') {
                 details = (
                     await Workshop.update(updateData, {
@@ -274,7 +288,7 @@ class ProgramService {
                         returning: true,
                         transaction: t,
                     })
-                )[1][0].toJSON();
+                )[1]?.[0]?.toJSON();
             } else if (program.type === 'Competition') {
                 details = (
                     await Competition.update(updateData, {
@@ -284,7 +298,7 @@ class ProgramService {
                         returning: true,
                         transaction: t,
                     })
-                )[1][0].toJSON();
+                )[1]?.[0]?.toJSON();
             } else {
                 details.totalModules = await CourseModule.count({
                     include: [
@@ -300,11 +314,11 @@ class ProgramService {
                 });
             }
 
-            delete details.id;
-            delete details.programId;
-            delete details.createdAt;
-            delete details.updatedAt;
-            delete details.deletedAt;
+            delete details?.id;
+            delete details?.programId;
+            delete details?.createdAt;
+            delete details?.updatedAt;
+            delete details?.deletedAt;
 
             return {
                 ...programRows[0].toJSON(),
@@ -409,9 +423,11 @@ class ProgramService {
             );
         }
 
+        const publicUrl = `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`;
+
         if (Location) {
             await Program.update(
-                { thumbnailUrl: Location },
+                { thumbnailUrl: publicUrl },
                 {
                     where: {
                         id: data.programId,
@@ -421,7 +437,7 @@ class ProgramService {
         }
 
         return {
-            thumbnailUrl: Location,
+            thumbnailUrl: publicUrl,
         };
     }
 
@@ -537,7 +553,7 @@ class ProgramService {
     }
 
     static async createModule(data) {
-        const { numberCode, youtubeUrl, programId } = data;
+        const { title, youtubeUrl, programId } = data;
 
         const program = await Program.findByPk(programId, {
             include: [
@@ -562,14 +578,15 @@ class ProgramService {
 
         const module = await CourseModule.create({
             courseId: program.course.id,
-            numberCode,
+            title,
             youtubeUrl,
         });
 
         return {
             id: module.id,
-            numberCode: module.numberCode,
+            title: module.title,
             materialUrl: module.materialUrl,
+            markdownUrl: module.markdownUrl,
             youtubeUrl: module.youtubeUrl,
             updatedAt: module.updatedAt,
             createdAt: module.createdAt,
@@ -635,8 +652,9 @@ class ProgramService {
 
         return {
             id: moduleRows[0].id,
-            numberCode: moduleRows[0].numberCode,
+            title: moduleRows[0].title,
             materialUrl: moduleRows[0].materialUrl,
+            markdownUrl: moduleRows[0].markdownUrl,
             youtubeUrl: moduleRows[0].youtubeUrl,
             updatedAt: moduleRows[0].updatedAt,
             createdAt: moduleRows[0].createdAt,
@@ -824,9 +842,11 @@ class ProgramService {
             );
         }
 
+        const publicUrl = `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`;
+
         if (Location) {
             await CourseModule.update(
-                { materialUrl: Location },
+                { materialUrl: publicUrl },
                 {
                     where: {
                         id: data.moduleId,
@@ -836,7 +856,109 @@ class ProgramService {
         }
 
         return {
-            materialUrl: Location,
+            materialUrl: publicUrl,
+        };
+    }
+
+    static async uploadTextMaterial(data) {
+        if (!data.file) {
+            throw new HTTPError(400, 'Validation error.', [
+                {
+                    message: '"text" is empty',
+                    context: {
+                        key: 'text',
+                        value: null,
+                    },
+                },
+            ]);
+        }
+
+        const programData = await Program.findByPk(data.programId, {
+            include: [
+                {
+                    model: Course,
+                    as: 'course',
+                    include: [
+                        {
+                            model: CourseModule,
+                            as: 'modules',
+                            where: {
+                                id: data.moduleId,
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        if (!programData) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Program with "programId" does not exist',
+                    context: {
+                        key: 'programId',
+                        value: data.programId,
+                    },
+                },
+            ]);
+        }
+
+        if (!programData.course) {
+            throw new HTTPError(404, 'Resource not found.', [
+                {
+                    message: 'Module with "moduleId" does not exist',
+                    context: {
+                        key: 'moduleId',
+                        value: data.moduleId,
+                    },
+                },
+            ]);
+        }
+
+        const { file } = data;
+        const fileName = `documents/programs/${data.programId}-${data.moduleId}-markdown-${Date.now().toString()}.md`;
+
+        const client = new Upload({
+            client: s3,
+            params: {
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: fileName,
+                Body: file.buffer,
+                ContentType: 'text/markdown',
+                ACL: 'public-read',
+            },
+        });
+
+        const { Location } = await client.done();
+
+        if (programData.course.modules[0].markdownUrl) {
+            const oldKey = programData.course.modules[0].markdownUrl
+                .split('/')
+                .pop();
+
+            await s3.send(
+                new DeleteObjectCommand({
+                    Bucket: process.env.S3_BUCKET_NAME,
+                    Key: `documents/programs/${oldKey}`,
+                }),
+            );
+        }
+
+        const publicUrl = `${process.env.S3_PUBLIC_ENDPOINT}/${process.env.S3_BUCKET_NAME}/${fileName}`;
+
+        if (Location) {
+            await CourseModule.update(
+                { markdownUrl: publicUrl },
+                {
+                    where: {
+                        id: data.moduleId,
+                    },
+                },
+            );
+        }
+
+        return {
+            markdownUrl: publicUrl,
         };
     }
 }

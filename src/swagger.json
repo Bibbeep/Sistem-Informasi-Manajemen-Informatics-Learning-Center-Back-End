@@ -539,6 +539,14 @@
                             "format": "email"
                         },
                         "description": "Filter users by email."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on user full names and emails."
                     }
                 ],
                 "responses": {
@@ -1251,6 +1259,14 @@
                         },
                         "description": "Filter feedbacks by email. Accepts null.",
                         "nullable": true
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on feedback full names, emails, and messages."
                     }
                 ],
                 "responses": {
@@ -1762,6 +1778,14 @@
                             "type": "boolean"
                         },
                         "description": "Filter by availability (true/false)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on program titles and descriptions."
                     },
                     {
                         "in": "query",
@@ -3537,17 +3561,36 @@
                     {
                         "in": "query",
                         "name": "status",
+                        "style": "form",
+                        "explode": true,
                         "schema": {
-                            "type": "string",
-                            "enum": [
-                                "unpaid",
-                                "in progress",
-                                "completed",
-                                "expired",
-                                "all"
-                            ],
-                            "default": "all"
-                        }
+                            "oneOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "unpaid",
+                                        "in progress",
+                                        "completed",
+                                        "expired",
+                                        "all"
+                                    ],
+                                    "default": "all"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "unpaid",
+                                            "in progress",
+                                            "completed",
+                                            "expired"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        "description": "Filter enrollments by status. Can be a single status or an array of statuses (e.g., `status=in progress&status=completed`). If not provided, it will return all."
                     }
                 ],
                 "responses": {
@@ -5689,6 +5732,14 @@
                             "type": "string"
                         },
                         "description": "Filter discussions by title (case-insensitive)."
+                    },
+                    {
+                        "in": "query",
+                        "name": "q",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "description": "Search query for full-text search on discussion titles and main content."
                     }
                 ],
                 "responses": {
@@ -5707,14 +5758,14 @@
                                         "discussions": [
                                             {
                                                 "id": 1,
-                                                "adminUserId": 1,
+                                                "userId": 1,
                                                 "title": "General Discussion about Web Development",
                                                 "createdAt": "2025-10-16T10:00:00.000Z",
                                                 "updatedAt": "2025-10-16T10:00:00.000Z"
                                             },
                                             {
                                                 "id": 2,
-                                                "adminUserId": 1,
+                                                "userId": 1,
                                                 "title": "Frontend Frameworks: React vs Vue",
                                                 "createdAt": "2025-10-15T14:30:00.000Z",
                                                 "updatedAt": "2025-10-15T14:30:00.000Z"
@@ -5762,7 +5813,7 @@
                 "description": "API for discussion management — GET /api/v1/discussions"
             },
             "post": {
-                "summary": "Creates a new discussion forum (Admin only)",
+                "summary": "Creates a new discussion forum",
                 "tags": ["Discussion Management"],
                 "security": [
                     {
@@ -5795,8 +5846,8 @@
                                         "discussion": {
                                             "id": 26,
                                             "title": "New Discussion on DevOps",
-                                            "adminUserId": 1,
-                                            "updatedAt": "2025-10-16T10:47:00.000Z",
+                                                            "mainContent": "This is the main content of the discussion.",
+                                                            "userId": 1,                                            "updatedAt": "2025-10-16T10:47:00.000Z",
                                             "createdAt": "2025-10-16T10:47:00.000Z"
                                         }
                                     },
@@ -5853,31 +5904,6 @@
                                 }
                             }
                         }
-                    },
-                    "403": {
-                        "description": "Forbidden access for non-admin users.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/FailedResponse"
-                                },
-                                "example": {
-                                    "success": false,
-                                    "statusCode": 403,
-                                    "message": "Forbidden.",
-                                    "data": null,
-                                    "errors": [
-                                        {
-                                            "message": "You do not have the necessary permissions to access this resource.",
-                                            "context": {
-                                                "key": "role",
-                                                "value": "User"
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        }
                     }
                 },
                 "description": "API for discussion management — POST /api/v1/discussions"
@@ -5918,8 +5944,9 @@
                                     "data": {
                                         "discussion": {
                                             "id": 1,
-                                            "adminUserId": 1,
+                                            "userId": 1,
                                             "title": "General Discussion about Web Development",
+                                            "mainContent": "This is the main content of the discussion.",
                                             "createdAt": "2025-10-16T10:00:00.000Z",
                                             "updatedAt": "2025-10-16T10:00:00.000Z"
                                         }
@@ -6001,7 +6028,9 @@
                                     "data": {
                                         "discussion": {
                                             "id": 1,
+                                            "userId": 1,
                                             "title": "Updated: Discussion on Advanced Web Topics",
+                                            "mainContent": "This is the updated main content.",
                                             "createdAt": "2025-10-16T10:00:00.000Z",
                                             "updatedAt": "2025-10-16T10:55:00.000Z"
                                         }
@@ -6191,6 +6220,7 @@
                                                 "message": "This is a top-level comment on the discussion.",
                                                 "likesCount": 3,
                                                 "repliesCount": 2,
+                                                "isLiked": false,
                                                 "createdAt": "2025-10-18T09:12:34.000Z",
                                                 "updatedAt": "2025-10-18T09:12:34.000Z"
                                             },
@@ -6202,6 +6232,7 @@
                                                 "message": "This is a reply to the top-level comment.",
                                                 "likesCount": 1,
                                                 "repliesCount": 0,
+                                                "isLiked": false,
                                                 "createdAt": "2025-10-18T10:00:00.000Z",
                                                 "updatedAt": "2025-10-18T10:00:00.000Z"
                                             }
@@ -6342,6 +6373,7 @@
                                             "message": "This is a top-level comment on the discussion.",
                                             "likesCount": 3,
                                             "repliesCount": 2,
+                                            "isLiked": false,
                                             "createdAt": "2025-10-18T09:12:34.000Z",
                                             "updatedAt": "2025-10-18T09:12:34.000Z"
                                         }
@@ -6846,8 +6878,8 @@
                     "id": {
                         "type": "integer"
                     },
-                    "numberCode": {
-                        "type": "integer"
+                    "title": {
+                        "type": "string"
                     },
                     "materialUrl": {
                         "type": "string",
@@ -6941,6 +6973,10 @@
                     "id": {
                         "type": "integer",
                         "description": "The unique identifier for the invoice."
+                    },
+                    "enrollmentId": {
+                        "type": "integer",
+                        "description": "The ID of the enrollment this invoice is for."
                     },
                     "userId": {
                         "type": "integer",
@@ -7096,13 +7132,18 @@
                         "type": "integer",
                         "example": 1
                     },
-                    "adminUserId": {
+                    "userId": {
                         "type": "integer",
+                        "description": "The ID of the user who created the discussion.",
                         "example": 1
                     },
                     "title": {
                         "type": "string",
                         "example": "General Discussion about Web Development"
+                    },
+                    "mainContent": {
+                        "type": "string",
+                        "example": "This is the main content of the discussion."
                     },
                     "createdAt": {
                         "type": "string",
@@ -7142,6 +7183,10 @@
                     },
                     "repliesCount": {
                         "type": "integer"
+                    },
+                    "isLiked": {
+                        "type": "boolean",
+                        "description": "Indicates if the current user has liked this comment."
                     },
                     "createdAt": {
                         "type": "string",
@@ -7625,27 +7670,25 @@
             "ModuleCreateRequestBody": {
                 "type": "object",
                 "properties": {
-                    "numberCode": {
-                        "type": "integer",
-                        "minimum": 1
+                    "title": {
+                        "type": "string"
                     },
                     "youtubeUrl": {
                         "type": "string",
                         "format": "uri"
                     }
                 },
-                "required": ["numberCode", "youtubeUrl"],
+                "required": ["title"],
                 "example": {
-                    "numberCode": 21,
+                    "title": "Introduction to Course",
                     "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
                 }
             },
             "ModuleUpdateRequestBody": {
                 "type": "object",
                 "properties": {
-                    "numberCode": {
-                        "type": "integer",
-                        "minimum": 1
+                    "title": {
+                        "type": "string"
                     },
                     "youtubeUrl": {
                         "type": "string",
@@ -7653,7 +7696,7 @@
                     }
                 },
                 "example": {
-                    "numberCode": 100
+                    "title": "Advanced Topics"
                 }
             },
             "EnrollmentCreateRequestBody": {
@@ -7747,23 +7790,31 @@
                 "properties": {
                     "title": {
                         "type": "string"
+                    },
+                    "mainContent": {
+                        "type": "string"
                     }
                 },
-                "required": ["title"],
+                "required": ["title", "mainContent"],
                 "example": {
-                    "title": "New Discussion on DevOps"
+                    "title": "New Discussion on DevOps",
+                    "mainContent": "This is the main content of the discussion."
                 }
             },
             "DiscussionUpdateRequestBody": {
                 "type": "object",
+                "description": "At least one of the properties is required.",
                 "properties": {
                     "title": {
                         "type": "string"
+                    },
+                    "mainContent": {
+                        "type": "string"
                     }
                 },
-                "required": ["title"],
                 "example": {
-                    "title": "Updated: Discussion on Advanced Web Topics"
+                    "title": "Updated: Discussion on Advanced Web Topics",
+                    "mainContent": "This is the updated main content."
                 }
             },
             "CompletedModuleSuccessResponse201": {
@@ -8705,7 +8756,7 @@
                         "modules": [
                             {
                                 "id": 1,
-                                "numberCode": 1,
+                                "title": "First Module",
                                 "materialUrl": "https://example.com/module1.pdf",
                                 "youtubeUrl": "https://youtube.com/watch?v=12345",
                                 "createdAt": "2025-10-01T10:00:00.000Z",
@@ -8756,7 +8807,7 @@
                     "data": {
                         "module": {
                             "id": 1,
-                            "numberCode": 1,
+                            "title": "First Module",
                             "materialUrl": "https://example.com/module1.pdf",
                             "youtubeUrl": "https://youtube.com/watch?v=12345",
                             "createdAt": "2025-10-01T10:00:00.000Z",
@@ -8798,7 +8849,7 @@
                     "data": {
                         "module": {
                             "id": 21,
-                            "numberCode": 21,
+                            "title": "New Module",
                             "materialUrl": null,
                             "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                             "updatedAt": "2025-10-02T02:30:00.000Z",
@@ -8841,7 +8892,7 @@
                     "data": {
                         "module": {
                             "id": 1,
-                            "numberCode": 100,
+                            "title": "Updated Module Title",
                             "materialUrl": "https://example.com/module1.pdf",
                             "youtubeUrl": "https://youtube.com/watch?v=12345",
                             "createdAt": "2025-10-01T10:00:00.000Z",
@@ -9172,6 +9223,7 @@
                         "invoices": [
                             {
                                 "id": 1,
+                                "enrollmentId": 1,
                                 "userId": 1,
                                 "programId": 1,
                                 "programTitle": "Introduction to Backend Development",
@@ -9236,6 +9288,7 @@
                     "data": {
                         "invoice": {
                             "id": 1,
+                            "enrollmentId": 1,
                             "userId": 1,
                             "programId": 1,
                             "programTitle": "Introduction to Backend Development",

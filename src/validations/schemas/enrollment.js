@@ -19,8 +19,24 @@ const enrollmentQueryParam = Joi.object({
     programType: Joi.string()
         .valid('course', 'seminar', 'workshop', 'competition', 'all')
         .default('all'),
-    status: Joi.string()
-        .valid('unpaid', 'in progress', 'completed', 'expired', 'all')
+    status: Joi.alternatives()
+        .try(
+            Joi.string().valid(
+                'unpaid',
+                'in progress',
+                'completed',
+                'expired',
+                'all',
+            ),
+            Joi.array().items(
+                Joi.string().valid(
+                    'unpaid',
+                    'in progress',
+                    'completed',
+                    'expired',
+                ),
+            ),
+        )
         .default('all'),
 });
 

@@ -9,6 +9,7 @@ const {
     sequelize,
 } = require('../../../src/db/models');
 const HTTPError = require('../../../src/utils/httpError');
+const { Op, fn } = require('sequelize');
 
 describe('Discussion Service Unit Tests', () => {
     afterEach(() => {
@@ -47,6 +48,54 @@ describe('Discussion Service Unit Tests', () => {
 
             expect(Discussion.findAndCountAll).toHaveBeenCalledWith({
                 where: {},
+                limit: 10,
+                offset: 0,
+                order: [['id', 'ASC']],
+            });
+            expect(result.pagination).toEqual(expectedPagination);
+            expect(result.discussions).toHaveLength(10);
+        });
+
+        it('should return discussions and pagination data with full-text search query parameters', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                q: 'query',
+            };
+            const mockCount = 25;
+            const mockRows = Array(10).fill({
+                id: 1,
+                title: 'Test Discussion',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            });
+            const expectedPagination = {
+                currentRecords: 10,
+                totalRecords: 25,
+                currentPage: 1,
+                totalPages: 3,
+                nextPage: 2,
+                prevPage: null,
+            };
+
+            Discussion.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const result = await DiscussionService.getMany(mockParams);
+
+            expect(Discussion.findAndCountAll).toHaveBeenCalledWith({
+                where: {
+                    _search: {
+                        [Op.match]: fn(
+                            'plainto_tsquery',
+                            'english',
+                            mockParams.q,
+                        ),
+                    },
+                },
                 limit: 10,
                 offset: 0,
                 order: [['id', 'ASC']],
@@ -215,11 +264,19 @@ describe('Discussion Service Unit Tests', () => {
     describe('updateOne Tests', () => {
         it('should update a discussion and return it', async () => {
             const mockDiscussionId = 1;
-            const mockUpdateData = { title: 'Updated Title' };
-            const mockDiscussion = { id: mockDiscussionId, title: 'Old Title' };
+            const mockUpdateData = {
+                title: 'Updated Title',
+                mainContent: 'Updated Main Content',
+            };
+            const mockDiscussion = {
+                id: mockDiscussionId,
+                title: 'Old Title',
+                mainContent: 'Old main content',
+            };
             const mockUpdatedDiscussion = {
                 id: mockDiscussionId,
                 title: 'Updated Title',
+                mainContent: 'Updated Main Content',
                 createdAt: new Date(),
                 updatedAt: new Date(),
             };
@@ -234,12 +291,21 @@ describe('Discussion Service Unit Tests', () => {
 
             expect(Discussion.findByPk).toHaveBeenCalledWith(mockDiscussionId);
             expect(Discussion.update).toHaveBeenCalledWith(
-                { title: 'Updated Title' },
-                { where: { id: mockDiscussionId }, returning: true },
+                {
+                    title: 'Updated Title',
+                    mainContent: 'Updated Main Content',
+                },
+                {
+                    where: {
+                        id: mockDiscussionId,
+                    },
+                    returning: true,
+                },
             );
             expect(result).toEqual({
                 id: mockUpdatedDiscussion.id,
                 title: mockUpdatedDiscussion.title,
+                mainContent: mockUpdatedDiscussion.mainContent,
                 createdAt: mockUpdatedDiscussion.createdAt,
                 updatedAt: mockUpdatedDiscussion.updatedAt,
             });

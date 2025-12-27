@@ -159,7 +159,7 @@ describe('Discussion Controller Unit Tests', () => {
             expect(validateDiscussion).toHaveBeenCalledWith(req.body);
             expect(DiscussionService.create).toHaveBeenCalledWith({
                 ...mockValue,
-                adminUserId: 1,
+                userId: 1,
             });
             expect(res.status).toHaveBeenCalledWith(201);
             expect(res.json).toHaveBeenCalledWith({
@@ -202,7 +202,7 @@ describe('Discussion Controller Unit Tests', () => {
             expect(validateDiscussion).toHaveBeenCalledWith(req.body);
             expect(DiscussionService.create).toHaveBeenCalledWith({
                 ...mockValue,
-                adminUserId: 1,
+                userId: 1,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
         });
@@ -313,6 +313,7 @@ describe('Discussion Controller Unit Tests', () => {
     describe('getAllComments Tests', () => {
         beforeEach(() => {
             req.params.discussionId = '1';
+            req.tokenPayload.sub = 1;
         });
 
         it('should return 200 with comments and pagination on success', async () => {
@@ -326,6 +327,7 @@ describe('Discussion Controller Unit Tests', () => {
                         message: 'Test Comment',
                         userId: 1,
                         fullName: 'Test User',
+                        isLiked: false,
                     },
                 ],
             };
@@ -343,6 +345,7 @@ describe('Discussion Controller Unit Tests', () => {
             expect(DiscussionService.getManyComments).toHaveBeenCalledWith({
                 ...mockQuery,
                 discussionId: mockDiscussionId,
+                userId: 1,
             });
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({
@@ -386,6 +389,7 @@ describe('Discussion Controller Unit Tests', () => {
             expect(DiscussionService.getManyComments).toHaveBeenCalledWith({
                 ...mockQuery,
                 discussionId: mockDiscussionId,
+                userId: 1,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();
@@ -396,6 +400,7 @@ describe('Discussion Controller Unit Tests', () => {
     describe('getCommentById Tests', () => {
         beforeEach(() => {
             req.params = { discussionId: '1', commentId: '5' };
+            req.tokenPayload.sub = 1;
         });
 
         it('should return 200 with comment details on success (no replies)', async () => {
@@ -424,6 +429,7 @@ describe('Discussion Controller Unit Tests', () => {
             expect(DiscussionService.getOneComment).toHaveBeenCalledWith({
                 discussionId: mockDiscussionId,
                 commentId: mockCommentId,
+                userId: 1,
                 includeReplies: false,
             });
             expect(res.status).toHaveBeenCalledWith(200);
@@ -466,6 +472,7 @@ describe('Discussion Controller Unit Tests', () => {
                 discussionId: mockDiscussionId,
                 commentId: mockCommentId,
                 includeReplies: true,
+                userId: 1,
             });
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(
@@ -509,6 +516,7 @@ describe('Discussion Controller Unit Tests', () => {
                 discussionId: mockDiscussionId,
                 commentId: mockCommentId,
                 includeReplies: false,
+                userId: 1,
             });
             expect(next).toHaveBeenCalledWith(serviceError);
             expect(res.status).not.toHaveBeenCalled();

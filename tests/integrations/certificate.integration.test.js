@@ -322,11 +322,15 @@ describe('Certificate Integration Tests', () => {
         }, 10000);
 
         it('should return 201 with custom title, issuedAt, and expiredAt', async () => {
+            const now = new Date().toISOString();
+
             const customData = {
                 enrollmentId: completedEnrollment.id,
                 title: 'Special Certificate of Awesomeness',
-                issuedAt: '2025-12-01T00:00:00.000Z',
-                expiredAt: '2027-12-01T00:00:00.000Z',
+                issuedAt: now,
+                expiredAt: faker.date
+                    .future({ years: 3, refDate: now })
+                    .toISOString(),
             };
 
             const response = await request(server)

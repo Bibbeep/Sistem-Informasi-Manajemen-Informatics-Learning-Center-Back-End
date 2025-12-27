@@ -166,6 +166,7 @@ describe('User Controller Unit Tests', () => {
             await getById(req, res, next);
 
             expect(UserService.getOne).toHaveBeenCalledWith(
+                expect.any(Object),
                 parseInt(req.params.userId, 10),
             );
             expect(res.status).toHaveBeenCalledWith(200);
@@ -190,6 +191,7 @@ describe('User Controller Unit Tests', () => {
             await getById(req, res, next);
 
             expect(UserService.getOne).toHaveBeenCalledWith(
+                expect.any(Object),
                 parseInt(req.params.userId, 10),
             );
             expect(next).toHaveBeenCalledWith(serviceError);

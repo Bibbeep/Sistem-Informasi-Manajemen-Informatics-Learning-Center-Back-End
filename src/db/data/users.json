@@ -1,0 +1,112 @@
+[
+  {
+    "id": 1,
+    "fullName": "Administrator",
+    "email": "admin@sim-ilc.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Premium",
+    "role": "Admin",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "fullName": "Jane Doe",
+    "email": "jane.doe@example.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Premium",
+    "role": "Admin",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  },
+  {
+    "id": 3,
+    "fullName": "John Smith",
+    "email": "john.smith@example.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Basic",
+    "role": "User",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  },
+  {
+    "id": 4,
+    "fullName": "Emily Jones",
+    "email": "emily.jones@example.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Premium",
+    "role": "User",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  },
+  {
+    "id": 5,
+    "fullName": "Michael Brown",
+    "email": "michael.brown@example.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Basic",
+    "role": "User",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  },
+  {
+    "id": 6,
+    "fullName": "Jessica Davis",
+    "email": "jessica.davis@example.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Premium",
+    "role": "User",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  },
+  {
+    "id": 7,
+    "fullName": "Christopher Miller",
+    "email": "christopher.miller@example.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Basic",
+    "role": "User",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  },
+  {
+    "id": 8,
+    "fullName": "Amanda Wilson",
+    "email": "amanda.wilson@example.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Premium",
+    "role": "User",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  },
+  {
+    "id": 9,
+    "fullName": "Daniel Moore",
+    "email": "daniel.moore@example.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Basic",
+    "role": "User",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  },
+  {
+    "id": 10,
+    "fullName": "Sarah Taylor",
+    "email": "sarah.taylor@example.com",
+    "hashedPassword": "$2b$10$E/uCqP31t2p.iP9.pZ5dI.g.y.V8U7yI.qU/Q8w7g0c3zH6f.wP3K",
+    "memberLevel": "Premium",
+    "role": "User",
+    "pictureUrl": null,
+    "createdAt": "2025-12-17T12:00:00.000Z",
+    "updatedAt": "2025-12-17T12:00:00.000Z"
+  }
+]

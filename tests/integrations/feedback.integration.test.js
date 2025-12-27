@@ -129,6 +129,14 @@ describe('Feedback Management Integration Tests', () => {
             );
         });
 
+        it('should return 200 and fetches discussions filtered by search query', async () => {
+            const response = await request(server)
+                .get(`/api/v1/feedbacks?q=mail`)
+                .set('Authorization', `Bearer ${tokens.validAdmin}`);
+
+            expect(response.status).toBe(200);
+        });
+
         it('should return 200 and fetches all feedback data with query params', async () => {
             const response = await request(server)
                 .get('/api/v1/feedbacks?sort=-createdAt&limit=5&page=2')

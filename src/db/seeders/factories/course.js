@@ -15,9 +15,11 @@ module.exports = async (props = {}) => {
     for (let i = 1; i <= moduleCount; i++) {
         await models.CourseModule.create({
             courseId: course.id,
-            numberCode: i,
+            title: faker.lorem.words(5),
             materialUrl: faker.internet.url(),
-            youtubeUrl: `https://www.youtube.com/watch?v=${faker.string.alphanumeric(11)}`,
+            youtubeUrl: faker.datatype.boolean()
+                ? `https://www.youtube.com/watch?v=${faker.string.alphanumeric(11)}`
+                : null,
         });
     }
     return course;

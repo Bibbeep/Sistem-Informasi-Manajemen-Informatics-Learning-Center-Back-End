@@ -14,18 +14,22 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 field: 'course_id',
             },
-            numberCode: {
+            title: {
                 allowNull: false,
-                type: DataTypes.INTEGER,
-                field: 'number_code',
+                type: DataTypes.STRING,
             },
             materialUrl: {
                 allowNull: true,
                 type: DataTypes.TEXT,
                 field: 'material_url',
             },
+            markdownUrl: {
+                allowNull: true,
+                type: DataTypes.TEXT,
+                field: 'markdown_url',
+            },
             youtubeUrl: {
-                allowNull: false,
+                allowNull: true,
                 type: DataTypes.TEXT,
                 field: 'youtube_url',
             },

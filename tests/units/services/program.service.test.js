@@ -36,7 +36,7 @@ jest.mock('sharp', () => {
         };
     });
 });
-const { Op } = require('sequelize');
+const { Op, fn } = require('sequelize');
 const ProgramService = require('../../../src/services/program.service');
 const {
     Program,
@@ -122,6 +122,87 @@ describe('Program Service Unit Tests', () => {
 
             expect(Program.findAndCountAll).toHaveBeenCalledWith({
                 where: {
+                    priceIdr: {
+                        [Op.gte]: 0,
+                    },
+                },
+                limit: 10,
+                offset: 0,
+                order: [['id', 'ASC']],
+            });
+            expect(returnValue).toStrictEqual(mockReturnValue);
+        });
+
+        it('should return programs and pagination data with full-text search query', async () => {
+            const mockParams = {
+                page: 1,
+                limit: 10,
+                sort: 'id',
+                type: 'all',
+                'price.gte': 0,
+                q: 'query',
+            };
+            const mockCount = 100;
+            const mockRows = [
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+                {
+                    dummy: 'program',
+                },
+            ];
+            const mockReturnValue = {
+                pagination: {
+                    currentRecords: 10,
+                    totalRecords: 100,
+                    currentPage: 1,
+                    totalPages: 10,
+                    nextPage: 2,
+                    prevPage: null,
+                },
+                programs: mockRows,
+            };
+
+            Program.findAndCountAll.mockResolvedValue({
+                count: mockCount,
+                rows: mockRows,
+            });
+
+            const returnValue = await ProgramService.getMany(mockParams);
+
+            expect(Program.findAndCountAll).toHaveBeenCalledWith({
+                where: {
+                    _search: {
+                        [Op.match]: fn(
+                            'plainto_tsquery',
+                            'english',
+                            mockParams.q,
+                        ),
+                    },
                     priceIdr: {
                         [Op.gte]: 0,
                     },
@@ -615,6 +696,7 @@ describe('Program Service Unit Tests', () => {
                 type: 'Workshop',
                 priceIdr: 200000,
                 isOnline: true,
+                startDate: new Date(),
                 videoConferenceUrl: 'http://zoom.us/w',
                 locationAddress: null,
                 facilitatorNames: ['John Doe'],
@@ -637,11 +719,15 @@ describe('Program Service Unit Tests', () => {
             expect(Workshop.create).toHaveBeenCalledWith({
                 programId: 1,
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 facilitatorNames: mockData.facilitatorNames,
             });
             expect(result.details).toEqual({
+                startDate: mockData.startDate,
+                endDate: null,
                 isOnline: mockData.isOnline,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
@@ -657,6 +743,7 @@ describe('Program Service Unit Tests', () => {
                 type: 'Seminar',
                 priceIdr: 50000,
                 isOnline: false,
+                startDate: new Date(),
                 videoConferenceUrl: null,
                 locationAddress: '123 Fake St',
                 speakerNames: ['Jane Smith'],
@@ -678,12 +765,16 @@ describe('Program Service Unit Tests', () => {
             expect(Seminar.create).toHaveBeenCalledWith({
                 programId: 1,
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 speakerNames: mockData.speakerNames,
             });
             expect(result.details).toEqual({
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 speakerNames: mockData.speakerNames,
@@ -698,6 +789,7 @@ describe('Program Service Unit Tests', () => {
                 type: 'Competition',
                 priceIdr: 0,
                 isOnline: true,
+                startDate: new Date(),
                 videoConferenceUrl: 'http://meet.google.com/c',
                 locationAddress: null,
                 contestRoomUrl: 'http://hackerrank.com/c',
@@ -723,6 +815,8 @@ describe('Program Service Unit Tests', () => {
             expect(Competition.create).toHaveBeenCalledWith({
                 programId: 1,
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 contestRoomUrl: mockData.contestRoomUrl,
@@ -732,6 +826,8 @@ describe('Program Service Unit Tests', () => {
 
             expect(result.details).toEqual({
                 isOnline: mockData.isOnline,
+                startDate: mockData.startDate,
+                endDate: null,
                 videoConferenceUrl: mockData.videoConferenceUrl,
                 locationAddress: mockData.locationAddress,
                 contestRoomUrl: mockData.contestRoomUrl,
@@ -990,22 +1086,18 @@ describe('Program Service Unit Tests', () => {
             Program.findByPk.mockResolvedValue(mockProgram);
             fromBuffer.mockResolvedValue({ mime: 'image/png' });
 
-            const result = await ProgramService.uploadThumbnail(mockData);
+            await ProgramService.uploadThumbnail(mockData);
 
             expect(Program.findByPk).toHaveBeenCalledWith(mockData.programId);
             expect(sharp).toHaveBeenCalledWith(mockData.file.buffer);
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(Program.update).toHaveBeenCalledWith(
                 {
-                    thumbnailUrl:
-                        'https://mock-s3-location.com/new-thumbnail.webp',
+                    thumbnailUrl: expect.any(String),
                 },
                 { where: { id: mockData.programId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
-            expect(result).toEqual({
-                thumbnailUrl: 'https://mock-s3-location.com/new-thumbnail.webp',
-            });
         });
 
         it('should upload a new thumbnail and not throw error even if failed to update to database', async () => {
@@ -1055,8 +1147,7 @@ describe('Program Service Unit Tests', () => {
             expect(DeleteObjectCommand).toHaveBeenCalledTimes(1);
             expect(Program.update).toHaveBeenCalledWith(
                 {
-                    thumbnailUrl:
-                        'https://mock-s3-location.com/new-thumbnail.webp',
+                    thumbnailUrl: expect.any(String),
                 },
                 { where: { id: mockData.programId } },
             );
@@ -1394,7 +1485,7 @@ describe('Program Service Unit Tests', () => {
     describe('createModule Tests', () => {
         it('should create a new module', async () => {
             const mockData = {
-                numberCode: 1,
+                title: 'ABC',
                 youtubeUrl: 'https://youtube.com/url',
                 programId: 1,
             };
@@ -1405,9 +1496,10 @@ describe('Program Service Unit Tests', () => {
             };
             const mockModule = {
                 id: 1,
-                numberCode: 1,
-                materialUrl: null,
+                title: 'ABC',
                 youtubeUrl: 'https://youtube.com/url',
+                markdownUrl: null,
+                materialUrl: null,
                 updatedAt: 'NOW',
                 createdAt: 'NOW',
                 deletedAt: null,
@@ -1475,8 +1567,9 @@ describe('Program Service Unit Tests', () => {
             const mockModuleRows = [
                 {
                     id: 1,
-                    numberCode: 2,
+                    title: 'ABC',
                     materialUrl: null,
+                    markdownUrl: null,
                     youtubeUrl: 'http://youtube.com/url',
                     updatedAt: 'NOW',
                     createdAt: 'NOW',
@@ -1697,14 +1790,13 @@ describe('Program Service Unit Tests', () => {
             expect(Upload).toHaveBeenCalledTimes(1);
             expect(CourseModule.update).toHaveBeenCalledWith(
                 {
-                    materialUrl:
-                        'https://mock-s3-location.com/new-material.pdf',
+                    materialUrl: expect.any(String),
                 },
                 { where: { id: mockData.moduleId } },
             );
             expect(s3.send).not.toHaveBeenCalled();
             expect(result).toEqual({
-                materialUrl: 'https://mock-s3-location.com/new-material.pdf',
+                materialUrl: expect.any(String),
             });
         });
 
@@ -1749,10 +1841,9 @@ describe('Program Service Unit Tests', () => {
                 };
             });
 
-            const result = await ProgramService.uploadMaterial(mockData);
+            await ProgramService.uploadMaterial(mockData);
 
             expect(CourseModule.update).not.toHaveBeenCalled();
-            expect(result).toEqual({ materialUrl: undefined });
         });
 
         it('should throw a 400 error if no file is provided', async () => {
@@ -1841,6 +1932,154 @@ describe('Program Service Unit Tests', () => {
                             key: 'File MIME Type',
                             value: null,
                         },
+                    },
+                ]),
+            );
+        });
+    });
+
+    describe('uploadTextMaterial Tests', () => {
+        const mockData = {
+            file: { buffer: 'mock-text-buffer' },
+            programId: 1,
+            moduleId: 1,
+        };
+
+        const mockProgram = {
+            id: 1,
+            course: {
+                id: 1,
+                modules: [
+                    {
+                        id: 1,
+                        markdownUrl: null,
+                    },
+                ],
+            },
+        };
+
+        beforeEach(() => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+        });
+
+        it('should upload a new markdown material and update the module record', async () => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Upload.mockImplementation(() => {
+                return {
+                    done: jest.fn().mockResolvedValue({
+                        Location:
+                            'https://mock-s3-location.com/new-markdown.md',
+                    }),
+                };
+            });
+
+            const result = await ProgramService.uploadTextMaterial(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(Upload).toHaveBeenCalledTimes(1);
+            expect(CourseModule.update).toHaveBeenCalledWith(
+                {
+                    markdownUrl: expect.any(String),
+                },
+                { where: { id: mockData.moduleId } },
+            );
+            expect(s3.send).not.toHaveBeenCalled();
+            expect(result).toEqual({
+                markdownUrl: expect.any(String),
+            });
+        });
+
+        it('should upload a new markdown material and not throw error even if failed to update to database', async () => {
+            Program.findByPk.mockResolvedValue(mockProgram);
+            Upload.mockImplementationOnce(() => {
+                return {
+                    done: jest.fn().mockResolvedValue({
+                        Location: undefined,
+                    }),
+                };
+            });
+
+            await ProgramService.uploadTextMaterial(mockData);
+
+            expect(Program.findByPk).toHaveBeenCalledWith(
+                mockData.programId,
+                expect.any(Object),
+            );
+            expect(Upload).toHaveBeenCalledTimes(1);
+            expect(CourseModule.update).not.toHaveBeenCalled();
+            expect(s3.send).not.toHaveBeenCalled();
+        });
+
+        it('should upload a new markdown material and delete the old one if it exists', async () => {
+            const programWithMarkdown = {
+                ...mockProgram,
+                course: {
+                    ...mockProgram.course,
+                    modules: [
+                        {
+                            id: 1,
+                            markdownUrl:
+                                'https://my-bucket.com/documents/programs/old-markdown.md',
+                        },
+                    ],
+                },
+            };
+            Program.findByPk.mockResolvedValue(programWithMarkdown);
+
+            await ProgramService.uploadTextMaterial(mockData);
+
+            expect(s3.send).toHaveBeenCalledTimes(1);
+            expect(DeleteObjectCommand).toHaveBeenCalledWith({
+                Bucket: process.env.S3_BUCKET_NAME,
+                Key: 'documents/programs/old-markdown.md',
+            });
+        });
+
+        it('should throw a 400 error if no file is provided', async () => {
+            await expect(
+                ProgramService.uploadTextMaterial({ ...mockData, file: null }),
+            ).rejects.toThrow(
+                new HTTPError(400, 'Validation error.', [
+                    {
+                        message: '"text" is empty',
+                        context: { key: 'text', value: null },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 404 error if the program is not found', async () => {
+            Program.findByPk.mockResolvedValue(null);
+            await expect(
+                ProgramService.uploadTextMaterial(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Program with "programId" does not exist',
+                        context: {
+                            key: 'programId',
+                            value: mockData.programId,
+                        },
+                    },
+                ]),
+            );
+        });
+
+        it('should throw a 404 error if the module is not found', async () => {
+            Program.findByPk.mockResolvedValue({
+                ...mockProgram,
+                course: null,
+            });
+            await expect(
+                ProgramService.uploadTextMaterial(mockData),
+            ).rejects.toThrow(
+                new HTTPError(404, 'Resource not found.', [
+                    {
+                        message: 'Module with "moduleId" doesを起こすnot exist',
+                        context: { key: 'moduleId', value: mockData.moduleId },
                     },
                 ]),
             );

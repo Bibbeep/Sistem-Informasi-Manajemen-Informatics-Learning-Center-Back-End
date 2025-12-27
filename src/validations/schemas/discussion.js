@@ -8,17 +8,22 @@ const discussionQueryParam = Joi.object({
         .regex(/^-?(id|createdAt|updatedAt)$/)
         .default('id'),
     title: Joi.string(),
+    q: Joi.string(),
 });
 
 // Request body for POST /api/v1/discussions
 const discussionPayload = Joi.object({
     title: Joi.string().required(),
+    mainContent: Joi.string().required(),
 }).unknown(false);
 
 // Request body for PATCH /api/v1/discussions/:discussionId
 const discussionUpdate = Joi.object({
-    title: Joi.string().required(),
-}).unknown(false);
+    title: Joi.string(),
+    mainContent: Joi.string(),
+})
+    .min(1)
+    .unknown(false);
 
 // Query parameters for GET /api/v1/discussions/:discussionId/comments
 const commentQueryParam = Joi.object({

@@ -12,47 +12,52 @@ Using Docker is the recommended way to run this project for both development and
 
 The application is configured using environment variables.
 
-1.  Create a file named `.env.production` in the root of the project.
+1.  Create a file named `.env.docker` in the root of the project.
     
-2.  Copy the contents of the `.env.example` file into your new `.env.production` file.
+2.  Copy the contents of the `.env.example` file into your new `.env.docker` file.
     
 3.  Fill in the required values. Note the specific hostnames for `POSTGRES_HOST`, `REDIS_HOST`, and `S3_ENDPOINT` which point to the service names in the `compose.yaml` file.
     
 
-#### Sample `.env.production`
+#### Sample `.env.docker`
 
     # Server
-    NODE_ENV=production
+    NODE_ENV=development
     PORT=3000
     HOST_NAME=http://localhost
     
     # Client
-    CORS_ORIGIN=http://localhost:5173
+    CORS_ORIGIN=http://localhost
     
     # PostgreSQL (connects to the 'db' service in compose.yaml)
     POSTGRES_USER=postgres
     POSTGRES_PASSWORD=your_super_secret_password
     POSTGRES_DB=sim_ilc
-    POSTGRES_HOST=db
-    POSTGRES_PORT=5432
+    DATABASE_HOST=db
+    DATABASE_PORT=5432
+    DATABASE_URL="postgresql://postgres:your_super_secret_password@db:5432/sim_ilc"
     
     # JWT
     # Generate a secure key with: openssl rand -hex 32
     JWT_SECRET_KEY=56e5b2fac2509fcf63e71274eca844137507d65393769fd1af7d4ea0a92247c3
     JWT_EXP="7d"
+
+    # Rate Limiter
+    RATE_LIMITER_WINDOW_SEC=60
+    RATE_LIMITER_MAX_REQ=50
     
     # Redis (connects to the 'cache' service in compose.yaml)
     REDIS_USER=default
     REDIS_PASSWORD=your_secure_redis_password
     REDIS_DB=1
-    REDIS_HOST=cache
-    REDIS_PORT=6379
+    REDIS_URL="redis://default:your_secure_redis_password@cache:6379/1"
     
-    # Nodemailer (using Gmail)
-    # See the main README for how to get an App Password
-    NODEMAILER_SERVICE="gmail"
-    NODEMAILER_USER="your_email@gmail.com"
-    NODEMAILER_PASS="your_gmail_app_password"
+    # Nodemailer (using Ethereal Mail)
+    NODEMAILER_SENDER="dummy@dum.dum" # Verified Sender Identity
+    NODEMAILER_USER="ethereal@ethereal.email"
+    NODEMAILER_PASS="your_password"
+    NODEMAILER_HOST="smtp.ethereal.email"
+    NODEMAILER_PORT=587
     
     # S3 (connects to the 's3' service in compose.yaml)
     S3_REGION=us-east-1
@@ -62,6 +67,8 @@ The application is configured using environment variables.
     S3_BUCKET_NAME=sim-ilc
     S3_TEST_BUCKET_NAME=sim-ilc-test
     
+    # External APIs
+    DOCRAPTOR_API_KEY=your_secret_key
 
 **Note on S3 Endpoints:**
 
@@ -73,7 +80,7 @@ The application is configured using environment variables.
 When you're ready, start all services by running the following command from the project root:
 
 ```bash
-APP_VERSION=$(npm pkg get version --json | jq -r .) docker compose --env-file .env.production up -d --build
+APP_VERSION=$(npm pkg get version --json | jq -r .) docker compose --env-file .env.docker up -d --build
 ```
 
 
