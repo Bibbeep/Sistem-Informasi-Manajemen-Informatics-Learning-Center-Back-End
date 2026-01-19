@@ -32,6 +32,28 @@ module.exports = {
                 onUpdate: 'CASCADE',
                 onDelete: 'CASCADE',
             },
+            signature1Id: {
+                allowNull: true,
+                type: Sequelize.INTEGER,
+                field: 'signature1_id',
+                references: {
+                    model: 'certificate_signatures',
+                    key: 'id',
+                },
+                onUpdate: 'CASCADE',
+                onDelete: 'SET NULL',
+            },
+            signature2Id: {
+                allowNull: true,
+                type: Sequelize.INTEGER,
+                field: 'signature2_id',
+                references: {
+                    model: 'certificate_signatures',
+                    key: 'id',
+                },
+                onUpdate: 'CASCADE',
+                onDelete: 'SET NULL',
+            },
             title: {
                 allowNull: false,
                 type: Sequelize.STRING,

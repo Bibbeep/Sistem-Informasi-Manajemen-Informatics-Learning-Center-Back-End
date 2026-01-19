@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 'use strict';
 const { fakerID_ID: faker } = require('@faker-js/faker');
-const { Enrollment, Program } = require('../models');
+const { Enrollment, Program, Signature } = require('../models');
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -17,6 +17,8 @@ module.exports = {
                 },
             ],
         });
+
+        const signatures = await Signature.findAll();
 
         const typeToCredential = {
             Course: 'CRS',
@@ -39,6 +41,12 @@ module.exports = {
             return {
                 user_program_enrollment_id: enrollment.id,
                 user_id: enrollment.userId,
+                signature1_id:
+                    signatures[Math.floor(Math.random() * signatures.length)]
+                        .id,
+                signature2_id:
+                    signatures[Math.floor(Math.random() * signatures.length)]
+                        .id,
                 title: `${enrollment.program.title} Certificate of Completion`,
                 credential,
                 document_url: `${faker.internet.url({ appendSlash: true })}${faker.system.commonFileName('pdf')}`,

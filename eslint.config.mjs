@@ -22,6 +22,7 @@ export default defineConfig([
             'no-unused-vars': 'warn',
             'arrow-body-style': ['error', 'always'],
             'capitalized-comments': ['off', 'always'],
+            'eol-last': ['error', 'always'],
         },
     },
 ]);

@@ -19,6 +19,16 @@ module.exports = (sequelize, DataTypes) => {
                 type: DataTypes.INTEGER,
                 field: 'user_id',
             },
+            signature1Id: {
+                allowNull: true,
+                type: DataTypes.INTEGER,
+                field: 'signature1_id',
+            },
+            signature2Id: {
+                allowNull: true,
+                type: DataTypes.INTEGER,
+                field: 'signature2_id',
+            },
             title: {
                 allowNull: false,
                 type: DataTypes.STRING,
@@ -66,8 +76,18 @@ module.exports = (sequelize, DataTypes) => {
         });
 
         Certificate.belongsTo(models.User, {
-            foreignKet: 'userId',
+            foreignKey: 'userId',
             as: 'user',
+        });
+
+        Certificate.belongsTo(models.Signature, {
+            foreignKey: 'signature1Id',
+            as: 'signature1',
+        });
+
+        Certificate.belongsTo(models.Signature, {
+            foreignKey: 'signature2Id',
+            as: 'signature2',
         });
     };
 
